@@ -1,0 +1,323 @@
+/* ===== Neo10: Windows 10 layout, Windows 3.1 pixels =====
+   Bitmap fonts are only ever used at whole multiples of their cell size. */
+#desktop.neo { --tbh: 41px; --neo-text: 16px/16px "W31 MS Sans Serif 10", sans-serif; --neo-small: 13px/13px "W31 MS Sans Serif", sans-serif; }
+#desktop.neo > .wmc { bottom: var(--tbh); }
+.neo-pix { image-rendering: pixelated; }
+
+/* full-screen layers: boot, lock, sign-in, shutdown */
+.neo-full { position: absolute; inset: 0; z-index: 300000; overflow: hidden; color: #fff; }
+.neo-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.neo-bigtext { font: 32px/36px "W31 Sans 32"; color: #fff; }
+.neo-lockbg { position: absolute; inset: 0; image-rendering: pixelated; }
+.neo-lockface { position: absolute; inset: 0; }
+.neo-lockclock { position: absolute; left: 48px; bottom: 56px; text-shadow: 2px 2px 0 #000; }
+.neo-locktime { font: 96px/108px "W31 Sans 96"; }
+.neo-lockdate { font: 48px/55px "W31 Sans 48"; }
+.neo-signin { gap: 16px; background: transparent; }
+.neo-signin img { image-rendering: pixelated; border: 2px solid #fff; }
+.neo-signname { font: 32px/36px "W31 Sans 32"; text-shadow: 2px 2px 0 #000; }
+.neo-pwrow { display: flex; gap: 0; }
+.neo-pw { width: 220px; height: 30px !important; font: 16px/16px "W31 System"; }
+.neo-pwrow .btn { min-width: 34px; height: 30px; }
+.neo-signmsg { font: 16px/16px "W31 System"; min-height: 16px; text-shadow: 1px 1px 0 #000; }
+.neo-welcome { display: flex; align-items: center; gap: 16px; font: 32px/36px "W31 Sans 32"; }
+.neo-signpower { position: absolute; right: 16px; bottom: 16px; }
+.neo-signpower .neo-tbtn { background: var(--btn-face); }
+
+/* ---------------- taskbar ---------------- */
+.neo-taskbar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 41px; z-index: 90000; display: flex; align-items: center; gap: 2px;
+  padding: 2px 0 1px 2px; background: var(--btn-face); color: var(--btn-text); border-top: 1px solid #000; font: var(--neo-small);
+  transition: none;
+}
+.neo-taskbar.accent { background: var(--active-title); color: var(--active-title-text); }
+.neo-taskbar.autohide:not(.peek) { transform: translateY(39px); }
+.neo-tbtn { height: 36px; min-width: 30px; padding: 0 5px; display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; }
+.neo-tbtn:active, .neo-tbtn.pressed { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset -1px -1px 0 var(--btn-highlight); }
+.neo-start { width: 48px; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); border: 1px solid #000; height: 36px; background: var(--btn-face); }
+.neo-start span { display: none; }
+.neo-start.pressed { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.neo-search { display: flex; align-items: center; gap: 4px; width: 230px; height: 30px; padding: 0 4px; border: 1px solid #000; background: var(--window); flex: none; }
+.neo-search input { flex: 1; border: 0 !important; height: 26px !important; padding: 0 2px; background: transparent; color: var(--window-text); font: 16px/16px "W31 System"; }
+.neo-search input::placeholder { color: var(--disabled-text); }
+.neo-search.inpanel { width: auto; margin: 6px; }
+.neo-tbapps { flex: 1; display: flex; gap: 2px; overflow: hidden; height: 38px; align-items: center; }
+.neo-tbapp {
+  position: relative; width: 44px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; padding: 0 4px;
+}
+.neo-tbapp.running { background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-tbapp.running::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: 2px; height: 2px; background: var(--highlight); }
+.neo-tbapp.multi::before { content: ''; position: absolute; right: -3px; top: 3px; bottom: 3px; width: 2px; border: 1px solid #000; border-left: 0; background: var(--btn-face); }
+.neo-tbapp.active { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset 2px 2px 0 var(--btn-shadow); background-image: repeating-conic-gradient(var(--btn-highlight) 0 25%, transparent 0 50%); background-size: 2px 2px; }
+.neo-tbapp.labels { width: 168px; justify-content: flex-start; }
+.neo-tbapp.labels span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 16px/16px "W31 System"; }
+.neo-tbapp.flash { background: var(--active-title); }
+.neo-tray { display: flex; align-items: center; height: 38px; gap: 0; flex: none; }
+.neo-clock { flex-direction: column; gap: 2px; min-width: 72px; padding: 0 6px; font: var(--neo-small); }
+.neo-showdesk { width: 7px; height: 38px; border-left: 1px solid var(--btn-shadow); margin-left: 4px; flex: none; }
+
+/* ---------------- panels (start, search, action centre, flyouts) ---------------- */
+.neo-panel { position: absolute; bottom: var(--tbh); z-index: 95000; color: var(--btn-text); font: var(--neo-text); }
+.raised { border: 1px solid #000; }
+.neo-start-menu { left: 0; height: min(520px, calc(100% - var(--tbh) - 8px)); display: flex; background: var(--btn-face); }
+.neo-rail { width: 48px; display: flex; flex-direction: column; border-right: 1px solid var(--btn-shadow); padding: 4px 0; flex: none; }
+.neo-railbtn { height: 40px; display: flex; align-items: center; justify-content: center; }
+.neo-railbtn span { display: none; }
+.neo-railbtn:hover, .neo-appitem:hover, .neo-appitem.hot, .neo-cat:hover { background: var(--highlight); color: var(--highlight-text); }
+.neo-applist { width: 240px; overflow-y: auto; padding: 4px 0; flex: none; background: var(--window); color: var(--window-text); border-right: 1px solid #000; }
+.neo-applabel { font: bold 13px/13px "W31 MS Sans Serif"; padding: 10px 10px 6px; color: inherit; }
+.neo-appitem { display: flex; align-items: center; gap: 8px; padding: 4px 10px; min-height: 26px; cursor: inherit; }
+.neo-appitem.indent { padding-left: 30px; }
+.neo-appitem.cur { background: var(--btn-face); box-shadow: inset 3px 0 0 var(--highlight); }
+.neo-chev { margin-left: auto; font: var(--neo-small); }
+.neo-tiles { width: 320px; padding: 4px 10px; overflow-y: auto; flex: none; }
+.neo-tilehead { font: bold 13px/13px "W31 MS Sans Serif"; padding: 6px 0 8px; }
+.neo-tilegrid { display: grid; grid-template-columns: repeat(3, 96px); grid-auto-rows: 96px; gap: 6px; grid-auto-flow: dense; }
+.neo-tile { position: relative; border: 1px solid #000; color: #fff; overflow: hidden; box-shadow: inset 1px 1px 0 rgba(255,255,255,.6), inset -1px -1px 0 rgba(0,0,0,.6); background-repeat: repeat; image-rendering: pixelated; }
+.neo-tile.wide { grid-column: span 2; }
+.neo-tile:active { box-shadow: inset 1px 1px 0 rgba(0,0,0,.6); }
+.neo-tilebody { position: absolute; inset: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: var(--neo-small); text-shadow: 1px 1px 0 #000; }
+.neo-tilebig { font: 32px/36px "W31 Sans 32"; }
+.neo-tilerow { display: flex; align-items: center; gap: 8px; }
+.neo-tilename { position: absolute; left: 5px; bottom: 4px; font: var(--neo-small); text-shadow: 1px 1px 0 #000; white-space: nowrap; }
+
+.neo-search-panel { left: 52px; width: 600px; height: min(440px, calc(100% - var(--tbh) - 8px)); display: flex; flex-wrap: wrap; background: var(--btn-face); align-content: stretch; }
+.neo-search-panel .neo-search.inpanel { width: calc(100% - 12px); flex: none; }
+.neo-results { width: 300px; height: 100%; overflow-y: auto; background: var(--window); color: var(--window-text); border-right: 1px solid #000; }
+.neo-search-panel .neo-search.inpanel ~ .neo-results, .neo-search-panel .neo-search.inpanel ~ .neo-resdetail { height: calc(100% - 44px); }
+.neo-appitem.best { min-height: 48px; }
+.neo-resdetail { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px 12px; gap: 8px; height: 100%; }
+.neo-resdetail img { image-rendering: pixelated; }
+.neo-resdetail .neo-appitem { align-self: stretch; }
+.neo-detname { font: 24px/28px "W31 Sans 24"; text-align: center; }
+.neo-kind { font: var(--neo-small); color: inherit; opacity: 1; }
+.neo-sep { align-self: stretch; border-top: 1px solid var(--btn-shadow); margin: 6px 0; }
+.neo-noresult { padding: 16px; }
+
+.neo-action { right: 0; top: 0; width: 330px; display: flex; flex-direction: column; background: var(--btn-face); }
+.neo-achead { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 12px 8px; font: 16px/16px "W31 System"; }
+.neo-link { color: var(--highlight); text-decoration: underline; font: var(--neo-small); padding: 4px 0; }
+.neo-panel .neo-link, .neo-scontent .neo-link { cursor: inherit; }
+.neo-notes { flex: 1; overflow-y: auto; padding: 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.neo-note { position: relative; display: flex; gap: 10px; padding: 8px 22px 8px 8px; background: var(--window); color: var(--window-text); }
+.neo-ttitle { font: bold 16px/16px "W31 MS Sans Serif 10"; margin: 2px 0; }
+.neo-nonotes { padding: 24px; text-align: center; }
+.neo-x { position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; line-height: 14px; text-align: center; font: bold 16px/14px "W31 System"; border: 1px solid #000; background: var(--btn-face); color: var(--btn-text); }
+.neo-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; border-top: 1px solid var(--btn-shadow); }
+.neo-qa { height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; border: 1px solid #000; background: var(--btn-face); font: var(--neo-small); text-align: center; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-qa.on { background: var(--highlight); color: var(--highlight-text); box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+
+.neo-fly { right: 4px; width: 300px; padding: 12px; background: var(--btn-face); display: flex; flex-direction: column; gap: 6px; }
+.neo-flytime { font: 32px/36px "W31 Sans 32"; }
+.neo-cal { margin-top: 6px; }
+.neo-calhead { display: flex; justify-content: space-between; padding: 4px 0; font: 16px/16px "W31 System"; }
+.neo-calgrid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 1px; background: var(--window); color: var(--window-text); border: 1px solid #000; }
+.neo-caldow { font: bold 13px/22px "W31 MS Sans Serif"; border-bottom: 1px solid #000; }
+.neo-calday { line-height: 26px; }
+.neo-calday.other { color: var(--disabled-text); }
+.neo-calday.today { background: var(--highlight); color: var(--highlight-text); }
+.neo-volrow { display: flex; align-items: center; gap: 8px; }
+.neo-flypct { width: 32px; text-align: right; font: 16px/16px "W31 System"; }
+.neo-netitem { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid #000; background: var(--window); color: var(--window-text); }
+.neo-netitem.on { box-shadow: inset 4px 0 0 var(--highlight); }
+
+.neo-toast { position: absolute; right: 8px; width: 330px; z-index: 96000; }
+.neo-toast .inner { background: var(--btn-face); }
+.neo-toastbody { display: flex; gap: 10px; padding: 10px; font: var(--neo-text); color: var(--btn-text); }
+
+/* ---------------- task view ---------------- */
+.neo-taskview { position: absolute; left: 0; right: 0; top: 0; bottom: var(--tbh); z-index: 94000; background: repeating-conic-gradient(#000 0 25%, transparent 0 50%) 0 0 / 2px 2px; display: flex; flex-direction: column; overflow: auto; }
+.neo-vdstrip { display: flex; gap: 12px; padding: 16px; justify-content: center; flex: none; }
+.neo-vd { position: relative; width: 130px; height: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; background: var(--btn-face); color: var(--btn-text); font: var(--neo-small); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-vd.cur { box-shadow: inset 1px 1px 0 var(--btn-shadow); background: var(--highlight); color: var(--highlight-text); }
+.neo-vdthumb { width: 96px; height: 54px; background: var(--desktop); border: 1px solid #000; }
+.neo-vdnew { justify-content: center; }
+.neo-cards { flex: 1; display: flex; flex-wrap: wrap; gap: 28px; align-content: center; justify-content: center; padding: 24px; }
+.neo-card { position: relative !important; width: 230px; height: 160px; }
+.neo-cardbody { display: flex; align-items: center; justify-content: center; }
+.neo-card .neo-x { top: -9px; right: -9px; }
+
+/* ---------------- desktop icons ---------------- */
+.neo-deskicons { position: absolute; inset: 0; z-index: 0; }
+.neo-deskicons .icon .lbl { background: transparent !important; color: #fff; text-shadow: 1px 1px 0 #000; }
+.neo-deskicons .icon.sel .lbl { text-shadow: none; }
+.neo-deskicons .icon.sel .lbl { background: var(--highlight) !important; color: var(--highlight-text) !important; }
+.neo-deskicons .icon.sel .img { filter: none; }
+.neo-rename { width: 74px; height: 18px !important; padding: 0 2px !important; font: 13px/13px "W31 MS Sans Serif" !important; }
+
+/* ---------------- File Explorer ---------------- */
+.body.neo-explorer { display: flex; flex-direction: column; background: var(--btn-face); }
+.neo-xbar { display: flex; gap: 4px; padding: 4px; align-items: center; border-bottom: 1px solid #000; flex: none; }
+.neo-xbtn { width: 26px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; background: var(--btn-face); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-xbtn:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.neo-xbtn.dis img { opacity: .35; }
+.neo-addr { flex: 1; height: 24px !important; }
+.neo-xsearch { width: 160px; height: 24px !important; }
+.neo-xsplit { flex: 1; display: flex; min-height: 0; background: var(--window); }
+.neo-xnav { width: 168px; border: 0 !important; border-right: 1px solid #000 !important; font: var(--neo-text) !important; flex: none; }
+.neo-xnav .it { min-height: 22px; }
+.neo-xmain { flex: 1; border: 0 !important; position: relative; font: var(--neo-text) !important; overflow: auto; }
+.neo-xhead { position: sticky; top: 0; display: flex; z-index: 2; background: var(--btn-face); }
+.neo-xcol { padding: 1px 6px; font: var(--neo-small); flex: none; overflow: hidden; white-space: nowrap; background: var(--btn-face); color: var(--btn-text); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-xrow { display: flex !important; align-items: center; min-height: 20px; white-space: nowrap; }
+.neo-xrow > span { flex: none; display: flex; align-items: center; gap: 6px; overflow: hidden; padding: 0 6px; }
+.neo-xname { overflow: hidden; text-overflow: ellipsis; }
+.view-icons .neo-xgrid { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; gap: 4px; }
+.neo-xicon { position: relative !important; width: 84px; padding: 4px 0; }
+.neo-xicon.sel .lbl { background: var(--highlight); color: var(--highlight-text); }
+.neo-xicon .lbl { max-width: 82px; }
+.view-list .neo-xgrid { display: flex; flex-direction: column; flex-wrap: wrap; height: 100%; align-content: flex-start; }
+.neo-xlist { width: 200px; }
+.neo-xmain .neo-xgrid .icon { left: auto; top: auto; }
+.neo-drive { display: inline-flex; gap: 10px; padding: 8px; margin: 4px 8px; width: 270px; align-items: center; }
+.neo-drive:hover { background: var(--btn-face); }
+.neo-usage { height: 12px; width: 190px; margin: 4px 0; background: var(--window); position: relative; }
+.neo-usage > div { height: 100%; }
+.neo-xtools { display: flex; gap: 6px; padding: 6px; border-bottom: 1px solid var(--btn-shadow); }
+.neo-xempty { padding: 24px; text-align: center; color: var(--disabled-text); }
+
+/* ---------------- Settings ---------------- */
+.body.neo-settings { display: flex; background: var(--window); color: var(--window-text); font: var(--neo-text); }
+.neo-sside { width: 210px; border-right: 1px solid #000; overflow-y: auto; background: var(--btn-face); color: var(--btn-text); flex: none; padding-top: 6px; }
+.neo-home { border-bottom: 1px solid var(--btn-shadow); margin-bottom: 4px; }
+.neo-scontent { flex: 1; overflow: auto; padding: 16px 28px 32px; position: relative; }
+.neo-h1 { font: 32px/36px "W31 Sans 32"; margin: 2px 0 12px; }
+.neo-h2 { font: bold 16px/16px "W31 MS Sans Serif 10"; margin: 18px 0 8px; }
+.neo-p { font: var(--neo-text); margin: 4px 0; max-width: 520px; white-space: pre-wrap; }
+.neo-sfield { margin: 12px 0; position: relative; }
+.neo-slabel { font: 16px/16px "W31 MS Sans Serif 10"; margin-bottom: 6px; }
+.neo-srow { display: flex; gap: 12px; align-items: center; }
+.neo-btnrow { display: flex; gap: 8px; }
+.neo-togrow { display: flex; align-items: center; gap: 10px; }
+.neo-toggle { position: relative; width: 44px; height: 22px; border: 1px solid #000; background: var(--window); box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.neo-toggle.on { background: var(--highlight); }
+.neo-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--btn-face); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.neo-toggle.on .neo-knob { left: 24px; }
+.neo-toggle:focus { outline: 1px dotted var(--window-text); outline-offset: 2px; }
+.neo-catgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
+.neo-cat { display: flex; gap: 12px; align-items: center; padding: 10px; border: 1px solid transparent; }
+.neo-findwrap { position: relative; width: 340px; margin: 0 auto; }
+.neo-find { width: 340px; height: 28px !important; }
+.neo-findres { position: absolute; left: 0; right: 0; top: 30px; z-index: 5; background: var(--window); border: 1px solid #000; }
+.neo-findres:empty { display: none; }
+.neo-swatches { display: flex; flex-wrap: wrap; gap: 6px; max-width: 420px; margin: 6px 0 10px; }
+.neo-swatch { width: 30px; height: 30px; border: 1px solid #000; }
+.neo-swatch.on { outline: 2px solid var(--window-text); outline-offset: 2px; }
+.neo-picgrid { display: grid; grid-template-columns: repeat(auto-fill, 84px); gap: 8px; max-width: 560px; margin-bottom: 8px; }
+.neo-pic { width: 84px; height: 60px; border: 1px solid #000; background-repeat: repeat; background-color: var(--desktop); image-rendering: pixelated; }
+.neo-pic.on { outline: 3px solid var(--highlight); outline-offset: 1px; }
+.neo-preview { position: relative; width: 240px; height: 150px; border: 1px solid #000; overflow: hidden; margin-bottom: 12px; image-rendering: pixelated; }
+.neo-themes { display: grid; grid-template-columns: repeat(auto-fill, 128px); gap: 8px; }
+.neo-theme { display: flex; flex-direction: column; gap: 4px; padding: 6px; font: var(--neo-small); background: var(--btn-face); color: var(--btn-text); }
+.neo-theme.on { outline: 3px solid var(--highlight); }
+.neo-thprev { height: 60px; padding: 10px 16px; border: 1px solid #000; }
+.neo-thprev > div { height: 36px; }
+.neo-info { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.neo-inforow { display: flex; gap: 12px; }
+.neo-inforow > span:first-child { width: 200px; flex: none; font: bold 16px/16px "W31 MS Sans Serif 10"; }
+.neo-approw { display: flex; gap: 12px; align-items: center; padding: 6px; border-bottom: 1px solid var(--btn-shadow); }
+.neo-approw:hover { background: var(--btn-face); }
+
+/* ---------------- Task Manager ---------------- */
+.body.neo-taskmgr { display: flex; flex-direction: column; background: var(--btn-face); padding: 6px; }
+.neo-tabs { display: flex; gap: 0; flex: none; }
+.neo-tab { padding: 3px 12px; border: 1px solid #000; border-bottom: 0; background: var(--btn-face); margin-right: -1px; position: relative; top: 1px; box-shadow: inset 1px 1px 0 var(--btn-highlight); }
+.neo-tab.on { background: var(--window); z-index: 1; padding-bottom: 4px; top: 0; }
+.neo-tabpane { flex: 1; overflow: auto; background: var(--window); color: var(--window-text); border: 1px solid #000; padding: 4px; font: var(--neo-text); }
+.neo-tmfoot { display: flex; justify-content: flex-end; padding-top: 6px; flex: none; }
+.neo-graph { border: 1px solid #000; image-rendering: pixelated; display: block; margin: 4px 0; }
+
+/* ---------------- Weather ---------------- */
+.body.neo-weather { padding: 12px 16px; background: var(--window); color: var(--window-text); font: var(--neo-text); }
+.neo-wxnow { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+.neo-wxnow img { image-rendering: pixelated; }
+.neo-wxtemp { font: 64px/72px "W31 Sans 64"; }
+.neo-wxdays { display: flex; gap: 8px; margin-bottom: 10px; }
+.neo-wxday { width: 90px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; background: var(--btn-face); color: var(--btn-text); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+
+/* ======================= MICROSOFT EDGE ======================= */
+.body.edge { display: flex; flex-direction: column; background: var(--btn-face); --neo-text: 16px/16px "W31 MS Sans Serif 10", sans-serif; --neo-small: 13px/13px "W31 MS Sans Serif", sans-serif; }
+.edge-tabs { flex: none; display: flex; align-items: flex-end; gap: 2px; height: 30px; padding: 0 4px; background: #808080; border-bottom: 1px solid #000; overflow: hidden; }
+.edge-tab { flex: 0 1 200px; min-width: 44px; height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 2px 0 5px; background: #c0c0c0; color: #000; border: 1px solid #000; border-bottom: none; box-shadow: inset 1px 1px 0 #fff; font: var(--neo-small); overflow: hidden; }
+.edge-tab.on { height: 27px; margin-bottom: -1px; background: var(--btn-face); color: var(--btn-text); font-weight: bold; }
+.edge-tab img { flex: none; }
+.edge-tt { flex: 1; white-space: nowrap; overflow: hidden; }
+.edge-tx { flex: none; display: flex; width: 16px; height: 16px; }
+.edge-tx:hover { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080; }
+.edge-plus { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 22px; margin: 0 0 2px 2px; background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.edge-plus:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.edge-bar .neo-xbtn.hidden { display: none; }
+.edge-addr { flex: 1; display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 3px; min-width: 60px; }
+.edge-siteico, .edge-star { flex: none; display: flex; }
+.edge-addrin { flex: 1; min-width: 0; height: 20px; border: 0; outline: 0; padding: 0; background: transparent; color: #000; font: var(--dlg-font); font-weight: normal; }
+.edge-favbar { flex: none; display: flex; gap: 2px; padding: 2px 4px; border-bottom: 1px solid #000; font: var(--neo-small); overflow: hidden; }
+.edge-fav { display: flex; align-items: center; gap: 4px; padding: 2px 6px 2px 3px; white-space: nowrap; }
+.edge-fav:hover { box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.edge-fav:active { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset -1px -1px 0 var(--btn-highlight); }
+.edge-find { flex: none; display: flex; align-items: center; gap: 4px; padding: 3px 4px; border-bottom: 1px solid #000; font: var(--neo-small); }
+.edge-find input.tx { position: relative; width: 220px; height: 22px; }
+.edge-findn { min-width: 90px; padding: 0 4px; }
+.edge-views { flex: 1; position: relative; min-height: 0; background: #fff; }
+.edge-view { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.edge-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+.edge-info { flex: none; display: flex; align-items: center; gap: 8px; padding: 3px 6px; background: var(--btn-face); border-bottom: 1px solid #000; font: var(--neo-small); }
+.edge-info span { flex: 1; }
+.edge-status { position: absolute; left: 0; bottom: 0; z-index: 3; max-width: 70%; padding: 2px 5px; background: var(--btn-face); color: #000; border: 1px solid #000; border-left: 0; border-bottom: 0; font: var(--neo-small); white-space: nowrap; overflow: hidden; pointer-events: none; }
+.edge-dlbar { flex: none; display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-top: 1px solid #000; font: var(--neo-text); }
+.edge-dlbar .btn { position: relative; height: 24px; padding: 0 10px; }
+.edge-sugg { position: absolute; z-index: 20; background: #fff; color: #000; border: 1px solid #000; font: var(--neo-text); }
+.edge-srow { display: flex; align-items: center; gap: 6px; padding: 3px 6px; white-space: nowrap; overflow: hidden; }
+.edge-srow .nw-date { margin-left: auto; padding-left: 12px; overflow: hidden; }
+.edge-srow.hot, .edge-srow:hover { background: var(--highlight); color: var(--highlight-text); }
+.edge-srow.hot .nw-date, .edge-srow:hover .nw-date { color: inherit; }
+
+/* pages */
+.edge-doc { flex: 1; overflow: auto; background: #fff; color: #000; font: 16px/18px "W31 MS Sans Serif 10", sans-serif; user-select: text; -webkit-user-select: text; image-rendering: pixelated; }
+.edge-doc a { color: #0000ff; text-decoration: underline; }
+.edge-doc a.vis { color: #800080; }
+.edge-doc input.tx { position: relative; height: 24px; }
+.edge-doc .btn { position: relative; height: 24px; padding: 0 12px; }
+.edge-doc mark.edge-hit { background: #ffff00; color: #000; }
+.edge-doc mark.edge-hit.cur { background: #00ffff; }
+.edge-pre { margin: 0; padding: 8px 12px; font: var(--fixed-font); white-space: pre-wrap; }
+.edge-img { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 100%; background: #808080; }
+.edge-img img { image-rendering: pixelated; }
+.edge-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.edge-rowx { display: flex; opacity: .6; }
+.edge-rowx:hover { opacity: 1; }
+.edge-set .neo-sfield { margin-bottom: 14px; }
+.edge-nt { display: flex; flex-direction: column; align-items: center; padding: 36px 16px 24px; }
+.edge-ntsearch { display: flex; align-items: center; gap: 6px; width: min(520px, 90%); height: 34px; padding: 0 8px; }
+.edge-ntsearch input { flex: 1; border: 0; outline: 0; background: transparent; font: 16px/16px "W31 MS Sans Serif 10"; color: #000; }
+.edge-nthead { align-self: stretch; max-width: 640px; margin: 24px auto 8px; width: 100%; font: bold 16px/16px "W31 MS Sans Serif 10"; }
+.edge-sites { display: grid; grid-template-columns: repeat(4, 140px); gap: 8px; }
+.edge-site { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 76px; padding: 4px; color: #000 !important; text-decoration: none !important; font: var(--neo-small); text-align: center; overflow: hidden; }
+.edge-site:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.edge-ntfeed { width: 100%; max-width: 640px; }
+.edge-ntcols { display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: start; }
+.nw-head { display: flex; align-items: center; gap: 24px; padding: 8px 16px; background: #000080; color: #fff; flex-wrap: wrap; }
+.edge-doc .nw-brand { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font: 24px/28px "W31 Sans 24"; }
+.nw-nav { display: flex; gap: 14px; flex-wrap: wrap; }
+.edge-doc .nw-nav a { color: #fff; text-decoration: none; }
+.edge-doc .nw-nav a.on, .edge-doc .nw-nav a:hover { text-decoration: underline; }
+.nw-body { padding: 16px 24px; max-width: 760px; }
+.nw h1 { margin: 0 0 12px; font: 32px/36px "W31 Sans 32"; font-weight: normal; }
+.nw h2 { margin: 18px 0 6px; font: bold 16px/18px "W31 MS Sans Serif 10"; }
+.nw p { margin: 0 0 10px; max-width: 640px; }
+.nw-foot { margin-top: 8px; padding: 10px 24px 16px; border-top: 1px solid #c0c0c0; color: #808080; font: var(--neo-small); }
+.nw-search { display: flex; align-items: center; gap: 6px; margin: 4px 0 16px; }
+.nw-cols { display: grid; grid-template-columns: 1fr 220px; gap: 24px; }
+.nw-box { margin: 0 0 12px; padding: 8px 10px; border: 1px solid #000; background: var(--btn-face); }
+.nw-boxhead { margin-bottom: 6px; font-weight: bold; }
+.nw-item { margin-bottom: 10px; }
+.nw-date { color: #808080; font: var(--neo-small); }
+.nw-res { margin-bottom: 14px; }
+.nw-url { color: #008000; font: var(--neo-small); margin: 2px 0; }
+.nw-card { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #c0c0c0; }
+.nw-thumb { flex: none; width: 64px; height: 48px; border: 1px solid #000; background-repeat: repeat; }
+.nw-wx { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.nw-wxt { font: 24px/28px "W31 Sans 24"; }
+.nw-wx.big .nw-wxt { font: 48px/55px "W31 Sans 48"; }
+.nw-table { border-collapse: collapse; margin-bottom: 12px; }
+.nw-table td, .nw-table th { padding: 3px 14px 3px 0; text-align: left; vertical-align: middle; }
+.nw-table .num { text-align: right; }

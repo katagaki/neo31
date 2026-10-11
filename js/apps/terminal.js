@@ -1,0 +1,173 @@
+'use strict';
+/* Terminal — with a simulated Hayes modem and a tiny dial-up BBS */
+(() => {
+  Sys.registerApp('terminal', {
+    name: 'Terminal', icon: 'terminal', help: 'terminal',
+    run(opts) {
+      const st = Object.assign({ phone: '555-0131', baud: 2400, echo: true }, Store.get('term', {}));
+      const pre = h('div', { style: { position: 'absolute', left: 0, top: 0 } });
+      const scroller = h('div', { class: 'fill', style: { overflow: 'auto', background: 'var(--window)' } }, pre);
+      const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+      const con = new TextConsole(pre, 80, 24, { colors: () => ({ bg: css('--window') || '#fff', fg: css('--window-text') || '#000' }) });
+      let online = false, dialing = false, line = '', q = [], bbs = null, path = null;
+
+      // output queue at "baud rate"
+      const out = s => { q.push(...s); pump(); };
+      let pumping = false;
+      const pump = () => {
+        if (pumping) return;
+        pumping = true;
+        const step = () => {
+          const n = Math.max(1, Math.round(st.baud / 10 / 60));
+          for (let i = 0; i < n && q.length; i++) con.write(q.shift());
+          if (q.length) requestAnimationFrame(step); else pumping = false;
+        };
+        requestAnimationFrame(step);
+      };
+      const outln = s => out(s + '\r\n');
+
+      /* ---- modem ---- */
+      const modem = cmd => {
+        const c = cmd.trim().toUpperCase();
+        if (!c) return;
+        if (!c.startsWith('AT')) { outln('ERROR'); return; }
+        if (/^ATD[TP]?/.test(c)) { dial(c.replace(/^ATD[TP]?/, '').trim() || st.phone); return; }
+        if (c === 'ATI' || c === 'ATI0') { outln('Neo31 Virtual Modem 2400'); outln('OK'); return; }
+        if (c === 'ATH' || c === 'ATH0') { outln('OK'); return; }
+        outln('OK');
+      };
+      const dial = num => {
+        if (online || dialing) return;
+        dialing = true;
+        dialStatus(num);
+        const tones = num.replace(/\D/g, '');
+        const ctx = Snd.ensure();
+        if (ctx) {
+          const DTMF = { 1: [697, 1209], 2: [697, 1336], 3: [697, 1477], 4: [770, 1209], 5: [770, 1336], 6: [770, 1477], 7: [852, 1209], 8: [852, 1336], 9: [852, 1477], 0: [941, 1336] };
+          [...tones].forEach((d, i) => DTMF[d].forEach(f => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = 0.03; o.connect(g).connect(ctx.destination); o.start(ctx.currentTime + 0.3 + i * 0.12); o.stop(ctx.currentTime + 0.3 + i * 0.12 + 0.08); }));
+          // handshake screech
+          const t0 = ctx.currentTime + 1.6 + tones.length * 0.12;
+          const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sawtooth'; g.gain.value = 0.02;
+          o.frequency.setValueAtTime(2100, t0); o.frequency.setValueAtTime(1200, t0 + 0.6); o.frequency.linearRampToValueAtTime(2400, t0 + 1.4); o.frequency.setValueAtTime(980, t0 + 1.6);
+          o.connect(g).connect(ctx.destination); o.start(t0); o.stop(t0 + 2.2);
+        }
+        setTimeout(() => {
+          dialing = false;
+          if (dlg) dlg.close();
+          if (tones === '5550131' || tones === '0131' || tones.endsWith('0131')) { online = true; outln(`CONNECT ${st.baud}`); bbs = BBS(); }
+          else { outln('NO CARRIER'); }
+        }, 4200 + tones.length * 120);
+      };
+      let dlg = null;
+      const dialStatus = num => {
+        dlg = dialog({ title: 'Terminal', w: 260, h: 80, owner: w, modal: false, build(d) {
+          d.add(h('div', { class: 'txt', text: `Dialing ${num}...\n\nTimeout:  30` }), 14, 10);
+          d.add(UI.button('Cancel', { default: true, cancel: true, onClick: () => { dialing = false; d.close(); outln('NO CARRIER'); } }), 168, 10, 80, 25);
+        } });
+        dlg.promise.then(() => { dlg = null; });
+      };
+      const hangup = () => { if (online) { online = false; bbs = null; outln(''); outln('NO CARRIER'); } };
+
+      /* ---- the BBS ---- */
+      const BBS = () => {
+        const s = { stage: 'name', name: '', guess: null, tries: 0 };
+        const banner = [
+          '', '  ███╗   ██╗███████╗ ██████╗ ██████╗  ██╗', '  ████╗  ██║██╔════╝██╔═══██╗╚════██╗███║',
+          '  ██╔██╗ ██║█████╗  ██║   ██║ █████╔╝╚██║', '  ██║╚██╗██║██╔══╝  ██║   ██║ ╚═══██╗ ██║',
+          '  ██║ ╚████║███████╗╚██████╔╝██████╔╝ ██║', '  ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═════╝  ╚═╝', '',
+          '       The Neo31 Bulletin Board System   -   Node 1 of 1', '       Running since 1992 on a 486DX2/66 with 2 phone lines', ''];
+        banner.forEach(outln);
+        out('What is your first name? ');
+        const menu = () => { outln(''); outln('  [B]ulletins   [F]iles   [M]essages   [G]ame   [W]ho   [T]ime   [Q]uit'); out(`\r\n${s.name}, command? `); };
+        return {
+          input(l) {
+            const t = l.trim();
+            if (s.stage === 'name') { s.name = t || 'GUEST'; s.stage = 'menu'; outln(''); outln(`Welcome, ${s.name}! You have 60 minutes left today.`); menu(); return; }
+            if (s.stage === 'game') {
+              const n = parseInt(t);
+              if (isNaN(n)) { out('A number, please: '); return; }
+              s.tries++;
+              if (n === s.guess) { outln(`Correct! You got it in ${s.tries} tries.`); s.stage = 'menu'; menu(); }
+              else { out(n < s.guess ? 'Higher! Guess: ' : 'Lower! Guess: '); }
+              return;
+            }
+            switch (t.toUpperCase()[0]) {
+              case 'B': ['', '=== BULLETINS ===', '1. Windows 3.1 has shipped! Upgrade from 3.0 today.', '2. New file area: TrueType fonts.', '3. SysOp vacation next week. Be nice to the modem.'].forEach(outln); break;
+              case 'F': ['', '=== FILE AREA 1: WINDOWS UTILITIES ===', 'WINZIP.ZIP    212K  Archive manager for Windows', 'SOLHINT.TXT     2K  How to always win Solitaire (you can\'t)', 'CHIMES2.WAV    30K  A better exit sound', 'MINES16.ZIP    41K  Minesweeper strategies', '', 'Downloads are disabled for guests.'].forEach(outln); break;
+              case 'M': ['', '=== MESSAGES ===', 'From: SYSOP    To: ALL    Subj: Welcome', '  Thanks for calling! Leave a message after the tone.', '', 'From: BILL     To: ALL    Subj: Hotdog Stand', '  Who designed that colour scheme? I love it.'].forEach(outln); break;
+              case 'G': s.guess = 1 + Math.floor(Math.random() * 100); s.tries = 0; s.stage = 'game'; outln(''); out('I am thinking of a number from 1 to 100. Guess: '); return;
+              case 'W': ['', 'Node  User            Activity', '----  --------------  ---------------', `  1   ${s.name.padEnd(14)}  Browsing menus`].forEach(outln); break;
+              case 'T': outln(''); outln(`The time is ${timeStr(Sys.now(), true)}.`); break;
+              case 'Q': outln(''); outln(`Goodbye, ${s.name}! Call again soon.`); setTimeout(hangup, 600); return;
+              default: outln(''); outln('Unknown command.');
+            }
+            menu();
+          }
+        };
+      };
+
+      const send = l => { if (online && bbs) bbs.input(l); else modem(l); };
+
+      const w = new Win({
+        title: 'Terminal - (Untitled)', icon: 'terminal', w: 560, h: 380,
+        onKey: (e, name) => {
+          if (e.ctrlKey || e.altKey || e.metaKey) return false;
+          if (e.key === 'Enter') { con.write('\r\n'); const l = line; line = ''; send(l); return true; }
+          if (e.key === 'Backspace') { if (line) { line = line.slice(0, -1); con.write('\b \b'); } return true; }
+          if (e.key.length === 1) { line += e.key; if (st.echo || !online) con.write(e.key); return true; }
+          return false;
+        },
+        onClose: async () => { if (online) { const r = await msgBox('Terminal is still connected.\n\nDo you want to hang up?', 'Terminal', { buttons: 'yesno', icon: 'question', owner: w }); if (r !== 'yes') return false; hangup(); } return true; },
+        menu: [
+          { label: '&File', items: [
+            { label: '&New', action: () => { con.clear(); path = null; w.setTitle('Terminal - (Untitled)'); } },
+            { label: '&Open...', action: async () => { const p = await fileDialog({ owner: w, filters: [['Settings Files (*.TRM)', '*.TRM']] }); if (p) { try { Object.assign(st, JSON.parse(FS.read(p))); path = p; w.setTitle('Terminal - ' + FS.basename(p)); } catch {} } } },
+            { label: '&Save', action: async () => { const p = path || await fileDialog({ mode: 'save', owner: w, defExt: 'TRM', filters: [['Settings Files (*.TRM)', '*.TRM']] }); if (p) { FS.write(p, JSON.stringify(st)); path = p; w.setTitle('Terminal - ' + FS.basename(p)); } } },
+            { label: 'Save &As...', action: async () => { const p = await fileDialog({ mode: 'save', owner: w, defExt: 'TRM', filters: [['Settings Files (*.TRM)', '*.TRM']] }); if (p) { FS.write(p, JSON.stringify(st)); path = p; w.setTitle('Terminal - ' + FS.basename(p)); } } }, '-',
+            { label: 'Print Set&up...', action: () => Sys.launch('CONTROL.EXE printers') }, '-',
+            { label: 'E&xit', action: () => w.close() }] },
+          { label: '&Edit', items: [
+            { label: '&Copy', key: 'Ctrl+Ins', action: () => Sys.setClipboard({ type: 'text', data: String(getSelection()) }) },
+            { label: '&Paste', key: 'Shift+Ins', action: () => { const t = Sys.clipboard?.type === 'text' ? Sys.clipboard.data : ''; for (const ch of t) { if (ch === '\n') { con.write('\r\n'); send(line); line = ''; } else { line += ch; con.write(ch); } } } },
+            { label: 'Se&lect All', action: () => { const r = document.createRange(); r.selectNodeContents(pre); getSelection().removeAllRanges(); getSelection().addRange(r); } },
+            { label: 'Clear Bu&ffer', action: () => con.clear() }] },
+          { label: '&Settings', items: [
+            { label: '&Phone Number...', action: () => dialog({ title: 'Phone Number', w: 300, h: 110, owner: w, build(d) {
+              const t = UI.text(st.phone);
+              d.add(UI.label('&Dial:', t), 10, 14); d.add(t, 60, 10, 140);
+              d.add(UI.label('Hint: try 555-0131'), 10, 50);
+              d.add(UI.check('&Redial After Timing Out', false), 10, 80);
+              d.add(UI.button('OK', { default: true, onClick: () => { st.phone = t.value; Store.set('term', st); d.close(); } }), 212, 8, 80, 25);
+              d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 212, 38, 80, 25);
+            } }) },
+            { label: 'Terminal &Emulation...', action: () => dialog({ title: 'Terminal Emulation', w: 240, h: 90, owner: w, build(d) { ['&TTY (Generic)', 'DEC VT-100 (ANSI)', 'DEC VT-52'].forEach((l, i) => d.add(UI.radio('te', l, i === 1), 14, 12 + i * 24)); d.add(UI.button('OK', { default: true, onClick: () => d.close() }), 152, 8, 80, 25); d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 152, 38, 80, 25); } }) },
+            { label: 'Terminal &Preferences...', action: () => dialog({ title: 'Terminal Preferences', w: 260, h: 80, owner: w, build(d) { const e = UI.check('&Local Echo', st.echo); d.add(e, 14, 14); d.add(UI.check('Line &Wrap', true), 14, 40); d.add(UI.button('OK', { default: true, onClick: () => { st.echo = e.input.checked; Store.set('term', st); d.close(); } }), 172, 8, 80, 25); d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 172, 38, 80, 25); } }) },
+            { label: '&Communications...', action: () => dialog({ title: 'Communications', w: 280, h: 100, owner: w, build(d) {
+              const bauds = [110, 300, 600, 1200, 2400, 4800, 9600, 19200];
+              const cb = UI.combo({ items: bauds.map(String), index: bauds.indexOf(st.baud) });
+              d.add(UI.label('&Baud Rate:', cb), 10, 14); d.add(cb, 90, 10, 90);
+              d.add(UI.label('Connector: COM1'), 10, 50);
+              d.add(UI.button('OK', { default: true, onClick: () => { st.baud = bauds[cb.index]; Store.set('term', st); d.close(); } }), 192, 8, 80, 25);
+              d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 192, 38, 80, 25);
+            } }) },
+            { label: '&Modem Commands...', action: () => msgBox('Dial prefix: ATDT\nHangup: +++ATH\nOriginate: ATQ0V1E1S0=0', 'Modem Commands', { owner: w }) }] },
+          { label: '&Phone', items: [
+            { label: '&Dial...', disabled: () => online, action: () => { outln(`ATDT ${st.phone}`); dial(st.phone); } },
+            { label: '&Hangup', disabled: () => !online, action: hangup }] },
+          { label: '&Transfers', items: [{ label: '&Send Text File...', disabled: true }, { label: '&Receive Text File...', disabled: true }, { label: '&View Text File...', disabled: true }, '-', { label: 'Send &Binary File...', disabled: true }, { label: 'Receive Binary &File...', disabled: true }] },
+          { label: '&Help', items: [{ label: '&Contents', action: () => Sys.launch('WINHELP.EXE terminal') }, '-', { label: '&About Terminal...', action: () => aboutBox('Terminal', 'terminal', w) }] }
+        ]
+      });
+      w.body.appendChild(scroller);
+      w.on('closed', () => con.dispose());
+      requestAnimationFrame(() => w.sizeToClient(640 + 17, 384));
+      con.render();
+      setTimeout(() => {
+        if (!Store.get('term.seen')) { Store.set('term.seen', true); }
+        outln('Neo31 Virtual Modem ready. Type ATDT 555-0131 or use Phone > Dial.');
+        outln('OK');
+      }, 100);
+      return w;
+    }
+  });
+})();
