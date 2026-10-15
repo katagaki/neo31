@@ -357,3 +357,9 @@ canvas.dosgrid { display: block; image-rendering: pixelated; }
 .icon .lbl { color: var(--window-text); }
 #desktop > .wmc > .icon .lbl { color: var(--desktop-text); }
 .wmc .wmc > .icon .lbl { color: var(--workspace-text); }
+
+/* Excel worksheet cells use the simulator's classic raised headers and grid. */
+.xl-head { background: #e4e4e4; border: 1px solid #888; text-align: center; font-weight: bold; user-select: none; }
+.xl-rowhead { background: #e4e4e4; border: 1px solid #888; text-align: center; user-select: none; }
+.xl-cell { overflow: hidden; white-space: nowrap; border-right: 1px solid #d0d0d0; border-bottom: 1px solid #d0d0d0; padding: 2px 4px; }
+.xl-cell.sel { outline: 2px solid #217346; outline-offset: -2px; }

@@ -15,7 +15,7 @@
   Sys.registerApp('winfile', {
     name: 'File Manager', icon: 'winfile', single: true, help: 'winfile',
     run() {
-      const st = Object.assign({ view: 'name', sort: 'name', status: true, minOnUse: false, confirmDel: true, saveOnExit: true, font: 'MS Sans Serif', lower: true }, Store.get('wf.opts', {}));
+      const st = Object.assign({ view: 'name', sort: 'name', pane: 'both', partial: ['size', 'date'], status: true, minOnUse: false, confirmDel: true, saveOnExit: true, font: 'MS Sans Serif', lower: true }, Store.get('wf.opts', {}));
       const lc = n => st.lower ? n.toLowerCase() : n;
       const listFont = () => `${WIN_FONT_PX[st.font] || 13}px/${Math.max(16, WIN_FONT_PX[st.font] || 13)}px ${WIN_FONTS[st.font] || WIN_FONTS['MS Sans Serif']}`;
       const saveOpts = () => Store.set('wf.opts', st);
@@ -56,7 +56,13 @@
         const split = h('div', { style: { display: 'flex', flex: 1, minHeight: 0 } }, tree, list);
         if (!search) b.append(drives);
         b.append(split);
-        if (search) tree.style.display = 'none';
+        const applyPane = () => {
+          tree.style.display = search || st.pane === 'directory' ? 'none' : '';
+          list.style.display = st.pane === 'tree' && !search ? 'none' : '';
+          tree.style.flex = st.pane === 'tree' && !search ? '1' : '0 0 38%';
+          list.style.flex = st.pane === 'tree' && !search ? '1' : '1';
+        };
+        applyPane();
 
         const dl = (lbl, ico, onClick, sel) => {
           const d = h('div', { style: { display: 'flex', alignItems: 'center', gap: '2px', padding: '0 2px', outline: sel ? '1px solid #000' : '' } }, iconImg(ico, 16), lbl);
@@ -104,8 +110,8 @@
         dw.renderList = () => {
           list.innerHTML = '';
           const es = dw.entries();
-          const details = st.view === 'all' || search;
-          list.style.display = '';
+          const details = st.view !== 'name' || search;
+          applyPane();
           let col;
           if (!details) { col = h('div', { style: { display: 'flex', flexDirection: 'column', flexWrap: 'wrap', height: '100%', alignContent: 'flex-start' } }); list.appendChild(col); list.style.overflowX = 'auto'; list.style.overflowY = 'hidden'; }
           else { list.style.overflowX = 'auto'; list.style.overflowY = 'auto'; }
@@ -115,11 +121,11 @@
             const row = h('div', { class: 'it' + (dw.sel.has(i) ? ' sel' : '') + (dw.cur === i ? ' cur' : ''), style: details ? {} : { width: '130px' } },
               iconImg(fileIcon(e.name, e.node), 16),
               details ? h('span', { style: { display: 'flex', gap: '10px' } },
-                h('span', { style: { width: search ? '220px' : '100px', overflow: 'hidden' }, text: shown }),
-                h('span', { style: { width: '70px', textAlign: 'right' }, text: e.node.t === 'd' ? '' : fmtNum(FS.size(e.node)) }),
-                h('span', { style: { width: '60px' }, text: fmtDate(e.node.d) }),
-                h('span', { style: { width: '78px' }, text: fmtTime(e.node.d) }),
-                h('span', { text: e.node.t === 'd' ? '' : 'a' })) : shown);
+                h('span', { style: { width: search ? '220px' : '120px', overflow: 'hidden' }, text: shown }),
+                ...(st.view === 'all' || search || st.partial.includes('size') ? [h('span', { style: { width: '70px', textAlign: 'right' }, text: e.node.t === 'd' ? '' : fmtNum(FS.size(e.node)) })] : []),
+                ...(st.view === 'all' || search || st.partial.includes('date') ? [h('span', { style: { width: '70px' }, text: fmtDate(e.node.d) })] : []),
+                ...(st.view === 'all' || search || st.partial.includes('time') ? [h('span', { style: { width: '78px' }, text: fmtTime(e.node.d) })] : []),
+                ...(st.view === 'all' || search ? [h('span', { text: e.node.t === 'd' ? '' : 'a' })] : [])) : shown);
             row.addEventListener('pointerdown', ev => dw.itemDown(ev, i));
             row.addEventListener('dblclick', () => dw.open());
             (col || list).appendChild(row);
@@ -359,6 +365,7 @@
       const diskMsg = () => msgBox('There is no disk in drive A.\n\nInsert a disk, and then try again.', 'File Manager', { icon: 'exclaim', owner: fm });
       const setView = v => () => { st.view = v; saveOpts(); dws.forEach(d => d.renderList()); };
       const setSort = v => () => { st.sort = v; saveOpts(); dws.forEach(d => d.renderList()); };
+      const setPane = v => () => { st.pane = v; saveOpts(); dws.forEach(d => d.renderList()); };
 
       const saved = st.saveOnExit ? Store.get('wf.layout') : null;
       fm = new Win({
@@ -392,10 +399,15 @@
             { label: 'Expand &All', key: 'Ctrl+*', action: () => { const dw = active(); if (!dw) return; const walk = p => { dw.expanded.add(p); for (const e of FS.list(p) || []) if (e.node.t === 'd') walk(FS.join(p, e.name)); }; walk('C:\\'); dw.renderTree(); } },
             { label: '&Collapse Branch', key: '-', action: () => { const dw = active(); if (dw && dw.dir !== 'C:\\') { dw.expanded.delete(dw.dir); dw.renderTree(); } } }] },
           { label: '&View', items: [
-            { label: 'T&ree and Directory', checked: true }, { label: 'Tr&ee Only', disabled: true }, { label: 'Directory &Only', disabled: true }, '-',
+            { label: 'T&ree and Directory', checked: () => st.pane === 'both', action: setPane('both') }, { label: 'Tr&ee Only', checked: () => st.pane === 'tree', action: setPane('tree') }, { label: 'Directory &Only', checked: () => st.pane === 'directory', action: setPane('directory') }, '-',
             { label: '&Name', checked: () => st.view === 'name', action: setView('name') },
             { label: '&All File Details', checked: () => st.view === 'all', action: setView('all') },
-            { label: '&Partial Details...', action: setView('all') }, '-',
+            { label: '&Partial Details...', action: () => dialog({ title: 'Partial Details', w: 210, h: 125, owner: fm, build(d) {
+              const checks = ['size', 'date', 'time'].map((v, i) => UI.check(['&Size', '&Date', '&Time'][i], st.partial.includes(v)));
+              checks.forEach((c, i) => d.add(c, 14, 12 + i * 22));
+              d.add(UI.button('OK', { default: true, onClick: () => { st.partial = ['size', 'date', 'time'].filter((v, i) => checks[i].input.checked); st.view = 'partial'; saveOpts(); d.close(); dws.forEach(x => x.renderList()); } }), 120, 8, 78, 25);
+              d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 120, 38, 78, 25);
+            } }) }, '-',
             { label: '&Sort by Name', checked: () => st.sort === 'name', action: setSort('name') },
             { label: 'Sort &by Type', checked: () => st.sort === 'type', action: setSort('type') },
             { label: 'Sort by Si&ze', checked: () => st.sort === 'size', action: setSort('size') },

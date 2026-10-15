@@ -244,6 +244,10 @@ sys=notepad.exe ^.sys
 pcx=pbrush.exe ^.pcx
 bmp=pbrush.exe ^.bmp
 wri=write.exe ^.wri
+doc=winword.exe ^.doc
+xls=excel.exe ^.xls
+csv=excel.exe ^.csv
+ppt=powerpoint.exe ^.ppt
 hlp=winhelp.exe ^.hlp
 wav=soundrec.exe ^.wav
 mid=mplayer.exe ^.mid
@@ -467,6 +471,7 @@ midimapper=midimap.drv
         'PRINTMAN.EXE': A(43968, 'printman'), 'CLIPBRD.EXE': A(18512, 'clipbrd'), 'SETUP.EXE': A(422080, 'setup'),
         'TASKMAN.EXE': A(3744, 'taskman'), 'WINHELP.EXE': A(256192, 'winhelp'), 'NOTEPAD.EXE': A(32800, 'notepad'),
         'WRITE.EXE': A(244976, 'write'), 'PBRUSH.EXE': A(183376, 'pbrush'), 'CALC.EXE': A(43072, 'calc'),
+        'WINWORD.EXE': A(1300000, 'winword'), 'EXCEL.EXE': A(1600000, 'excel'), 'POWERPNT.EXE': A(1400000, 'powerpoint'),
         'CLOCK.EXE': A(16416, 'clock'), 'CALENDAR.EXE': A(59824, 'calendar'), 'CARDFILE.EXE': A(93184, 'cardfile'),
         'CHARMAP.EXE': A(22016, 'charmap'), 'TERMINAL.EXE': A(148160, 'terminal'), 'SOUNDREC.EXE': A(51888, 'soundrec'),
         'MPLAYER.EXE': A(33312, 'mplayer'), 'SOL.EXE': A(180688, 'sol'), 'WINMINE.EXE': A(27776, 'winmine'),

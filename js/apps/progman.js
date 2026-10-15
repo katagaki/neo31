@@ -16,10 +16,17 @@ const PM = {
         I('Calculator', 'CALC.EXE', 'calc'), I('Clock', 'CLOCK.EXE', 'clock'), I('Character Map', 'CHARMAP.EXE', 'charmap'),
         I('Media Player', 'MPLAYER.EXE', 'mplayer'), I('Sound Recorder', 'SOUNDREC.EXE', 'soundrec')] },
       { name: 'Games', state: 'min', items: [I('Solitaire', 'SOL.EXE', 'sol'), I('Minesweeper', 'WINMINE.EXE', 'winmine')] },
+      { name: 'Office', state: 'min', items: [I('Microsoft Word', 'WINWORD.EXE', 'winword'), I('Microsoft Excel', 'EXCEL.EXE', 'excel'), I('Microsoft PowerPoint', 'POWERPNT.EXE', 'powerpoint')] },
       { name: 'StartUp', state: 'min', items: [] }
     ];
   },
-  load() { const g = Store.get('pm.groups'); return g ? JSON.parse(JSON.stringify(g)) : this.defaults(); },
+  load() {
+    const g = Store.get('pm.groups');
+    if (!g) return this.defaults();
+    const groups = JSON.parse(JSON.stringify(g));
+    if (!groups.some(x => x.name.toLowerCase() === 'office')) groups.splice(Math.max(0, groups.findIndex(x => x.name.toLowerCase() === 'startup')), 0, this.defaults().find(x => x.name === 'Office'));
+    return groups;
+  },
   iconFor(cmd) {
     const [tok] = Sys.splitCmd(cmd);
     const f = FS.which(tok);
@@ -32,7 +39,7 @@ const PM = {
     }
     return 'app';
   },
-  allIcons: ['app', 'progman', 'winfile', 'control', 'printman', 'clipbrd', 'dos', 'setup', 'notepad', 'write', 'pbrush', 'calc', 'clock',
+  allIcons: ['app', 'progman', 'winfile', 'control', 'printman', 'clipbrd', 'dos', 'setup', 'notepad', 'write', 'pbrush', 'calc', 'clock', 'winword', 'excel', 'powerpoint',
     'calendar', 'cardfile', 'charmap', 'terminal', 'soundrec', 'mplayer', 'sol', 'winmine', 'help', 'taskman', 'pifedit', 'doc', 'wri',
     'bmp', 'wav', 'floppy', 'group', 'cpColor', 'cpFonts', 'cpPorts', 'cpMouse', 'cpDesktop', 'cpKeyboard', 'cpPrinters', 'cpIntl',
     'cpDateTime', 'cp386', 'cpDrivers', 'cpSound', 'cpNetwork', 'mbStop', 'mbInfo', 'mbQuestion', 'mbExclaim', 'winlogo']

@@ -28,6 +28,21 @@
     x.fillStyle = opts.bg; x.fillRect(0, 0, W, H);
     let hh = d.getHours(); const ap = hh >= 12 ? 'PM' : 'AM'; hh = hh % 12 || 12;
     const t = `${hh}:${pad(d.getMinutes())}${opts.seconds ? ':' + pad(d.getSeconds()) : ''}`;
+    if (opts.font && opts.font !== 'Pixel') {
+      const date = opts.date ? dateStr(d) : '';
+      const size = clamp(+opts.fontSize || 20, 8, 48);
+      const family = WIN_FONTS[opts.font] || WIN_FONTS['MS Sans Serif'];
+      const tmp = h('canvas'), c = tmp.getContext('2d');
+      c.font = `${size}px ${family}`;
+      const line = `${t} ${ap}`, width = Math.ceil(c.measureText(line).width + 8), lineH = Math.ceil(size * 1.35);
+      tmp.width = Math.max(1, Math.min(W - 8, width)); tmp.height = lineH * (date ? 2 : 1);
+      c.font = `${size}px ${family}`; c.fillStyle = opts.fg; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(line, tmp.width / 2, lineH / 2, tmp.width - 4);
+      if (date) { c.font = `${Math.max(8, Math.round(size * .65))}px ${family}`; c.fillText(date, tmp.width / 2, lineH * 1.5, tmp.width - 4); }
+      x.imageSmoothingEnabled = false;
+      x.drawImage(tmp, Math.floor((W - tmp.width) / 2), Math.floor((H - tmp.height) / 2));
+      return;
+    }
     const lines = [t];
     if (opts.date) lines.push(dateStr(d));
     const g0 = new PixGrid(1, 1);
@@ -50,7 +65,7 @@
   Sys.registerApp('clock', {
     name: 'Clock', icon: 'clock', help: 'clock',
     run() {
-      const st = Object.assign({ mode: 'analog', seconds: true, date: true, noTitle: false, top: false }, Store.get('clock', {}));
+      const st = Object.assign({ mode: 'analog', seconds: true, date: true, noTitle: false, top: false, font: 'Pixel', fontSize: 20 }, Store.get('clock', {}));
       const save = () => Store.set('clock', st);
       const cv = h('canvas', { style: { position: 'absolute', left: 0, top: 0, imageRendering: 'pixelated' } });
       const x = cv.getContext('2d');
@@ -59,7 +74,7 @@
         if (w.isMin) { if (w.iconCanvas) drawAnalog(w.iconCanvas.getContext('2d'), 32, 32, d, { bg: '#ffffff', fg: '#000000', mark: '#000080', seconds: false }); return; }
         const W = w.body.clientWidth, H = w.body.clientHeight;
         if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
-        const opts = { bg: css('--window'), fg: css('--window-text'), mark: css('--active-title'), seconds: st.seconds, date: st.date };
+        const opts = { bg: css('--window'), fg: css('--window-text'), mark: css('--active-title'), seconds: st.seconds, date: st.date, font: st.font, fontSize: st.fontSize };
         (st.mode === 'analog' ? drawAnalog : drawDigital)(x, W, H, d, opts);
         const title = st.mode === 'analog' && st.date ? `Clock - ${dateStr(d)}` : 'Clock';
         if (w.title !== title) w.setTitle(title);
@@ -69,6 +84,16 @@
         w.mb.style.display = st.noTitle ? 'none' : '';
         requestAnimationFrame(paint);
       };
+      const setFont = () => dialog({ title: 'Clock Font', w: 300, h: 150, owner: w, build(d) {
+        const fonts = ['Pixel', 'Fixedsys', 'MS Sans Serif', 'Small Fonts', 'System'];
+        const font = UI.combo({ items: fonts, index: Math.max(0, fonts.indexOf(st.font)) });
+        const size = UI.combo({ items: ['12', '14', '16', '18', '20', '24', '28', '32', '40', '48'], index: ['12', '14', '16', '18', '20', '24', '28', '32', '40', '48'].indexOf(String(st.fontSize)) });
+        d.add(UI.label('&Font:', font), 12, 16); d.add(font, 92, 12, 190);
+        d.add(UI.label('&Size:', size), 12, 48); d.add(size, 92, 44, 90);
+        d.add(h('div', { class: 'txt', text: 'Font settings apply to the digital clock.' }), 12, 80);
+        d.add(UI.button('OK', { default: true, onClick: () => { st.font = fonts[font.index] || 'Pixel'; st.fontSize = +(size.value || '20'); save(); d.close(); paint(); } }), 112, 112, 80, 25);
+        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 202, 112, 80, 25);
+      } });
       const w = new Win({
         title: 'Clock', icon: 'clock', w: 200, h: 220, minW: 60, minH: 40, persist: 'clock',
         drawIcon: c => drawAnalog(c.getContext('2d'), 32, 32, Sys.now(), { bg: '#ffffff', fg: '#000000', mark: '#000080', seconds: false }),
@@ -79,7 +104,7 @@
         menu: [{ label: '&Settings', items: [
           { label: '&Analog', checked: () => st.mode === 'analog', action: () => { st.mode = 'analog'; save(); paint(); } },
           { label: '&Digital', checked: () => st.mode === 'digital', action: () => { st.mode = 'digital'; save(); paint(); } }, '-',
-          { label: 'Set &Font...', disabled: true }, '-',
+          { label: 'Set &Font...', action: setFont }, '-',
           { label: '&No Title', checked: () => st.noTitle, action: () => { st.noTitle = !st.noTitle; save(); applyTitle(); } },
           { label: '&Seconds', checked: () => st.seconds, action: () => { st.seconds = !st.seconds; save(); paint(); } },
           { label: 'D&ate', checked: () => st.date, action: () => { st.date = !st.date; save(); paint(); } }, '-',

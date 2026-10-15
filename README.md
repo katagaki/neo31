@@ -9,6 +9,8 @@ It ships with two shells that share the same programs, files and settings:
   Edge has tabs, favourites, history, downloads, find on page and whole-step zoom. Pages on `neo31.net` (news, weather, games, downloads, help, Neo Search) are built in and work offline. `C:\` paths show your files. Any other address loads the live web inside the window. Sites that refuse to be framed (Bing, DuckDuckGo and many others) stay blank; use *Open in new window* for those.
 - **Windows 3.1**: the classic MS-DOS boot and Program Manager.
 
+The **Office** group includes simulated Microsoft Word, Excel, and PowerPoint apps. Word edits and formats documents, Excel provides cell formulas (`+ - * / ^`, cell references, ranges, and `SUM`/`AVERAGE`/`MIN`/`MAX`/`COUNT`) plus CSV import/export, and PowerPoint builds, reorders, themes, and presents slides. Their `.DOC`, `.XLS`, and `.PPT` files use Neo31's own JSON-backed formats rather than native Microsoft Office binary formats.
+
 Switch between them in Settings › System › Shell (Neo10) or Windows Setup › Change System Settings (3.1).
 
 All graphics are pixel art. Icons, cursors, cards, wallpapers, the Windows flag and control glyphs are bitmaps in the 16-colour VGA palette, plotted pixel by pixel and scaled with nearest-neighbour. Nothing is drawn as vector art.
