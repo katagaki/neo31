@@ -172,6 +172,9 @@ function pageIcon(g, x, y, w, hh, lines = 'K') {
   g.l(x, y, x + w - 7, y, 'K'); g.l(x, y, x, y + hh - 1, 'K'); g.l(x, y + hh - 1, x + w - 1, y + hh - 1, 'K');
   g.l(x + w - 1, y + 6, x + w - 1, y + hh - 1, 'K'); g.l(x + w - 7, y, x + w - 1, y + 6, 'K');
   g.l(x + w - 7, y, x + w - 7, y + 6, 'K'); g.l(x + w - 7, y + 6, x + w - 1, y + 6, 'K');
+  /* A recessed grey edge gives document icons a little depth at 32px. */
+  g.l(x + w - 2, y + 7, x + w - 2, y + hh - 2, 'S');
+  g.l(x + 1, y + hh - 2, x + w - 2, y + hh - 2, 'S');
   for (let j = 1; j < 6; j++) for (let i = 1; i < j + 1; i++) g.p(x + w - 7 + i, y + j, 'S');
   if (lines) for (let j = y + 9; j < y + hh - 3; j += 3) g.l(x + 3, j, x + w - 4 - ((j / 3) % 2 ? 3 : 0), j, lines);
 }
@@ -284,15 +287,15 @@ const ICON_DEFS = {
       '..K...............']);
   },
   winword: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'B'); g.t(7, 3, 'W', 'W', 2);
+    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'N'); g.l(4, 2, 26, 2, 'B'); g.t(7, 3, 'W', 'W', 2);
     g.l(8, 12, 23, 12, 'K'); g.l(8, 17, 23, 17, 'K'); g.l(8, 22, 20, 22, 'K');
   },
   excel: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'G'); g.t(6, 3, 'X', 'W', 2);
+    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'g'); g.l(4, 2, 26, 2, 'L'); g.t(6, 3, 'X', 'W', 2);
     g.o(8, 11, 16, 15, 'K'); g.l(16, 12, 16, 24, 'K'); g.l(9, 16, 22, 16, 'K'); g.l(9, 20, 22, 20, 'K');
   },
   powerpoint: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'R'); g.t(6, 3, 'P', 'W', 2);
+    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'r'); g.l(4, 2, 26, 2, 'R'); g.t(6, 3, 'P', 'W', 2);
     g.o(7, 12, 17, 13, 'K'); g.f(15, 15, 3, 8, 'R'); g.l(18, 19, 24, 19, 'K');
   },
   pbrush: g => {
@@ -714,8 +717,9 @@ function iconURL(name) {
   if (!_iconCache[name]) _iconCache[name] = iconCanvas(ICON_DEFS[name] ? name : 'app').toDataURL();
   return _iconCache[name];
 }
-/* 16x16 version of a 32x32 icon: each 2x2 block becomes the colour most of
-   its pixels have (outline black wins ties), so small icons stay crisp. */
+/* 16x16 version of a 32x32 icon: each 2x2 block becomes its majority colour.
+   Keep single-pixel marks too: they carry thin strokes and highlights in the
+   original pixel art, and dropping them made small toolbar icons look broken. */
 const _smallCache = {};
 function iconURLSmall(name) {
   if (_smallCache[name]) return _smallCache[name];
@@ -725,7 +729,7 @@ function iconURLSmall(name) {
   for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
     const b = [g.get(2 * x, 2 * y), g.get(2 * x + 1, 2 * y), g.get(2 * x, 2 * y + 1), g.get(2 * x + 1, 2 * y + 1)];
     const solid = b.filter(Boolean);
-    if (solid.length < 2) continue;
+    if (!solid.length) continue;
     const cnt = {};
     solid.forEach(c => cnt[c] = (cnt[c] || 0) + 1);
     const best = Object.entries(cnt).sort((p, q) => q[1] - p[1] || (q[0] === 'K') - (p[0] === 'K'))[0][0];

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Neo31 regression runner</title>
+<p>Loading Neo31 with fresh scripts. Use a disposable browser profile.</p>
+<script>
+(async () => {
+  const base = new URL('../', location.href), stamp = Date.now();
+  const html = await (await fetch(new URL('index.html?test=' + stamp, base), { cache: 'no-store' })).text();
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  for (const el of parsed.querySelectorAll('script[src],link[href]')) {
+    const attr = el.tagName === 'SCRIPT' ? 'src' : 'href';
+    const url = new URL(el.getAttribute(attr), base); url.searchParams.set('test', stamp); el.setAttribute(attr, url);
+  }
+  const tests = parsed.createElement('script'); tests.src = new URL('tests/browser.js?test=' + stamp, base); parsed.body.appendChild(tests);
+  document.open(); document.write('<!doctype html>' + parsed.documentElement.outerHTML); document.close();
+})();
+</script></html>

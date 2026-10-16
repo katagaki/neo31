@@ -8,6 +8,8 @@
     name: 'Write', icon: 'write', help: 'write',
     run(opts) {
       let path = null, dirty = false, ruler = false;
+      let layout = { margin: 14, width: 560, tab: 4 }, picture = null, movingPicture = null;
+      const applyLayout = () => { doc.style.padding = `8px ${layout.margin}px 40px`; doc.style.width = layout.width + 'px'; doc.style.boxSizing = 'border-box'; doc.style.tabSize = String(layout.tab); };
       let find = { text: '', whole: false, caseSens: false };
       const doc = h('div', { contenteditable: 'true', spellcheck: false, style: {
         minHeight: '100%', padding: '8px 14px 40px', outline: 'none', font: '13px/1.35 Arial, Helvetica, sans-serif', color: '#000',
@@ -54,13 +56,15 @@
         const n = FS.get(p);
         if (!n || n.t !== 'f') { msgBox(`Cannot find ${p}.`, 'Write', { icon: 'exclaim', owner: w }); return; }
         const x = n.x || '';
-        if (x.trim().startsWith('<')) doc.innerHTML = x;
+        if (x.trim().startsWith('<')) doc.innerHTML = safeDocumentHTML(x);
         else doc.innerText = x;
+        layout = { margin: clamp(Number(n.writeLayout?.margin) || 14, 0, 192), width: clamp(Number(n.writeLayout?.width) || 560, 240, 1600), tab: clamp(Number(n.writeLayout?.tab) || 4, 1, 32) };
+        picture = null; stopMoving(); applyLayout();
         path = FS.full(p); dirty = false; title();
         scroller.scrollTop = 0;
       };
       const writeTo = p => {
-        try { FS.write(p, doc.innerHTML); path = FS.full(p); dirty = false; title(); return true; }
+        try { FS.write(p, safeDocumentHTML(doc.innerHTML), { writeLayout: { ...layout } }); path = FS.full(p); dirty = false; title(); return true; }
         catch (e) { msgBox(`Cannot save ${p}.\n${e.message}`, 'Write', { icon: 'exclaim', owner: w }); return false; }
       };
       const saveAs = async () => {
@@ -70,6 +74,50 @@
         return writeTo(p);
       };
       const save = () => path && FS.ext(path) !== 'TXT' ? writeTo(path) : saveAs();
+
+      const layoutDialog = tabs => dialog({ title: tabs ? 'Tabs' : 'Page Layout', w: 300, h: tabs ? 100 : 125, owner: w, build(d) {
+        const width = UI.text(String(tabs ? layout.tab : layout.width)), margin = UI.text(String(layout.margin));
+        d.add(UI.label(tabs ? '&Tab width (spaces):' : '&Page width (pixels):', width), 10, 12); d.add(width, 150, 8, 60);
+        if (!tabs) { d.add(UI.label('&Margins (pixels):', margin), 10, 46); d.add(margin, 150, 42, 60); }
+        d.add(UI.button('OK', { default: true, onClick: () => {
+          const v = Number(width.value), m = Number(margin.value);
+          if (!Number.isFinite(v) || v < (tabs ? 1 : 240) || v > (tabs ? 32 : 1600) || (!tabs && (!Number.isFinite(m) || m < 0 || m > 192))) {
+            msgBox(tabs ? 'Enter a tab width from 1 to 32.' : 'Enter a page width from 240 to 1600 pixels and margins from 0 to 192 pixels.', 'Write', { owner: d.win, icon: 'exclaim' }); return;
+          }
+          if (tabs) layout.tab = v; else { layout.width = v; layout.margin = m; }
+          applyLayout(); dirty = true; d.close();
+        } }), 218, 8, 72, 25);
+        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 218, 40, 72, 25);
+      } });
+      const insertPicture = async () => {
+        const p = await fileDialog({ owner: w, filters: [['Pictures', '*.BMP;*.PNG;*.JPG;*.GIF'], ['All Files', '*.*']] });
+        if (!p) return;
+        const n = FS.get(p), src = n?.g ? Wallpapers.gen(n.g)?.toDataURL() : n?.x;
+        if (!/^data:image\/(png|jpeg|gif|bmp|webp);base64,/i.test(src || '')) { msgBox('Choose an imported image or a Paintbrush picture.', 'Write', { owner: w, icon: 'exclaim' }); return; }
+        exec('insertImage', src);
+      };
+      const movePicture = () => {
+        if (!picture || !doc.contains(picture)) { msgBox('Click a picture in the document first.', 'Write', { owner: w }); return; }
+        movingPicture = picture; doc.style.cursor = 'crosshair';
+        status.firstChild.textContent = 'Click a destination for the picture. Esc cancels.';
+        doc.focus();
+      };
+      const stopMoving = () => { movingPicture = null; doc.style.cursor = ''; status.firstChild.textContent = 'Page 1'; };
+      const pictureDialog = () => {
+        if (!picture || !doc.contains(picture)) { msgBox('Click a picture in the document first.', 'Write', { owner: w }); return; }
+        const image = picture;
+        dialog({ title: 'Size Picture', w: 300, h: 100, owner: w, build(d) {
+          const width = UI.text(String(image.width)), height = UI.text(String(image.height));
+          d.add(UI.label('&Width (pixels):', width), 10, 12); d.add(width, 120, 8, 70);
+          d.add(UI.label('&Height (pixels):', height), 10, 46); d.add(height, 120, 42, 70);
+          d.add(UI.button('OK', { default: true, onClick: () => {
+            const x = Number(width.value), y = Number(height.value);
+            if (![x, y].every(v => Number.isFinite(v) && v >= 1 && v <= 2048)) { msgBox('Enter dimensions from 1 to 2048 pixels.', 'Write', { owner: d.win, icon: 'exclaim' }); return; }
+            image.style.width = x + 'px'; image.style.height = y + 'px'; dirty = true; d.close();
+          } }), 210, 8, 80, 25);
+          d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 210, 42, 80, 25);
+        } });
+      };
 
       const findIn = (text, back) => {
         // Use window.find when available (Chromium/Safari), scoped by focusing the doc
@@ -154,7 +202,7 @@
         onClose: confirmLose,
         menu: [
           { label: '&File', items: [
-            { label: '&New', action: async () => { if (await confirmLose()) { doc.innerHTML = ''; path = null; dirty = false; title(); } } },
+            { label: '&New', action: async () => { if (await confirmLose()) { doc.innerHTML = ''; path = null; picture = null; stopMoving(); layout = { margin: 14, width: 560, tab: 4 }; applyLayout(); dirty = false; title(); } } },
             { label: '&Open...', action: async () => { if (!(await confirmLose())) return; const p = await fileDialog({ owner: w, dir: path ? FS.dirname(path) : null, filters: [['Write Files (*.WRI)', '*.WRI'], ['Text Files (*.TXT)', '*.TXT'], ['All Files (*.*)', '*.*']] }); if (p) load(p); } },
             { label: '&Save', action: save }, { label: 'Save &As...', action: saveAs }, '-',
             { label: '&Print...', action: () => printDoc('Write', name(), doc.innerText, w) },
@@ -167,8 +215,8 @@
             { label: '&Copy', key: 'Ctrl+C', action: () => Sys.setClipboard({ type: 'text', data: String(getSelection()) }) },
             { label: '&Paste', key: 'Ctrl+V', action: async () => { let t = Sys.clipboard?.type === 'text' ? Sys.clipboard.data : ''; if (!t && navigator.clipboard?.readText) try { t = await navigator.clipboard.readText(); } catch {} if (t) exec('insertText', t); } },
             { label: 'Paste &Special...', disabled: true }, { label: 'Paste &Link', disabled: true }, '-',
-            { label: 'Lin&ks...', disabled: true }, { label: '&Object', disabled: true }, { label: '&Insert Object...', disabled: true }, '-',
-            { label: '&Move Picture', disabled: true }, { label: '&Size Picture', disabled: true }] },
+            { label: 'Lin&ks...', disabled: true }, { label: '&Object', disabled: true }, { label: '&Insert Picture...', action: insertPicture }, '-',
+            { label: '&Move Picture', action: movePicture }, { label: 'Picture &Alignment', items: ['left', 'right', 'none'].map(value => ({ label: value === 'none' ? 'Inline' : value === 'left' ? 'Align left' : 'Align right', action: () => { if (picture && doc.contains(picture)) { picture.style.float = value; dirty = true; } else msgBox('Click a picture first.', 'Write', { owner: w }); } })) }, { label: '&Size Picture...', action: pictureDialog }] },
           { label: 'Fi&nd', items: [
             { label: '&Find...', action: () => findDlg(false) }, { label: '&Repeat Last Find', key: 'F3', action: findNext },
             { label: 'R&eplace...', action: () => findDlg(true) }, '-', { label: '&Go To Page...', key: 'F4', action: () => msgBox('This document has only one page.', 'Write', { owner: w }) }] },
@@ -198,7 +246,7 @@
             { label: '&Header...', action: () => msgBox('Headers appear only when printing.', 'Write', { owner: w }) },
             { label: '&Footer...', action: () => msgBox('Footers appear only when printing.', 'Write', { owner: w }) },
             { label: '&Ruler On', label2: 'Ruler', checked: () => ruler, action: () => { ruler = !ruler; rulerEl.style.display = ruler ? '' : 'none'; } },
-            { label: '&Tabs...', disabled: true }, { label: '&Page Layout...', disabled: true }] },
+            { label: '&Tabs...', action: () => layoutDialog(true) }, { label: '&Page Layout...', action: () => layoutDialog(false) }] },
           { label: '&Help', items: [{ label: '&Contents', action: () => Sys.launch('WINHELP.EXE write') }, { label: '&Search for Help On...', action: () => Sys.launch('WINHELP.EXE write') }, { label: '&How to Use Help', action: () => Sys.launch('WINHELP.EXE winhelp') }, '-', { label: '&About Write...', action: () => aboutBox('Write', 'write', w) }] }
         ]
       });
@@ -211,6 +259,20 @@
 
       w.body.style.display = 'flex'; w.body.style.flexDirection = 'column';
       w.body.append(rulerEl, wrap, status);
+      applyLayout();
+      doc.style.whiteSpace = 'pre-wrap';
+      doc.setAttribute('role', 'textbox'); doc.setAttribute('aria-multiline', 'true'); doc.setAttribute('aria-label', 'Write document');
+      doc.addEventListener('click', e => {
+        if (movingPicture && e.target !== movingPicture) {
+          const image = movingPicture, selection = getSelection();
+          if (selection.rangeCount && doc.contains(selection.anchorNode) && !image.contains(selection.anchorNode)) {
+            const range = selection.getRangeAt(0).cloneRange(); range.collapse(true); range.insertNode(image);
+          } else { const target = e.target.closest('p,div,li'); (target && doc.contains(target) ? target : doc).appendChild(image); }
+          picture = image; dirty = true; stopMoving(); return;
+        }
+        picture = e.target.tagName === 'IMG' ? e.target : null;
+      });
+      doc.addEventListener('keydown', e => { if (e.key === 'Escape' && movingPicture) { e.preventDefault(); e.stopPropagation(); stopMoving(); return; } if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); exec('insertText', '\t'); } });
       doc.addEventListener('input', () => { dirty = true; });
       doc.addEventListener('paste', e => { e.preventDefault(); const t = e.clipboardData.getData('text/plain'); document.execCommand('insertText', false, t); });
       if (opts.args) load(FS.full(opts.args.trim(), 'C:\\WINDOWS'));

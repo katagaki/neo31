@@ -12,7 +12,7 @@ function askSave(appName, text, owner) {
     run(opts) {
       let path = null, dirty = false, wrap = Store.get('np.wrap', false);
       let find = { text: '', caseSens: false, up: false };
-      const ta = h('textarea', { class: 'edit', spellcheck: false, wrap: wrap ? 'soft' : 'off' });
+      const ta = h('textarea', { class: 'edit', 'aria-label': 'Notepad document', spellcheck: false, wrap: wrap ? 'soft' : 'off' });
       const name = () => path ? FS.basename(path) : '(Untitled)';
       const title = () => w.setTitle('Notepad - ' + name());
 

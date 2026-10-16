@@ -36,6 +36,7 @@
   Sys.registerApp('pbrush', {
     name: 'Paintbrush', icon: 'pbrush', help: 'pbrush',
     run(opts) {
+      const colors = [...PALETTE]; let colorIndex = 0;
       let path = null, dirty = false, tool = 'brush', size = 2, fg = '#000000', bg = '#ffffff', zoom = 1;
       let undoBuf = null, sel = null, poly = null, curve = null, textPos = null, textStr = '';
       let textStyle = { bold: false, italic: false, underline: false, font: 'Arial', px: 16 };
@@ -54,9 +55,10 @@
       // toolbox
       const toolEls = {};
       TOOLS.forEach((t, i) => {
-        const b = h('div', { title: TOOL_NAMES[t], style: { position: 'absolute', left: (2 + (i % 2) * 26) + 'px', top: (2 + Math.floor(i / 2) * 22) + 'px', width: '25px', height: '21px', border: '1px solid #000', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        const b = h('div', { role: 'button', tabindex: '0', 'aria-label': TOOL_NAMES[t], title: TOOL_NAMES[t], style: { position: 'absolute', left: (2 + (i % 2) * 26) + 'px', top: (2 + Math.floor(i / 2) * 22) + 'px', width: '25px', height: '21px', border: '1px solid #000', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
           h('img', { src: toolURL(t), width: 16, height: 16, class: 'ico' }));
         b.addEventListener('pointerdown', () => setTool(t));
+        b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setTool(t); } });
         toolEls[t] = b; toolbox.appendChild(b);
       });
       const sizeBox = h('div', { style: { position: 'absolute', left: '2px', top: (2 + 9 * 22 + 4) + 'px', width: '51px', border: '1px solid #000', background: '#fff' } });
@@ -70,19 +72,41 @@
       const setTool = t => {
         commitText(); finishPoly(); dropSelection();
         tool = t;
-        for (const k in toolEls) { toolEls[k].style.background = k === t ? '#000' : '#fff'; toolEls[k].firstChild.style.filter = k === t ? 'invert(1)' : ''; }
+        for (const k in toolEls) { toolEls[k].setAttribute('aria-pressed', String(k === t)); toolEls[k].style.background = k === t ? '#000' : '#fff'; toolEls[k].firstChild.style.filter = k === t ? 'invert(1)' : ''; }
       };
 
       // palette
       const ind = h('div', { style: { position: 'absolute', left: '4px', top: '4px', width: '34px', height: '34px', border: '1px solid #000' } });
       const indFg = h('div', { style: { position: 'absolute', left: '8px', top: '8px', width: '16px', height: '16px', border: '1px solid #000' } });
       ind.appendChild(indFg); palette.appendChild(ind);
-      PALETTE.forEach((c, i) => {
-        const sw = h('div', { style: { position: 'absolute', left: (44 + (i % 14) * 18) + 'px', top: (3 + Math.floor(i / 14) * 18) + 'px', width: '17px', height: '17px', border: '1px solid #000', background: c } });
-        sw.addEventListener('pointerdown', e => { if (e.button === 2) bg = c; else fg = c; renderInd(); });
-        palette.appendChild(sw);
+      const swatches = [];
+      colors.forEach((c, i) => {
+        const sw = h('div', { role: 'button', tabindex: '0', 'aria-label': 'Color ' + (i + 1) + ' ' + c, style: { position: 'absolute', left: (44 + (i % 14) * 18) + 'px', top: (3 + Math.floor(i / 14) * 18) + 'px', width: '17px', height: '17px', border: '1px solid #000', background: c } });
+        sw.addEventListener('pointerdown', e => { colorIndex = i; if (e.button === 2) bg = colors[i]; else fg = colors[i]; renderInd(); });
+        sw.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); colorIndex = i; if (e.shiftKey) bg = colors[i]; else fg = colors[i]; renderInd(); } });
+        swatches.push(sw); palette.appendChild(sw);
       });
       const renderInd = () => { ind.style.background = bg; indFg.style.background = fg; };
+
+      const refreshPalette = () => { swatches.forEach((sw, i) => { sw.style.background = colors[i]; sw.setAttribute('aria-label', 'Color ' + (i + 1) + ' ' + colors[i]); }); fg = colors[colorIndex]; renderInd(); };
+      const editColor = () => dialog({ title: 'Edit Colors', w: 280, h: 100, owner: w, build(d) {
+        const value = UI.text(colors[colorIndex]);
+        d.add(UI.label('&Color (#RRGGBB):', value), 10, 12); d.add(value, 10, 34, 150);
+        d.add(UI.button('OK', { default: true, onClick: () => {
+          if (!/^#[a-f0-9]{6}$/i.test(value.value.trim())) { msgBox('Enter a color such as #008080.', 'Paintbrush', { owner: d.win, icon: 'exclaim' }); return; }
+          colors[colorIndex] = value.value.trim(); refreshPalette(); d.close();
+        } }), 185, 8, 85, 25);
+        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 185, 40, 85, 25);
+      } });
+      const paletteFile = async save => {
+        const p = await fileDialog({ mode: save ? 'save' : 'open', owner: w, name: 'COLORS.PAL', defExt: 'PAL', filters: [['Color Palettes', '*.PAL']] });
+        if (!p) return;
+        try {
+          if (save) FS.write(p, JSON.stringify(colors));
+          else { const values = JSON.parse(FS.read(p)); if (!Array.isArray(values) || values.length !== colors.length || !values.every(c => typeof c === 'string' && /^#[a-f0-9]{6}$/i.test(c))) throw new Error('Choose a valid 28-color palette.'); colors.splice(0, colors.length, ...values); refreshPalette(); }
+        } catch (e) { msgBox(e.message, 'Paintbrush', { owner: w, icon: 'exclaim' }); }
+      };
+      swatches.forEach(sw => sw.addEventListener('dblclick', editColor));
 
       /* ---------- helpers ---------- */
       const snapshot = () => { undoBuf = ctx.getImageData(0, 0, cv.width, cv.height); dirty = true; };
@@ -490,7 +514,7 @@
               d.add(UI.button('OK', { default: true, onClick: () => { Store.set('pb.round', rd.input.checked); d.close(); } }), 130, 8, 80, 25);
               d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 130, 38, 80, 25);
             } }) },
-            { label: '&Edit Colors...', disabled: true }, { label: '&Get Colors...', disabled: true }, { label: '&Save Colors...', disabled: true }, '-',
+            { label: '&Edit Colors...', action: editColor }, { label: '&Get Colors...', action: () => paletteFile(false) }, { label: '&Save Colors...', action: () => paletteFile(true) }, '-',
             { label: '&Omit Picture Format', checked: false }] },
           { label: '&Help', items: [{ label: '&Contents', action: () => Sys.launch('WINHELP.EXE pbrush') }, { label: '&Search for Help on...', action: () => Sys.launch('WINHELP.EXE pbrush') }, { label: '&How to Use Help', action: () => Sys.launch('WINHELP.EXE winhelp') }, '-', { label: '&About Paintbrush...', action: () => aboutBox('Paintbrush', 'pbrush', w) }] }
         ]

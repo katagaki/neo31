@@ -34,7 +34,7 @@ const FileOps = {
     const n = FS.get(path);
     if (!n) { msgBox(`Windows can't find '${path}'. Make sure you typed the name correctly, and then try again.`, 'File Explorer', { icon: 'stop' }); return; }
     if (n.t === 'd') return Sys.run('explorer', { args: path });
-    return Sys.launch(path, { cwd: FS.dirname(path), caller: 'File Explorer' });
+    return Sys.launch(`"${path}"`, { cwd: FS.dirname(path), caller: 'File Explorer' });
   },
 
   uniqueName(dir, base) {

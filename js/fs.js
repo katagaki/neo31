@@ -8,7 +8,7 @@ const DOS_DATE = new Date(1993, 2, 10, 6, 0).getTime();
 class VFS extends Emitter {
   constructor() {
     super();
-    try { this.root = JSON.parse(localStorage.getItem(Store.key + '.fs')); } catch { this.root = null; }
+    try { this.root = Store.state?.fs || JSON.parse(localStorage.getItem(Store.key + '.fs')); } catch { this.root = null; }
     if (!this.root || this.root.t !== 'd') this.root = VFS.defaultTree();
     this.totalBytes = 125 * 1024 * 1024;
     this.baseUsed = 78 * 1024 * 1024;
@@ -17,15 +17,12 @@ class VFS extends Emitter {
   flush() {
     clearTimeout(this._t);
     if (Store.wiped) return;
-    try { localStorage.setItem(Store.key + '.fs', JSON.stringify(this.root)); } catch (e) { console.warn('FS save failed', e); }
+    return Store.flush();
   }
 
   save() {
     clearTimeout(this._t);
-    this._t = setTimeout(() => {
-      try { localStorage.setItem(Store.key + '.fs', JSON.stringify(this.root)); }
-      catch (e) { console.warn('FS save failed', e); }
-    }, 250);
+    this._t = setTimeout(() => this.flush(), 250);
     this.emit('change');
   }
 
@@ -464,7 +461,8 @@ midimapper=midimap.drv
       }, DOS_DATE),
       WINDOWS: D({
         'WIN.COM': A(50904, 'win'), 'WIN.INI': F(winIni), 'SYSTEM.INI': F(systemIni),
-        'PROGMAN.INI': F('[Settings]\nWindow=60 28 565 388 1\nSaveSettings=1\nMinOnRun=0\nAutoArrange=1\n\n[Groups]\nGroup1=C:\\WINDOWS\\MAIN.GRP\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\nGroup3=C:\\WINDOWS\\GAMES.GRP\nGroup4=C:\\WINDOWS\\STARTUP.GRP\n'),
+        'PROGMAN.INI': F('[Settings]\nWindow=60 28 565 388 1\nSaveSettings=1\nMinOnRun=0\nAutoArrange=1\n\n[Groups]\nGroup1=C:\\WINDOWS\\MAIN.GRP\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\nGroup3=C:\\WINDOWS\\GAMES.GRP\nGroup4=C:\\WINDOWS\\STARTUP.GRP\nGroup5=C:\\WINDOWS\\OFFICE.GRP\n'),
+        'OFFICE.GRP': S(6144),
         'CONTROL.INI': F('[current]\ncolor schemes=Windows Default\n\n[Screen Saver.Marquee]\nText=Neo31 - Windows 3.1\n'),
         'MAIN.GRP': S(5215), 'ACCESSOR.GRP': S(9862), 'GAMES.GRP': S(1488), 'STARTUP.GRP': S(44),
         'PROGMAN.EXE': A(115312, 'progman'), 'WINFILE.EXE': A(146864, 'winfile'), 'CONTROL.EXE': A(13904, 'control'),

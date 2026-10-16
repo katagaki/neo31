@@ -299,7 +299,7 @@ const EdgePages = {
       for (const d of dl) {
         const there = FS.exists(d.path);
         const open = h('a', { href: '#', text: 'Open', onclick: e => { e.preventDefault(); FileOps.open(d.path); } });
-        const folder = h('a', { href: '#', text: 'Show in folder', onclick: e => { e.preventDefault(); Sys.launch('EXPLORER ' + FS.dirname(d.path)); } });
+        const folder = h('a', { href: '#', text: 'Show in folder', onclick: e => { e.preventDefault(); Sys.launch(`EXPLORER "${FS.dirname(d.path)}"`); } });
         list.appendChild(h('div', { class: 'edge-row' }, iconImg(FileOps.iconFor(d.name, FS.get(d.path) || { t: 'f' }, 16), 16), h('b', { text: d.name }), h('span', { class: 'nw-date', text: there ? `${Intl31.date(new Date(d.t))} ${Intl31.time(new Date(d.t))}` : 'Deleted' }), there ? open : null, there ? folder : null));
       }
     };
@@ -518,9 +518,9 @@ Sys.registerApp('edge', {
       } else {
         // the live web
         const host = u.hostname.replace(/^www\./, '');
-        const fr = h('iframe', { class: 'edge-frame', src: url, referrerpolicy: 'no-referrer', sandbox: 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals' });
+        const fr = h('iframe', { title: `Live page from ${host}`, class: 'edge-frame', src: url, referrerpolicy: 'no-referrer', sandbox: 'allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals' });
         const ext = UI.button('Open in new window', { onClick: () => window.open(url, '_blank', 'noopener') });
-        const info = h('div', { class: 'edge-info' }, iconImg('s_globe', 16), h('span', { text: `Live page from ${host}. Some sites won't appear inside another page and stay blank.` }), ext);
+        const info = h('div', { class: 'edge-info' }, iconImg('s_globe', 16), h('span', { text: `Live page from ${host}. If this page stays blank or refuses to connect, open it in a new window.` }), ext);
         fr.style.zoom = t.zoom;
         t.loading = true;
         fr.addEventListener('load', () => { t.loading = false; if (t === cur) chrome(); else renderTabs(); });

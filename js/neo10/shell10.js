@@ -407,7 +407,7 @@ const Shell10 = {
     if (it.key === '::thispc') return [{ label: '&Open', action: it.open }, '-', { label: 'P&roperties', action: () => Sys.launch('SETTINGS system/about') }];
     return [
       { label: '&Open', action: it.open },
-      ...(FS.ext(it.key) && /^(TXT|INI|BAT|LOG)$/.test(FS.ext(it.key)) ? [{ label: '&Edit', action: () => Sys.launch('NOTEPAD.EXE ' + it.path) }] : []),
+      ...(FS.ext(it.key) && /^(TXT|INI|BAT|LOG)$/.test(FS.ext(it.key)) ? [{ label: '&Edit', action: () => Sys.launch(`NOTEPAD.EXE "${it.path}"`) }] : []),
       '-',
       { label: 'Cu&t', action: () => FileClip.set([it.path], true) },
       { label: '&Copy', action: () => FileClip.set([it.path], false) },
@@ -867,7 +867,7 @@ const Shell10 = {
     d.append(big, h('div', { class: 'neo-detname', text: r.name }), h('div', { class: 'neo-kind', text: r.kind }), h('div', { class: 'neo-sep' }));
     const act = (label, fn) => { const b = h('div', { class: 'neo-appitem', text: label }); b.addEventListener('pointerup', fn); d.appendChild(b); };
     act('Open', () => r.run());
-    if (r.path) act('Open file location', () => { this.closePanels(); Sys.launch('EXPLORER ' + FS.dirname(r.path)); });
+    if (r.path) act('Open file location', () => { this.closePanels(); Sys.launch(`EXPLORER "${FS.dirname(r.path)}"`); });
     if (r.kind === 'App') act('Run as administrator', () => r.run());
   },
   searchKey(e) {

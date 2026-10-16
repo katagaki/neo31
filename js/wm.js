@@ -50,6 +50,7 @@ const Menu = {
   /* context / system menus */
   show(items, x, y, opts = {}) {
     this.closeAll(true);
+    this.returnFocus = document.activeElement;
     this.opts = opts;
     this.ensureOverlay();
     this.push(items, x, y, opts.anchorH || 0);
@@ -58,6 +59,7 @@ const Menu = {
   },
 
   openBar(bar, idx, viaKey = false) {
+    if (!this.isOpen()) this.returnFocus = document.activeElement;
     const items = bar.defs[idx] && this.val(bar.defs[idx].items, bar.win);
     this.closePopups();
     this.bar && this.bar.highlight(-1);
@@ -81,14 +83,14 @@ const Menu = {
 
   push(items, x, y, anchorH = 0, anchorTop = null) {
     const level = this.stack.length;
-    const el = h('div', { class: 'popup' });
+    const el = h('div', { class: 'popup', role: 'menu', tabindex: '-1', 'aria-label': 'Commands' });
     const p = { el, items, hot: -1, level };
     items.forEach((it, i) => {
-      if (it === '-') { el.appendChild(h('div', { class: 'sep' })); return; }
+      if (it === '-') { el.appendChild(h('div', { class: 'sep', role: 'separator' })); return; }
       const dis = this.val(it.disabled, this.opts.ctx);
       const chk = this.val(it.checked, this.opts.ctx);
       const lab = this.val(it.label, this.opts.ctx);
-      const row = h('div', { class: 'mi' + (dis ? ' dis' : '') },
+      const row = h('div', { class: 'mi' + (dis ? ' dis' : ''), role: it.checked != null ? 'menuitemcheckbox' : 'menuitem', 'aria-label': stripAmp(lab), 'aria-disabled': String(!!dis), 'aria-checked': it.checked != null ? String(!!chk) : null, 'aria-haspopup': it.items ? 'menu' : null, id: 'menu-item-' + UI.nextId++, tabindex: '-1' },
         h('span', { class: 'chk' + (chk ? ' on' : '') }),
         h('span', { class: 'lab', html: mnemonicHTML(lab) }),
         it.items ? h('span', { class: 'sub', text: '▸' }) : h('span', { class: 'acc', text: it.key ? it.keyLabel || it.key : '' }));
@@ -115,7 +117,7 @@ const Menu = {
     if (p.hot >= 0 && p['row' + p.hot]) p['row' + p.hot].classList.remove('hot');
     p.hot = i;
     const row = p['row' + i];
-    if (row) row.classList.add('hot');
+    if (row) { row.classList.add('hot'); p.el.setAttribute('aria-activedescendant', row.id); if (!fromMouse) p.el.focus({ preventScroll: true }); }
     const it = p.items[i];
     if (fromMouse && it && it.items && !this.val(it.disabled, this.opts.ctx)) this.openSub(level, i);
   },
@@ -152,12 +154,17 @@ const Menu = {
     if (this.overlay) { this.overlay.remove(); this.overlay = null; }
     const oc = this.opts && this.opts.onClose;
     this.opts = {};
+    if (!silent) {
+      if (this.returnFocus?.isConnected) this.returnFocus.focus({ preventScroll: true });
+      else Sys.activeTop()?.focus();
+    }
     if (oc && !silent) oc();
   },
 
   key(e) {
     if (!this.isOpen()) return false;
     const k = e.key;
+    if (k === 'Tab') { this.closeAll(); return false; }
     if (k === 'Alt' || k === 'Meta') { if (e.type === 'keydown') this.closeAll(); return true; }
     const p = this.stack[this.stack.length - 1];
     if (this.barMode && !p) {
@@ -189,12 +196,12 @@ const Menu = {
       if (it && it.items) this.choose(p.level, p.hot);
       else if (this.bar) this.openBar(this.bar, (this.barIdx + 1) % this.bar.defs.length, true);
     } else if (k === 'ArrowLeft') {
-      if (p.level > 0) this.stack.pop().el.remove();
+      if (p.level > 0) { this.stack.pop().el.remove(); this.stack[this.stack.length - 1].el.focus({ preventScroll: true }); }
       else if (this.bar) this.openBar(this.bar, (this.barIdx + this.bar.defs.length - 1) % this.bar.defs.length, true);
     } else if (k === 'Enter') { if (p.hot >= 0) this.choose(p.level, p.hot); }
     else if (k === 'Escape') {
-      if (p.level > 0) this.stack.pop().el.remove();
-      else if (this.bar) { const b = this.bar, i = this.barIdx; this.closePopups(); this.bar = b; this.barIdx = i; this.barMode = true; b.highlight(i); }
+      if (p.level > 0) { this.stack.pop().el.remove(); this.stack[this.stack.length - 1].el.focus({ preventScroll: true }); }
+      else if (this.bar) { const b = this.bar, i = this.barIdx; this.closePopups(); this.bar = b; this.barIdx = i; this.barMode = true; b.highlight(i); b.items[i].focus({ preventScroll: true }); }
       else this.closeAll();
     } else if (k.length === 1) {
       const code = e.code && /^(Key[A-Z]|Digit\d)$/.test(e.code) ? e.code.slice(-1).toLowerCase() : k.toLowerCase();
@@ -208,6 +215,7 @@ const Menu = {
 
 class MenuBar {
   constructor(win, defs, el) {
+    el.setAttribute('role', 'menubar'); el.setAttribute('aria-label', 'Application menu');
     this.win = win; this.el = el; this.defs = defs; this.items = [];
     this.render();
   }
@@ -215,18 +223,22 @@ class MenuBar {
     this.el.querySelectorAll('.mb-item').forEach(n => n.remove());
     const anchor = this.el.querySelector('.mdi-restore');
     this.items = this.defs.map((d, i) => {
-      const it = h('div', { class: 'mb-item', 'data-i': i, html: mnemonicHTML(d.label) });
+      const it = h('div', { class: 'mb-item', role: 'menuitem', tabindex: '0', 'aria-haspopup': 'menu', 'aria-label': stripAmp(d.label), 'data-i': i, html: mnemonicHTML(d.label) });
       it.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;
         e.preventDefault();
         this.win.activate();
         Menu.openBar(this, i);
       });
+      it.addEventListener('keydown', e => {
+        if (['Enter', ' ', 'ArrowDown'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); Menu.openBar(this, i, true); }
+        else if (['ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); this.items[(i + (e.key === 'ArrowRight' ? 1 : this.items.length - 1)) % this.items.length].focus(); }
+      });
       this.el.insertBefore(it, anchor);
       return it;
     });
   }
-  highlight(i) { this.items.forEach((it, j) => it.classList.toggle('open', i === j)); }
+  highlight(i) { this.items.forEach((it, j) => { it.classList.toggle('open', i === j); it.setAttribute('aria-expanded', String(i === j)); }); }
   /* collect accelerators */
   accel(name) {
     const walk = items => {
@@ -397,6 +409,8 @@ class Win extends Emitter {
     const maxBox = o.maxBox ?? (!this.dialog && o.resizable);
 
     this.el = h('div', { class: 'win' + (this.dialog ? ' dlg' : '') + (o.resizable && !this.dialog ? ' sizable' : '') + (this.isMdi ? ' mdichild' : '') + (o.className ? ' ' + o.className : ''), tabindex: '-1' });
+    this.el.setAttribute('role', this.dialog ? 'dialog' : 'region');
+    this.el.setAttribute('aria-label', this.title);
     this.inner = h('div', { class: 'inner' });
     this.tb = h('div', { class: 'tb' });
     if (o.sysMenu !== false) {
@@ -487,6 +501,8 @@ class Win extends Emitter {
     if (o.owner && o.modal) {
       o.owner.modalChild = this;
       this.modalOwner = o.owner;
+      this.el.setAttribute('aria-modal', 'true');
+      o.owner.el.inert = true;
     }
     if (!o.noActivate) this.activate();
   }
@@ -516,6 +532,7 @@ class Win extends Emitter {
   setTitle(t) {
     this.title = t;
     this.capEl.textContent = t;
+    this.el.setAttribute('aria-label', t);
     if (this.iconLbl) this.iconLbl.textContent = this.iconTitle();
     if (this.isMdi && this.wm.frame) this.wm.syncMdiMax();
     Sys.emit('titles');
@@ -608,6 +625,7 @@ class Win extends Emitter {
     this.wm.remove(this);
     if (this.modalOwner) {
       this.modalOwner.modalChild = null;
+      this.modalOwner.el.inert = false;
       if (!this.modalOwner.closed) this.modalOwner.activate();
     }
     if (this.o.onClosed) this.o.onClosed(this);
@@ -800,6 +818,8 @@ class Win extends Emitter {
   }
 
   _bindSys(el) {
+    el.setAttribute('role', 'button'); el.setAttribute('aria-label', 'Window menu'); el.tabIndex = 0;
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); this.showSysMenu(el, true); } });
     let last = 0;
     el.addEventListener('pointerdown', e => {
       if (e.button !== 0) return;
@@ -816,6 +836,9 @@ class Win extends Emitter {
     });
   }
   _bindBtn(el, fn) {
+    const label = el.classList.contains('min') ? 'Minimize' : el.classList.contains('max') ? 'Maximize or restore' : el.classList.contains('close') ? 'Close' : 'Restore';
+    el.setAttribute('role', 'button'); el.setAttribute('aria-label', label); el.tabIndex = 0;
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); if (!this.modalChild) fn(); } });
     el.addEventListener('pointerdown', e => {
       if (e.button !== 0) return;
       e.stopPropagation(); e.preventDefault();

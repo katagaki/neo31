@@ -24,27 +24,27 @@ const SP = {
   p: t => h('div', { class: 'neo-p', text: t }),
   row: (...kids) => h('div', { class: 'neo-srow' }, ...kids),
   toggle(label, get, set, desc) {
-    const sw = h('div', { class: 'neo-toggle sunken' + (get() ? ' on' : ''), tabindex: '0' }, h('div', { class: 'neo-knob raised' }));
+    const sw = h('div', { class: 'neo-toggle sunken' + (get() ? ' on' : ''), tabindex: '0', role: 'switch', 'aria-label': label, 'aria-checked': String(!!get()) }, h('div', { class: 'neo-knob raised' }));
     const txt = h('span', { text: get() ? 'On' : 'Off' });
-    const flip = () => { set(!get()); sw.classList.toggle('on', get()); txt.textContent = get() ? 'On' : 'Off'; };
+    const flip = () => { set(!get()); sw.classList.toggle('on', get()); sw.setAttribute('aria-checked', String(!!get())); txt.textContent = get() ? 'On' : 'Off'; };
     sw.addEventListener('pointerup', flip);
     sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
     return h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: label }), desc ? SP.p(desc) : null, h('div', { class: 'neo-togrow' }, sw, txt));
   },
   combo(label, items, get, set) {
-    const cb = UI.combo({ items: items.map(i => typeof i === 'string' ? i : i[1]), onChange: (_, idx) => set(typeof items[idx] === 'string' ? items[idx] : items[idx][0]) });
+    const cb = UI.combo({ label, items: items.map(i => typeof i === 'string' ? i : i[1]), onChange: (_, idx) => set(typeof items[idx] === 'string' ? items[idx] : items[idx][0]) });
     const cur = get(); const idx = items.findIndex(i => (typeof i === 'string' ? i : i[0]) === cur);
     cb.set(Math.max(0, idx), false);
     cb.el.style.position = 'relative'; cb.el.style.width = '260px';
     return h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: label }), cb.el);
   },
   slider(label, min, max, get, set, step) {
-    const s = UI.slider({ min, max, step, value: get(), onChange: set });
+    const s = UI.slider({ label, min, max, step, value: get(), onChange: set });
     s.el.style.position = 'relative'; s.el.style.width = '260px';
     return h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: label }), s.el);
   },
   button(t, fn) { const b = UI.button(t, { onClick: fn }); b.style.minWidth = '120px'; return b; },
-  link(t, fn) { const a = h('div', { class: 'neo-link', text: t }); a.addEventListener('pointerup', fn); return a; },
+  link(t, fn) { const a = h('div', { class: 'neo-link', role: 'button', tabindex: '0', text: t }); a.addEventListener('pointerup', fn); a.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); fn(); } }); return a; },
   radios(label, items, get, set) {
     const name = 'r' + Math.random().toString(36).slice(2);
     return h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: label }),
@@ -54,7 +54,7 @@ const SP = {
     const g = h('div', { class: 'neo-swatches' });
     const draw = () => {
       g.innerHTML = '';
-      colors.forEach(c => { const s = h('div', { class: 'neo-swatch' + (get() === c ? ' on' : ''), style: { background: c } }); s.addEventListener('pointerup', () => { set(c); draw(); }); g.appendChild(s); });
+      colors.forEach(c => { const s = h('div', { class: 'neo-swatch' + (get() === c ? ' on' : ''), role: 'button', tabindex: '0', 'aria-label': 'Color ' + c, 'aria-pressed': String(get() === c), style: { background: c } }); s.addEventListener('pointerup', () => { set(c); draw(); }); s.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); set(c); draw(); g.querySelector(`[aria-label="Color ${c}"]`).focus(); } }); g.appendChild(s); });
     };
     draw();
     return g;
@@ -411,8 +411,10 @@ page('update/windowsupdate', 'Windows Update', 'update check updates history', e
   el.append(SP.h1('Windows Update'), st, h('div', { class: 'neo-sfield' }, btn), SP.h2('Update history'),
     SP.info([['Feature update to Neo10, version 22H2', 'Successfully installed on ' + Intl31.date(new Date(WIN_DATE))], ['Windows 3.1 Feature Experience Pack', 'Successfully installed on ' + Intl31.date(new Date(WIN_DATE))], ['Definition Update for Program Manager', 'Successfully installed on ' + Intl31.date(new Date(DOS_DATE))]]));
 });
-page('update/recovery', 'Recovery', 'reset this pc factory go back windows 3.1', el => {
+page('update/recovery', 'Recovery', 'backup restore reset this pc factory go back windows 3.1', el => {
   el.append(SP.h1('Recovery'),
+    SP.h2('Backup and restore'), SP.p('Download all saved files and settings. Restore a backup to replace this PC and restart.'),
+    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Download backup', () => HostFiles.backup()), SP.button('Restore backup...', () => HostFiles.restore())),
     SP.h2('Reset this PC'), SP.p('Restores drive C: and every setting to factory condition. Your files will be removed.'),
     h('div', { class: 'neo-sfield' }, SP.button('Get started', async () => {
       if (await msgBox('Reset this PC?\n\nThis removes all files you created and returns every setting to its factory default.', 'Reset this PC', { buttons: 'okcancel', icon: 'exclaim' }) !== 'ok') return;

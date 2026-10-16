@@ -94,12 +94,31 @@
         [BTN('M+', () => { mem += val(); fresh = true; render(); }, 'R'), BTN('0', () => enter('0'), 'B'), BTN('+/-', () => { if (fresh) unary(v => -v); else { cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur; render(); } }, 'B'), BTN('.', () => enter('.'), 'B'), BTN('+', () => pushOp('+'), 'R'), BTN('=', equals, 'R')]
       ];
       const trig = (f, af, hf, ahf) => () => unary(v => hyp ? (inv ? ahf(v) : hf(v)) : inv ? fromRad(af(v)) : f(toRad(v)));
+      const samples = [];
+      const statistic = kind => {
+        if (!samples.length || (kind === 'deviation' && !inv && samples.length < 2)) {
+          msgBox('Add data with Dat first. Sample standard deviation needs at least two values.', 'Calculator', { owner: w }); return;
+        }
+        const total = samples.reduce((a, b) => a + (inv && kind === 'sum' ? b * b : b), 0);
+        const mean = samples.reduce((a, b) => a + b, 0) / samples.length;
+        const result = kind === 'sum' ? total : kind === 'mean' ? (inv ? Math.sqrt(samples.reduce((a, b) => a + b * b, 0) / samples.length) : mean)
+          : Math.sqrt(samples.reduce((a, b) => a + (b - mean) ** 2, 0) / (samples.length - (inv ? 0 : 1)));
+        show(result); fresh = true;
+      };
+      const statsDialog = () => dialog({ title: 'Statistics', w: 310, h: 210, owner: w, build(d) {
+        const lb = UI.listbox({ items: samples.map(String), sel: samples.length - 1 });
+        d.add(UI.label('&Data:', lb), 10, 8); d.add(lb, 10, 28, 190, 165);
+        d.add(UI.button('&Delete', { onClick: () => { if (lb.sel >= 0) { samples.splice(lb.sel, 1); lb.setItems(samples.map(String), Math.max(0, samples.length - 1)); } } }), 214, 8, 85, 25);
+        d.add(UI.button('Delete &all', { onClick: () => { samples.length = 0; lb.setItems([]); } }), 214, 40, 85, 25);
+        d.add(UI.button('&Add current', { onClick: () => { if (!err && Number.isFinite(val())) { samples.push(val()); lb.setItems(samples.map(String), samples.length - 1); fresh = true; } } }), 214, 72, 85, 25);
+        d.add(UI.button('Close', { cancel: true, onClick: () => d.close() }), 214, 168, 85, 25);
+      } });
       const sciBtns = [
-        [BTN('Sta', () => msgBox('Statistics are not available in this version.', 'Calculator', { owner: w }), 'N'), BTN('F-E', () => { cur = val().toExponential(); render(); }, 'm'), BTN('(', () => { stack.push({ op: '(' }); fresh = true; }, 'm'), BTN(')', () => { let v = val(); while (stack.length && stack[stack.length - 1].op !== '(') { const t = stack.pop(); v = apply(t.v, t.op, v); } stack.pop(); show(v); fresh = true; }, 'm')],
-        [BTN('Ave', () => {}, 'N'), BTN('dms', () => unary(v => inv ? Math.trunc(v) + (Math.trunc(v * 100) % 100) / 60 + ((v * 10000) % 100) / 3600 : Math.trunc(v) + Math.trunc((v % 1) * 60) / 100 + ((v * 3600) % 60) / 10000), 'm'), BTN('Exp', () => { cur = val() + 'e+0'; render(); }, 'm'), BTN('ln', () => unary(v => inv ? Math.exp(v) : Math.log(v)), 'm')],
-        [BTN('Sum', () => {}, 'N'), BTN('sin', trig(Math.sin, Math.asin, Math.sinh, Math.asinh), 'm'), BTN('x^y', () => pushOp(inv ? 'root' : 'pow'), 'm'), BTN('log', () => unary(v => inv ? Math.pow(10, v) : Math.log10(v)), 'm')],
-        [BTN('s', () => {}, 'N'), BTN('cos', trig(Math.cos, Math.acos, Math.cosh, Math.acosh), 'm'), BTN('x^3', () => unary(v => inv ? Math.cbrt(v) : v * v * v), 'm'), BTN('n!', () => unary(fact), 'm')],
-        [BTN('Dat', () => {}, 'N'), BTN('tan', trig(Math.tan, Math.atan, Math.tanh, Math.atanh), 'm'), BTN('x^2', () => unary(v => inv ? Math.sqrt(v) : v * v), 'm'), BTN('1/x', () => unary(v => 1 / v), 'm')]
+        [BTN('Sta', statsDialog, 'N'), BTN('F-E', () => { cur = val().toExponential(); render(); }, 'm'), BTN('(', () => { stack.push({ op: '(' }); fresh = true; }, 'm'), BTN(')', () => { let v = val(); while (stack.length && stack[stack.length - 1].op !== '(') { const t = stack.pop(); v = apply(t.v, t.op, v); } stack.pop(); show(v); fresh = true; }, 'm')],
+        [BTN('Ave', () => statistic('mean'), 'N'), BTN('dms', () => unary(v => inv ? Math.trunc(v) + (Math.trunc(v * 100) % 100) / 60 + ((v * 10000) % 100) / 3600 : Math.trunc(v) + Math.trunc((v % 1) * 60) / 100 + ((v * 3600) % 60) / 10000), 'm'), BTN('Exp', () => { cur = val() + 'e+0'; render(); }, 'm'), BTN('ln', () => unary(v => inv ? Math.exp(v) : Math.log(v)), 'm')],
+        [BTN('Sum', () => statistic('sum'), 'N'), BTN('sin', trig(Math.sin, Math.asin, Math.sinh, Math.asinh), 'm'), BTN('x^y', () => pushOp(inv ? 'root' : 'pow'), 'm'), BTN('log', () => unary(v => inv ? Math.pow(10, v) : Math.log10(v)), 'm')],
+        [BTN('s', () => statistic('deviation'), 'N'), BTN('cos', trig(Math.cos, Math.acos, Math.cosh, Math.acosh), 'm'), BTN('x^3', () => unary(v => inv ? Math.cbrt(v) : v * v * v), 'm'), BTN('n!', () => unary(fact), 'm')],
+        [BTN('Dat', () => { if (!err && Number.isFinite(val())) { samples.push(val()); fresh = true; } }, 'N'), BTN('tan', trig(Math.tan, Math.atan, Math.tanh, Math.atanh), 'm'), BTN('x^2', () => unary(v => inv ? Math.sqrt(v) : v * v), 'm'), BTN('1/x', () => unary(v => 1 / v), 'm')]
       ];
       const sciRight = [
         [BTN('Mod', () => pushOp('mod'), 'R'), BTN('And', () => pushOp('&'), 'R'), BTN('Or', () => pushOp('|'), 'R'), BTN('Xor', () => pushOp('^'), 'R')],
@@ -110,7 +129,7 @@
       const COLORS = { R: '#ff0000', B: '#0000ff', N: '#000080', m: '#800080' };
       const mkBtn = (b, x, y, wd, ht) => {
         const el = UI.button(b.label, { onClick: () => { b.fn(); w.focus(); } });
-        el.style.color = COLORS[b.color]; el.style.padding = '0'; el.style.minHeight = '0'; el.tabIndex = -1;
+        el.style.color = COLORS[b.color]; el.style.padding = '0'; el.style.minHeight = '0'; el.tabIndex = 0;
         return UI.place(el, x, y, wd, ht);
       };
       const area = h('div', { class: 'fill', style: { background: 'var(--btn-face)' } });
@@ -160,6 +179,7 @@
           { label: '&Help', items: [{ label: '&Contents', action: () => Sys.launch('WINHELP.EXE calc') }, { label: '&Search for Help on...', action: () => Sys.launch('WINHELP.EXE calc') }, { label: '&How to Use Help', action: () => Sys.launch('WINHELP.EXE winhelp') }, '-', { label: '&About Calculator...', action: () => aboutBox('Calculator', 'calc', w) }] }
         ],
         onKey: (e, name) => {
+          if (e.target?.nodeName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return false;
           if (e.ctrlKey || e.altKey) {
             if (name === 'Ctrl+M') { mem = val(); fresh = true; render(); return true; }
             if (name === 'Ctrl+R') { show(mem); fresh = true; return true; }
@@ -190,7 +210,7 @@
         return false;
       };
       w.body.appendChild(area);
-      w.el.tabIndex = -1;
+      w.el.tabIndex = 0;
       clearAll();
       requestAnimationFrame(build);
       return w;

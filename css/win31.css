@@ -358,6 +358,11 @@ canvas.dosgrid { display: block; image-rendering: pixelated; }
 #desktop > .wmc > .icon .lbl { color: var(--desktop-text); }
 .wmc .wmc > .icon .lbl { color: var(--workspace-text); }
 
+/* Keyboard focus stays visible on custom pixel controls. */
+[role="button"]:focus-visible, .mb-item:focus-visible, .slider:focus-visible, .cb:focus-visible {
+  outline: 1px dotted var(--window-text); outline-offset: -2px;
+}
+
 /* Excel worksheet cells use the simulator's classic raised headers and grid. */
 .xl-head { background: #e4e4e4; border: 1px solid #888; text-align: center; font-weight: bold; user-select: none; }
 .xl-rowhead { background: #e4e4e4; border: 1px solid #888; text-align: center; user-select: none; }

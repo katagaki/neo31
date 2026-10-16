@@ -9,15 +9,19 @@
       const scroller = h('div', { class: 'fill', style: { overflow: 'auto', background: 'var(--window)' } }, pre);
       const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
       const con = new TextConsole(pre, 80, 24, { colors: () => ({ bg: css('--window') || '#fff', fg: css('--window-text') || '#000' }) });
+      let dialTimer = null;
       let online = false, dialing = false, line = '', q = [], bbs = null, path = null;
 
       // output queue at "baud rate"
-      const out = s => { q.push(...s); pump(); };
+      const remoteFiles = new Map([['SOLHINT.TXT', { t: 'f', x: 'Build down in alternating colors. Reveal face-down cards before moving to the foundations.\n', d: WIN_DATE }], ['CHIMES.WAV', JSON.parse(JSON.stringify(FS.get('C:\\WINDOWS\\CHIMES.WAV')))] ]);
+      let received = '';
+      const out = s => { received = (received + s).slice(-1024 * 1024); q.push(...s); pump(); };
       let pumping = false;
       const pump = () => {
         if (pumping) return;
         pumping = true;
         const step = () => {
+          if (w.closed) { q.length = 0; pumping = false; return; }
           const n = Math.max(1, Math.round(st.baud / 10 / 60));
           for (let i = 0; i < n && q.length; i++) con.write(q.shift());
           if (q.length) requestAnimationFrame(step); else pumping = false;
@@ -51,7 +55,8 @@
           o.frequency.setValueAtTime(2100, t0); o.frequency.setValueAtTime(1200, t0 + 0.6); o.frequency.linearRampToValueAtTime(2400, t0 + 1.4); o.frequency.setValueAtTime(980, t0 + 1.6);
           o.connect(g).connect(ctx.destination); o.start(t0); o.stop(t0 + 2.2);
         }
-        setTimeout(() => {
+        dialTimer = setTimeout(() => {
+          if (!dialing || w.closed) return;
           dialing = false;
           if (dlg) dlg.close();
           if (tones === '5550131' || tones === '0131' || tones.endsWith('0131')) { online = true; outln(`CONNECT ${st.baud}`); bbs = BBS(); }
@@ -62,7 +67,7 @@
       const dialStatus = num => {
         dlg = dialog({ title: 'Terminal', w: 260, h: 80, owner: w, modal: false, build(d) {
           d.add(h('div', { class: 'txt', text: `Dialing ${num}...\n\nTimeout:  30` }), 14, 10);
-          d.add(UI.button('Cancel', { default: true, cancel: true, onClick: () => { dialing = false; d.close(); outln('NO CARRIER'); } }), 168, 10, 80, 25);
+          d.add(UI.button('Cancel', { default: true, cancel: true, onClick: () => { dialing = false; clearTimeout(dialTimer); d.close(); outln('NO CARRIER'); } }), 168, 10, 80, 25);
         } });
         dlg.promise.then(() => { dlg = null; });
       };
@@ -80,6 +85,7 @@
         out('What is your first name? ');
         const menu = () => { outln(''); outln('  [B]ulletins   [F]iles   [M]essages   [G]ame   [W]ho   [T]ime   [Q]uit'); out(`\r\n${s.name}, command? `); };
         return {
+          upload(name, text) { remoteFiles.set(name, { t: 'f', x: text, d: VFS.now() }); outln(''); outln(`Received ${name}: ${text.length} characters. Thank you for your upload.`); menu(); },
           input(l) {
             const t = l.trim();
             if (s.stage === 'name') { s.name = t || 'GUEST'; s.stage = 'menu'; outln(''); outln(`Welcome, ${s.name}! You have 60 minutes left today.`); menu(); return; }
@@ -93,7 +99,7 @@
             }
             switch (t.toUpperCase()[0]) {
               case 'B': ['', '=== BULLETINS ===', '1. Windows 3.1 has shipped! Upgrade from 3.0 today.', '2. New file area: TrueType fonts.', '3. SysOp vacation next week. Be nice to the modem.'].forEach(outln); break;
-              case 'F': ['', '=== FILE AREA 1: WINDOWS UTILITIES ===', 'WINZIP.ZIP    212K  Archive manager for Windows', 'SOLHINT.TXT     2K  How to always win Solitaire (you can\'t)', 'CHIMES2.WAV    30K  A better exit sound', 'MINES16.ZIP    41K  Minesweeper strategies', '', 'Downloads are disabled for guests.'].forEach(outln); break;
+              case 'F': ['', '=== FILE AREA 1: WINDOWS UTILITIES ===', ...[...remoteFiles.keys()], '', 'Use Transfers > Receive Binary File to save a file.'].forEach(outln); break;
               case 'M': ['', '=== MESSAGES ===', 'From: SYSOP    To: ALL    Subj: Welcome', '  Thanks for calling! Leave a message after the tone.', '', 'From: BILL     To: ALL    Subj: Hotdog Stand', '  Who designed that colour scheme? I love it.'].forEach(outln); break;
               case 'G': s.guess = 1 + Math.floor(Math.random() * 100); s.tries = 0; s.stage = 'game'; outln(''); out('I am thinking of a number from 1 to 100. Guess: '); return;
               case 'W': ['', 'Node  User            Activity', '----  --------------  ---------------', `  1   ${s.name.padEnd(14)}  Browsing menus`].forEach(outln); break;
@@ -107,6 +113,45 @@
       };
 
       const send = l => { if (online && bbs) bbs.input(l); else modem(l); };
+
+      const viewText = async sendFile => {
+        const p = await fileDialog({ owner: w, filters: [['Text files', '*.TXT'], ['All files', '*.*']] });
+        if (!p) return;
+        const text = FS.read(p);
+        if (text == null || /^data:/.test(text)) { msgBox('Choose a text file.', 'Terminal', { owner: w, icon: 'exclaim' }); return; }
+        if (!sendFile) { Sys.run('notepad', { args: p }); return; }
+        if (!online) { msgBox('Dial the BBS before sending a text file.', 'Terminal', { owner: w }); return; }
+        // The local BBS accepts uploads without interpreting them as menu commands.
+        bbs.upload(FS.basename(p), text);
+      };
+      const sendBinary = async () => {
+        const p = await fileDialog({ owner: w, filters: [['All files', '*.*']] });
+        if (!p || !online) return;
+        const node = FS.get(p);
+        if (!node || node.t !== 'f') return;
+        remoteFiles.set(FS.basename(p), JSON.parse(JSON.stringify(node)));
+        outln(`Uploaded ${FS.basename(p)} (${FS.size(node)} bytes) to the Neo31 BBS.`);
+      };
+      const receiveBinary = () => dialog({ title: 'Receive Binary File', w: 300, h: 200, owner: w, build(d) {
+        const names = [...remoteFiles.keys()];
+        const lb = UI.listbox({ items: names, sel: 0 });
+        d.add(UI.label('&BBS files:', lb), 10, 8); d.add(lb, 10, 28, 175, 160);
+        d.add(UI.button('Receive', { default: true, onClick: async () => {
+          const name = lb.value?.text; if (!name) return;
+          const node = remoteFiles.get(name);
+          const p = await fileDialog({ mode: 'save', owner: d.win, name, defExt: FS.ext(name), filters: [['All files', '*.*']] });
+          if (!p) return;
+          try { const extra = { ...node }; delete extra.t; delete extra.x; delete extra.n; FS.write(p, node.x || '', extra); FS.flush(); outln(`Received ${name} into ${p}.`); d.close(); }
+          catch (e) { msgBox(e.message, 'Terminal', { owner: d.win, icon: 'stop' }); }
+        } }), 204, 8, 85, 25);
+        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 204, 40, 85, 25);
+      } });
+      const receiveText = async () => {
+        const p = await fileDialog({ mode: 'save', owner: w, name: 'CAPTURE.TXT', defExt: 'TXT', filters: [['Text files', '*.TXT']] });
+        if (!p) return;
+        try { FS.write(p, received.replace(/\r\n/g, '\n')); FS.flush(); }
+        catch (e) { msgBox(e.message, 'Terminal', { owner: w, icon: 'stop' }); }
+      };
 
       const w = new Win({
         title: 'Terminal - (Untitled)', icon: 'terminal', w: 560, h: 380,
@@ -154,12 +199,12 @@
           { label: '&Phone', items: [
             { label: '&Dial...', disabled: () => online, action: () => { outln(`ATDT ${st.phone}`); dial(st.phone); } },
             { label: '&Hangup', disabled: () => !online, action: hangup }] },
-          { label: '&Transfers', items: [{ label: '&Send Text File...', disabled: true }, { label: '&Receive Text File...', disabled: true }, { label: '&View Text File...', disabled: true }, '-', { label: 'Send &Binary File...', disabled: true }, { label: 'Receive Binary &File...', disabled: true }] },
+          { label: '&Transfers', items: [{ label: '&Send Text File...', action: () => viewText(true), disabled: () => !online }, { label: '&Receive Text File (capture)...', action: receiveText }, { label: '&View Text File...', action: () => viewText(false) }, '-', { label: 'Send &Binary File...', disabled: () => !online, action: sendBinary }, { label: 'Receive Binary &File...', disabled: () => !online, action: receiveBinary }] },
           { label: '&Help', items: [{ label: '&Contents', action: () => Sys.launch('WINHELP.EXE terminal') }, '-', { label: '&About Terminal...', action: () => aboutBox('Terminal', 'terminal', w) }] }
         ]
       });
       w.body.appendChild(scroller);
-      w.on('closed', () => con.dispose());
+      w.on('closed', () => { clearTimeout(dialTimer); dialing = false; online = false; dlg?.close(); con.dispose(); });
       requestAnimationFrame(() => w.sizeToClient(640 + 17, 384));
       con.render();
       setTimeout(() => {

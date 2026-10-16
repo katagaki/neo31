@@ -2,6 +2,7 @@
 /* Dialog controls, dialog builder, message boxes & common file dialogs. */
 
 const UI = {
+  nextId: 1,
   button(label, opts = {}) {
     const b = h('button', { class: 'btn' + (opts.default ? ' default' : ''), type: 'button' }, h('span', { class: 'bl', html: mnemonicHTML(label) }));
     const mk = mnemonicKey(label);
@@ -15,6 +16,7 @@ const UI = {
 
   label(text, forEl) {
     const l = h('div', { class: 'txt', html: mnemonicHTML(text) });
+    if (forEl) (forEl.el || forEl).setAttribute('aria-label', stripAmp(text).replace(/:$/, ''));
     const mk = mnemonicKey(text);
     if (mk && forEl) { l.dataset.mn = mk; l._for = forEl; }
     return l;
@@ -56,14 +58,14 @@ const UI = {
 
   /* list box. items: array of strings or {text, icon, value, indent, disabled} */
   listbox(opts = {}) {
-    const el = h('div', { class: 'lb', tabindex: '0' });
+    const el = h('div', { class: 'lb', tabindex: '0', role: 'listbox', 'aria-label': opts.label || 'Items', 'aria-multiselectable': String(!!opts.multi) });
     const lb = {
       el, items: [], sel: -1, multi: !!opts.multi, selected: new Set(),
       setItems(items, sel = -1) {
         this.items = items.map(it => typeof it === 'object' ? it : { text: String(it) });
-        el.innerHTML = '';
+        el.innerHTML = ''; el.removeAttribute('aria-activedescendant');
         this.rows = this.items.map((it, i) => {
-          const r = h('div', { class: 'it' + (it.disabled ? ' dis' : '') });
+          const r = h('div', { class: 'it' + (it.disabled ? ' dis' : ''), role: 'option', id: 'option-' + UI.nextId++, 'aria-selected': 'false', 'aria-disabled': String(!!it.disabled) });
           if (it.indent) r.style.paddingLeft = (3 + it.indent * 8) + 'px';
           if (it.icon) r.appendChild(iconImg(it.icon, 16));
           if (it.html) r.appendChild(h('span', { html: it.html })); else r.appendChild(h('span', { text: it.text }));
@@ -73,7 +75,7 @@ const UI = {
             if (this.multi && (e.ctrlKey || e.metaKey)) this.toggle(i);
             else this.select(i, true);
           });
-          r.addEventListener('dblclick', () => opts.onActivate && opts.onActivate(this.items[i], i));
+          r.addEventListener('dblclick', () => !it.disabled && opts.onActivate && opts.onActivate(this.items[i], i));
           el.appendChild(r);
           return r;
         });
@@ -81,18 +83,22 @@ const UI = {
         if (sel >= 0) this.select(sel, false);
       },
       select(i, notify = true) {
-        if (i < 0 || i >= this.items.length) return;
-        if (!this.multi || true) { this.selected.clear(); this.rows.forEach(r => r.classList.remove('sel', 'cur')); }
+        if (i < 0 || i >= this.items.length || this.items[i].disabled) return;
+        if (!this.multi || true) { this.selected.clear(); this.rows.forEach(r => { r.classList.remove('sel', 'cur'); r.setAttribute('aria-selected', 'false'); }); }
         this.sel = i; this.selected.add(i);
         this.rows[i].classList.add('sel', 'cur');
+        this.rows[i].setAttribute('aria-selected', 'true'); el.setAttribute('aria-activedescendant', this.rows[i].id);
         const r = this.rows[i];
         if (r.offsetTop < el.scrollTop) el.scrollTop = r.offsetTop;
         else if (r.offsetTop + r.offsetHeight > el.scrollTop + el.clientHeight) el.scrollTop = r.offsetTop + r.offsetHeight - el.clientHeight;
         if (notify && opts.onSelect) opts.onSelect(this.items[i], i);
       },
       toggle(i) {
+        if (!this.items[i] || this.items[i].disabled) return;
         if (this.selected.has(i)) { this.selected.delete(i); this.rows[i].classList.remove('sel'); }
         else { this.selected.add(i); this.rows[i].classList.add('sel'); }
+        this.rows[i].setAttribute('aria-selected', String(this.selected.has(i)));
+        el.setAttribute('aria-activedescendant', this.rows[i].id);
         this.sel = i;
         if (opts.onSelect) opts.onSelect(this.items[i], i);
       },
@@ -114,7 +120,7 @@ const UI = {
       else if (e.key === 'End') i = n - 1;
       else if (e.key === 'PageDown') i = Math.min(n - 1, i + page);
       else if (e.key === 'PageUp') i = Math.max(0, i - page);
-      else if (e.key === 'Enter' && opts.onActivate && lb.sel >= 0) { e.preventDefault(); e.stopPropagation(); opts.onActivate(lb.items[lb.sel], lb.sel); return; }
+      else if (e.key === 'Enter' && opts.onActivate && lb.sel >= 0 && !lb.items[lb.sel].disabled) { e.preventDefault(); e.stopPropagation(); opts.onActivate(lb.items[lb.sel], lb.sel); return; }
       else if (e.key.length === 1 && !e.ctrlKey && !e.altKey) {
         const c = e.key.toLowerCase();
         for (let k = 1; k <= n; k++) {
@@ -131,8 +137,9 @@ const UI = {
 
   /* drop-down combo box */
   combo(opts = {}) {
-    const el = h('div', { class: 'cb', tabindex: '0' });
-    const v = h('div', { class: 'cbv' }, h('span'));
+    const el = h('div', { class: 'cb', tabindex: '0', role: 'combobox', 'aria-label': opts.label || 'Selection', 'aria-haspopup': 'listbox', 'aria-expanded': 'false' });
+    const v = h('div', { class: 'cbv' }, h('span', { id: 'combo-value-' + UI.nextId++ }));
+    el.setAttribute('aria-describedby', v.firstChild.id);
     const b = h('div', { class: 'cbb' });
     el.append(v, b);
     const cb = {
@@ -162,12 +169,13 @@ const UI = {
         Menu.layer.appendChild(lb.el);
         lb.el.style.zIndex = 100003;
         cb.drop = { lb, ov };
+        lb.el.id = 'combo-list-' + UI.nextId++; el.setAttribute('aria-controls', lb.el.id); el.setAttribute('aria-expanded', 'true');
         const r2 = Sys.rectOf(lb.el);
         if (r2.y + r2.h > Sys.screen.clientHeight) lb.el.style.top = (r.y - r2.h + 1) + 'px';
         lb.el.focus();
         lb.el.addEventListener('keydown', e => { if (e.key === 'Escape' || (e.key === 'ArrowUp' && e.altKey)) { e.stopPropagation(); cb.close(); el.focus(); } });
       },
-      close() { if (cb.drop) { cb.drop.lb.el.remove(); cb.drop.ov.remove(); cb.drop = null; } }
+      close() { el.setAttribute('aria-expanded', 'false'); el.removeAttribute('aria-controls'); if (cb.drop) { cb.drop.lb.el.remove(); cb.drop.ov.remove(); cb.drop = null; } }
     };
     el.addEventListener('pointerdown', e => { e.preventDefault(); el.focus(); cb.open(); });
     el.addEventListener('keydown', e => {
@@ -191,12 +199,13 @@ const UI = {
     const th = h('div', { class: 'th' });
     const tr = h('div', { class: 'tr' }, th);
     const l = h('div', { class: 'ar l' }), r = h('div', { class: 'ar r' });
-    const el = h('div', { class: 'slider', tabindex: '0' }, l, tr, r);
+    const el = h('div', { class: 'slider', tabindex: '0', role: 'slider', 'aria-label': opts.label || 'Value', 'aria-valuemin': min, 'aria-valuemax': max, 'aria-valuenow': value }, l, tr, r);
     const s = {
       el,
       get value() { return value; },
       set(v, notify = true) {
         value = clamp(Math.round(v), min, max);
+        el.setAttribute('aria-valuenow', value);
         const w = tr.clientWidth || (parseInt(el.style.width) - 34) || 100;
         th.style.left = ((value - min) / (max - min || 1)) * Math.max(0, w - 16) + 'px';
         if (notify && opts.onChange) opts.onChange(value);
@@ -218,6 +227,8 @@ const UI = {
     });
     el.addEventListener('keydown', e => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); s.set(value - step); }
+      if (e.key === 'Home') { e.preventDefault(); s.set(min); }
+      if (e.key === 'End') { e.preventDefault(); s.set(max); }
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); s.set(value + step); }
     });
     requestAnimationFrame(() => s.set(value, false));
@@ -271,6 +282,13 @@ function dialog(opts) {
       }
       return false;
     }
+  });
+  win.el.addEventListener('keydown', e => {
+    if (e.key !== 'Tab' || Menu.isOpen()) return;
+    const controls = [...win.body.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(el => el.getClientRects().length);
+    if (!controls.length) { e.preventDefault(); win.el.focus(); return; }
+    const index = controls.indexOf(document.activeElement);
+    if (index < 0 || (e.shiftKey && index === 0) || (!e.shiftKey && index === controls.length - 1)) { e.preventDefault(); e.stopPropagation(); controls[e.shiftKey ? controls.length - 1 : 0].focus(); }
   });
   win.body.classList.add('dlgc');
   const d = {

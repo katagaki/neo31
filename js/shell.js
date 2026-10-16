@@ -180,7 +180,7 @@ const Sys = Object.assign(new Emitter(), {
     }
     if (ext === 'SCR') { Saver.start(node.g || 'Blank Screen'); return null; }
     const exe = this.association(file);
-    if (exe) return this.launch(exe + ' ' + file, opts);
+    if (exe) return this.launch(`${exe} "${file}"`, opts);
     msgBox('No application is associated with this file.\n\nChoose Associate from the File menu to create an association.', opts.caller || 'File Manager', { icon: 'exclaim', owner: opts.owner });
     return null;
   },
