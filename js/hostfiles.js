@@ -2,7 +2,6 @@
 /* The host browser is only accessed through explicit file-picker/download actions. */
 const HostFiles = {
   maxBytes: 16 * 1024 * 1024,
-  maxBackupBytes: 128 * 1024 * 1024,
   download(name, content, type = 'application/octet-stream') {
     const blob = content instanceof Blob ? content : new Blob([content], { type });
     const url = URL.createObjectURL(blob);
@@ -57,14 +56,14 @@ const HostFiles = {
   exportFile(path, owner) {
     try {
       const n = FS.get(path);
-      if (!n || n.t !== 'f') throw new Error('Select a file to export. Use a PC backup to export folders.');
+      if (!n || n.t !== 'f') throw new Error('Select a file to export. Folders can\'t be exported.');
       let name = FS.displayName(FS.basename(path), n), content = n.x ?? '';
       if (n.g && FS.ext(path) === 'BMP') content = Wallpapers.gen(n.g)?.toDataURL() || content;
       if (content.startsWith('PCM8:') || (n.g && Snd.gen[n.g])) {
         const sound = content.startsWith('PCM8:') ? Snd.decode(content) : { rate: Snd.rate, data: Snd.samples(n.g) };
         this.download(name.replace(/\.[^.]*$/, '') + '.wav', this.wave(sound), 'audio/wav');
       } else if (n.s && !content) {
-        throw new Error('This is a simulated system file with no exportable contents. Download a PC backup to preserve it.');
+        throw new Error('This is a simulated system file with no exportable contents.');
       } else if (/^data:[^,]*;base64,/.test(content)) {
         const [head, body] = content.split(',');
         const bytes = Uint8Array.from(atob(body), c => c.charCodeAt(0));
@@ -83,55 +82,5 @@ const HostFiles = {
     text(36, 'data'); view.setUint32(40, data.length, true);
     data.forEach((value, i) => bytes[44 + i] = clamp(Math.round(value * 127) + 128, 0, 255));
     return bytes;
-  },
-  /* backups made before the Windows 31 name say "Neo31 Backup" and restore the same way */
-  snapshot() { return { format: 'Windows 31 Backup', version: 1, created: new Date().toISOString(), cfg: Store.data, fs: FS.root }; },
-  backup() { this.download(`Windows31-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(this.snapshot(), null, 2), 'application/json'); },
-  validate(backup) {
-    const object = x => x && typeof x === 'object' && !Array.isArray(x);
-    if (!object(backup) || !['Windows 31 Backup', 'Neo31 Backup'].includes(backup.format) || backup.version !== 1 || !object(backup.cfg)) throw new Error('This is not a supported Windows 31 backup.');
-    let nodes = 0, files = 0;
-    const safe = (value, depth = 0) => {
-      if (depth > 64) throw new Error('The backup is too deeply nested.');
-      if (value && typeof value === 'object') for (const [key, item] of Object.entries(value)) {
-        if (['__proto__', 'prototype', 'constructor'].includes(key)) throw new Error('The backup contains an invalid property.');
-        safe(item, depth + 1);
-      }
-    };
-    safe(backup);
-    const walk = (node, depth) => {
-      if (++nodes > 50000 || depth > 32 || !object(node) || !['d', 'f'].includes(node.t)) throw new Error('The backup contains an invalid file tree.');
-      if (node.x != null && typeof node.x !== 'string') throw new Error('The backup contains invalid file contents.');
-      if (node.t === 'f') { files++; return; }
-      if (!object(node.c)) throw new Error('The backup contains an invalid folder.');
-      for (const [name, child] of Object.entries(node.c)) {
-        if (!VFS.validLong(name) || name !== name.toUpperCase()) throw new Error('The backup contains an invalid file name.');
-        walk(child, depth + 1);
-      }
-    };
-    if (backup.fs?.t !== 'd') throw new Error('The backup has no C: drive.');
-    walk(backup.fs, 0);
-    if (backup.fs.c.WINDOWS?.t !== 'd' || backup.fs.c.DOS?.t !== 'd') throw new Error('The backup is missing the system folders.');
-    return { files, nodes };
-  },
-  async restore(owner) {
-    const [file] = await this.pick('.json,application/json');
-    if (!file) return;
-    try {
-      if (file.size > this.maxBackupBytes) throw new Error('The backup is too large (maximum 128 MB).');
-      const backup = JSON.parse(await file.text()), summary = this.validate(backup);
-      if (await msgBox(`Restore ${summary.files} files and all settings from ${file.name}?\n\nThis replaces your current PC and restarts Windows 31. Download a backup first if you want to keep your current files.`, 'Restore PC', { buttons: 'yesno', icon: 'exclaim', owner }) !== 'yes') return;
-      this.applyBackup(backup);
-      location.hash = '#win'; location.reload();
-    } catch (e) { await msgBox(`Could not restore the backup. Your current PC is still active.\n\n${e.message}`, 'Restore PC', { owner, icon: 'stop' }); }
-  },
-  applyBackup(backup) {
-    this.validate(backup);
-    // One atomic write: quota or permission errors leave the old snapshot intact.
-    const state = JSON.parse(JSON.stringify({ version: 1, cfg: backup.cfg, fs: backup.fs }));
-    localStorage.setItem(Store.key + '.fs', JSON.stringify(state));
-    clearTimeout(Store._t); clearTimeout(FS._t);
-    Store.data = state.cfg; FS.root = state.fs;
-    Persistence.clear();
   }
 };

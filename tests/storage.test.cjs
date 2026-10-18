@@ -40,33 +40,10 @@ test('failed persistence keeps the saved snapshot and the current files recovera
   app.fail(true); app.run("FS.write('C:\\\\UNSAVED.TXT', 'Recover me')");
   assert.equal(app.run('FS.flush()'), false);
   assert.equal(app.values.get('windows31.v1.fs'), before);
-  assert.equal(app.run("HostFiles.snapshot().fs.c['UNSAVED.TXT'].x"), 'Recover me');
+  assert.equal(app.run("FS.read('C:\\\\UNSAVED.TXT')"), 'Recover me');
   assert.ok(app.run('Persistence.error'));
   app.fail(false); assert.equal(app.run('Store.flush()'), true);
   assert.equal(app.run('Persistence.error'), null); app.close();
-});
-
-test('backup restore replaces files and settings atomically; failure preserves both', () => {
-  const app = pc();
-  app.run("FS.write('C:\\\\OLD.TXT', 'old'); Store.set('userName', 'Old'); FS.flush(); var backup = JSON.parse(JSON.stringify(HostFiles.snapshot())); backup.cfg.userName = 'New'; backup.fs.c['OLD.TXT'].x = 'new'");
-  const before = app.values.get('windows31.v1.fs'); app.fail(true);
-  assert.throws(() => app.run('HostFiles.applyBackup(backup)'), /Quota/);
-  assert.equal(app.values.get('windows31.v1.fs'), before);
-  assert.equal(app.run("FS.read('C:\\\\OLD.TXT')"), 'old');
-  assert.equal(app.run("Store.get('userName')"), 'Old');
-  app.fail(false); app.run('HostFiles.applyBackup(backup)');
-  const loaded = pc(Object.fromEntries(app.values));
-  assert.equal(loaded.run("FS.read('C:\\\\OLD.TXT')"), 'new');
-  assert.equal(loaded.run("Store.get('userName')"), 'New'); app.close(); loaded.close();
-});
-
-test('invalid and malicious backups cannot change current storage', () => {
-  const app = pc(); app.run('FS.flush()'); const before = app.values.get('windows31.v1.fs');
-  for (const mutation of ["b.version = 9", "b.fs.c.WINDOWS = {t: 'f', x: 'wrong'}", "b.fs.c.BAD = {t: 'd', c: null}", "b.fs.c['../BAD'] = {t:'f',x:''}", "b.cfg = JSON.parse('{\"__proto__\":{\"bad\":true}}')", "b.fs.c.BAD = {t:'f',x:42}"]) {
-    assert.throws(() => app.run(`var b = JSON.parse(JSON.stringify(HostFiles.snapshot())); ${mutation}; HostFiles.applyBackup(b)`));
-    assert.equal(app.values.get('windows31.v1.fs'), before);
-  }
-  app.close();
 });
 
 test('file move and Recycle Bin restore preserve content across reload', async () => {
@@ -81,12 +58,9 @@ test('file move and Recycle Bin restore preserve content across reload', async (
 });
 
 
-test('backups and saved addresses from before the Windows 31 name still work', () => {
+test('saved addresses from before the Windows 31 name point at the new offline web', () => {
   const app = pc({ 'neo31.v1.cfg': JSON.stringify({ 'edge.favs': [{ title: 'Home', url: 'https://neo31.net/' }] }) });
   assert.equal(app.run("Store.get('edge.favs')[0].url"), 'https://windows31.net/');
-  const backup = app.run("JSON.stringify({ ...HostFiles.snapshot(), format: 'Neo31 Backup' })");
-  assert.doesNotThrow(() => app.run(`HostFiles.validate(${backup})`));
-  assert.throws(() => app.run(`HostFiles.validate(${JSON.stringify({ ...JSON.parse(backup), format: 'Other Backup' })})`));
   app.close();
 });
 
@@ -106,11 +80,4 @@ test('sound export emits a valid mono PCM WAV header and samples', () => {
   assert.equal(Buffer.from(wav).readUInt32LE(24), 8000);
   assert.equal(Buffer.from(wav).readUInt32LE(40), 3);
   assert.deepEqual(Array.from(wav.slice(44)), [1,128,255]); app.close();
-});
-
-
-test('restored state does not mutate the backup object on subsequent edits', () => {
-  const app = pc();
-  app.run("var original = JSON.parse(JSON.stringify(HostFiles.snapshot())); var originalText = JSON.stringify(original); HostFiles.applyBackup(original); FS.write('C:\\\\NEW.TXT', 'new'); Store.set('userName', 'changed')");
-  assert.equal(app.run('JSON.stringify(original)'), app.run('originalText')); app.close();
 });

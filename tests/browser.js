@@ -1,7 +1,10 @@
 /* Run in a disposable browser profile after opening index.html#win.
    await runWindows31Regression() returns checks; temporary files/settings are restored. */
 window.runWindows31Regression = async function () {
-  const results = [], original = JSON.parse(JSON.stringify(HostFiles.snapshot()));
+  // the starting files and settings, put back when the checks finish
+  const original = JSON.parse(JSON.stringify({ cfg: Store.data, fs: FS.root }));
+  const putBack = () => { clearTimeout(Store._t); clearTimeout(FS._t); Store.data = JSON.parse(JSON.stringify(original.cfg)); FS.root = JSON.parse(JSON.stringify(original.fs)); Store.flush(); Persistence.clear(); };
+  const results = [];
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const assert = (ok, message) => { if (!ok) throw new Error(message); };
   const check = async (name, fn) => { try { await fn(); results.push({ name, pass: true }); } catch (e) { results.push({ name, pass: false, error: e.message }); await cleanWindows(); } };
@@ -14,12 +17,12 @@ window.runWindows31Regression = async function () {
       button(document, 'Sign in')?.click(); await wait(400);
     }
     await cleanWindows();
-    await check('backup round trip, persisted settings and files', () => {
+    await check('files and settings persist together', () => {
       FS.write('C:\\REGRESS.TXT', 'Round trip'); Store.set('regressMarker', 'set'); FS.flush();
       const saved = JSON.parse(localStorage.getItem(Store.key + '.fs'));
       assert(saved.fs.c['REGRESS.TXT'].x === 'Round trip' && saved.cfg.regressMarker === 'set', 'Snapshot lost files or settings');
-      HostFiles.applyBackup(original);
-      assert(Store.get('regressMarker') === original.cfg.regressMarker, 'Settings were not restored');
+      putBack();
+      assert(Store.get('regressMarker') === original.cfg.regressMarker, 'Settings were not put back');
     });
     await check('text and binary host import/export with name collisions', async () => {
       const dir = FS.join('C:\\', FileOps.uniqueName('C:\\', 'NEOTEST')); FS.mkdir(dir);
@@ -129,22 +132,13 @@ window.runWindows31Regression = async function () {
       } finally { window.fileDialog = file; }
       await w.close(true);
     });
-    await check('restore cancellation preserves the PC', async () => {
-      const pick = HostFiles.pick;
-      try {
-        const backup = JSON.parse(JSON.stringify(HostFiles.snapshot())); backup.cfg.userName = 'Replacement';
-        HostFiles.pick = async () => [new File([JSON.stringify(backup)], 'restore.json')];
-        const restoring = HostFiles.restore(); await wait(30); const d = Sys.activeTop(); button(d.body, 'No').click(); await restoring;
-        assert(Store.get('userName') !== 'Replacement', 'Cancelled restore changed settings');
-      } finally { HostFiles.pick = pick; }
-    });
     await check('Edge live-page escape route and recovery controls' , async () => {
       const edge = Sys.run('edge', { args: 'https://example.com/' });
       assert(button(edge.body, 'Open in new window') && edge.body.innerText.includes('refuses to connect'), 'Live-page guidance is absent');
       assert(edge.body.querySelector('iframe[title="Live page from example.com"]'), 'Live frame has no accessible name');
       await edge.close(true); const settings = Sys.run('settings10', { args: 'update/recovery' });
-      assert(button(settings.body, 'Download backup') && button(settings.body, 'Restore backup...'), 'Recovery controls are absent'); await settings.close(true);
+      assert(button(settings.body, 'Get started') && button(settings.body, 'Restart now'), 'Recovery controls are absent'); await settings.close(true);
     });
-  } finally { await cleanWindows(); HostFiles.applyBackup(original); }
+  } finally { await cleanWindows(); putBack(); }
   return results;
 };

@@ -181,9 +181,8 @@ const Persistence = {
     this.error = error;
     if (typeof document === 'undefined' || !document.body || this.banner) return;
     const notice = h('div', { role: 'alert', class: 'save-warning', style: { position: 'fixed', top: '0', left: '0', right: '0', zIndex: '100000', background: '#ffff80', color: '#000', padding: '8px', font: '16px "W31 System", monospace' } },
-      h('span', { text: 'Changes could not be saved in this browser. Keep this page open. Retry saving or download a backup to protect your files. ' }),
-      h('button', { class: 'btn', type: 'button', onclick: () => Store.flush() }, h('span', { class: 'bl', text: 'Retry saving' })),
-      h('button', { class: 'btn', type: 'button', onclick: () => typeof HostFiles !== 'undefined' && HostFiles.backup() }, h('span', { class: 'bl', text: 'Download backup' })));
+      h('span', { text: 'Changes could not be saved in this browser. Keep this page open, free up browser storage, then retry saving. ' }),
+      h('button', { class: 'btn', type: 'button', onclick: () => Store.flush() }, h('span', { class: 'bl', text: 'Retry saving' })));
     this.banner = notice; document.body.appendChild(notice);
   },
   clear() { this.error = null; this.banner?.remove(); this.banner = null; }

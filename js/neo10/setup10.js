@@ -396,7 +396,7 @@ These license terms are an agreement between you and the Windows 31 simulation. 
 
 3. UPDATES. The software checks for simulated updates from time to time. They change nothing but this PC's update history.
 
-4. NO WARRANTY. The software is provided "as is". It may lose your files if your browser clears its storage. Back up anything important from Settings > Update & Security > Recovery.
+4. NO WARRANTY. The software is provided "as is". It may lose your files if your browser clears its storage.
 
 Microsoft and Windows are trademarks of Microsoft Corporation.`;
 
@@ -488,7 +488,7 @@ const Recovery = {
           advanced();
         }),
         SetupUI.tile('dos', 'Command Prompt', 'Use the Command Prompt for advanced troubleshooting', () => SetupUI.message('Command Prompt is available once Windows 31 starts.\n\nChoose Continue, then open Command Prompt from Start.', 'Command Prompt')),
-        SetupUI.tile('clock', 'System Restore', 'Use a restore point recorded on your PC to restore Windows', () => SetupUI.message('No restore points have been created on your computer\'s system drive.\n\nTo create a backup, use Download backup in Settings > Update & Security > Recovery.', 'System Restore')),
+        SetupUI.tile('clock', 'System Restore', 'Use a restore point recorded on your PC to restore Windows', () => SetupUI.message('No restore points have been created on your computer\'s system drive.', 'System Restore')),
         SetupUI.tile('neologo', 'Uninstall Updates', 'Remove recently installed quality updates from Windows', async () => {
           const hist = Updates.history(), last = hist.findIndex(u => u.id);
           if (last < 0) { await SetupUI.message('There are no updates to uninstall.', 'Uninstall Updates'); return; }

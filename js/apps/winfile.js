@@ -391,8 +391,6 @@
             { label: 'Cr&eate Directory...', action: mkdir },
             { label: '&Import files from computer...', action: () => HostFiles.importFiles(active()?.dir || 'C:\\', fm) },
             { label: '&Export selected file...', action: () => { const s = need(); if (s) HostFiles.exportFile(s[0].full, fm); } },
-            { label: 'Download PC &backup...', action: () => HostFiles.backup() },
-            { label: 'Restore PC bac&kup...', action: () => HostFiles.restore(fm) },
             { label: 'Searc&h...', action: search },
             { label: '&Select Files...', action: selectFiles }, '-',
             { label: 'E&xit', action: () => fm.close() }] },

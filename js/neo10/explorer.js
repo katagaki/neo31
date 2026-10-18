@@ -295,7 +295,6 @@
             '-', { label: 'Ne&w', items: newItems(), disabled: !curDir() },
             { label: '&Import files from computer...', disabled: !curDir(), action: () => HostFiles.importFiles(curDir(), w) },
             { label: '&Export selected file...', disabled: selected().length !== 1 || selected()[0]?.node.t !== 'f', action: () => HostFiles.exportFile(selected()[0].full, w) },
-            { label: 'Download PC &backup...', action: () => HostFiles.backup() },
             { label: '&Delete', action: () => del(false), disabled: !sel.size },
             { label: 'Rena&me', action: () => renameInline(cur), disabled: sel.size !== 1 },
             { label: 'P&roperties', key: 'Alt+Enter', action: () => { const s = selected()[0]; s ? FileOps.properties(s.full, w) : curDir() && FileOps.properties(curDir(), w); } },

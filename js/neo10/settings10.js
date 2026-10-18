@@ -408,14 +408,12 @@ page('update/windowsupdate', 'Windows Update', 'update check updates history res
   el.append(SP.h1('Windows Update'), st, btns, SP.h2('Update history'),
     SP.info(Updates.history().slice(0, 12).map(u => [u.title, 'Successfully installed on ' + Intl31.date(new Date(u.date))])));
 });
-page('update/recovery', 'Recovery', 'backup restore reset this pc factory advanced startup recovery environment', el => {
+page('update/recovery', 'Recovery', 'reset this pc factory advanced startup recovery environment', el => {
   el.append(SP.h1('Recovery'),
     SP.h2('Reset this PC'), SP.p('If your PC isn\'t running well, resetting it might help. This lets you choose to keep your personal files or remove them, and then reinstalls Windows.'),
     h('div', { class: 'neo-sfield' }, SP.button('Get started', () => Recovery.resetWizard())),
     SP.h2('Advanced startup'), SP.p('Start up from the Windows Recovery Environment to repair or reset Windows, or uninstall updates. This will restart your PC.'),
-    h('div', { class: 'neo-sfield' }, SP.button('Restart now', () => Recovery.advancedStartup())),
-    SP.h2('Backup and restore'), SP.p('Download all saved files and settings. Restore a backup to replace this PC and restart.'),
-    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Download backup', () => HostFiles.backup()), SP.button('Restore backup...', () => HostFiles.restore())));
+    h('div', { class: 'neo-sfield' }, SP.button('Restart now', () => Recovery.advancedStartup())));
 });
 
 /* ======================= THE APP ======================= */

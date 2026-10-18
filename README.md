@@ -45,21 +45,21 @@ URL options: `#fast` shortens the BIOS checks, `#win` goes straight to Windows, 
 
 Files live on a virtual drive C: that is persisted to `localStorage`. Associations come from the `[Extensions]` section of `C:\WINDOWS\WIN.INI`. PCs saved by an older release get any programs and file types added since then installed at start-up.
 
-## Files, backups and recovery
+## Files and storage
 
 In File Explorer, use **File > Import files from computer** or **Export selected file**. The classic File Manager has the same commands. Imports keep existing files and choose a new name on collisions. Individual imports are limited to 16 MB, and browser storage may fill sooner.
 
 Text files export as text, imported binary files retain their bytes, Paintbrush pictures export as PNG, and generated/recorded sounds export as WAV. Write, Calendar, Cardfile and other virtual document formats use Windows 31's own representations; they are not native Windows binary formats. Simulated executable placeholders have no real executable contents to export.
 
-**Settings > Update & Security > Recovery** offers whole-PC JSON backup and restore. Both file managers can download a backup, and classic File Manager can restore one. A backup includes the saved virtual drive and settings; save open documents before backing up. Restore validates the backup, asks before replacing the PC, then restarts. Backups up to 128 MB are accepted; browser storage must also have enough room to restore them. Files and settings persist together in one atomic browser-storage snapshot, with automatic migration from earlier formats, including PCs and backups saved under the old Neo31 name.
+Files and settings persist together in one atomic browser-storage snapshot, with automatic migration from earlier formats, including PCs saved under the old Neo31 name.
 
-If browser storage rejects a save, an alert stays visible with **Retry saving** and **Download backup**. Your latest saved documents remain in memory so they can be backed up while the page is open.
+If browser storage rejects a save, an alert stays visible with **Retry saving**. Your latest documents remain in memory while the page is open.
 
 Write now supports page width/margins, tab spacing, picture insertion, alignment and sizing. Its layout is saved with the document; the simulated text printer still outputs plain text. Imported rich documents have active HTML removed. Paintbrush can edit, save and load 28-color palettes (`.PAL`). Calculator's scientific view supports datasets, mean, sum and sample standard deviation; Inv selects RMS, sum of squares and population deviation. Terminal supports text uploads, transcript capture and binary transfers to its local BBS; the BBS file area lasts for that Terminal session.
 
 ## Verification
 
-Run the storage, migration, backup validation and file-operation checks with Node:
+Run the storage, migration and file-operation checks with Node:
 
 ```sh
 node --test tests/storage.test.cjs
@@ -71,7 +71,7 @@ For browser workflow checks, serve the project and open `tests/runner.html#win` 
 await runWindows31Regression()
 ```
 
-The browser checks exercise import/export, save failure recovery, backup cancellation, Write layout/pictures, Calculator statistics, Paintbrush palettes, Terminal transfers, unsaved-document cancellation, keyboard menus/dialogs and Edge guidance. They restore the starting files/settings afterward. File-picker and destination selections are supplied by the test harness; native OS picker interaction remains a manual check. Shared controls now expose accessible names, menu/list/slider states, window buttons and modal focus containment; a full assistive-technology audit remains outstanding.
+The browser checks exercise import/export, save failure recovery, Write layout/pictures, Calculator statistics, Paintbrush palettes, Terminal transfers, unsaved-document cancellation, keyboard menus/dialogs and Edge guidance and Recovery settings. They restore the starting files/settings afterward. File-picker and destination selections are supplied by the test harness; native OS picker interaction remains a manual check. Shared controls now expose accessible names, menu/list/slider states, window buttons and modal focus containment; a full assistive-technology audit remains outstanding.
 
 ## Keyboard shortcuts
 
