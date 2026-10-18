@@ -131,14 +131,14 @@ page('system/multitasking', 'Multitasking', 'snap windows virtual desktops', el 
     SP.combo('On the taskbar, show windows that are open on', [['cur', 'Only the desktop I\'m using'], ['all', 'All desktops']], () => Store.get('vd.all', false) ? 'all' : 'cur', v => { Store.set('vd.all', v === 'all'); Shell10.renderTaskbar(); }));
 });
 page('system/about', 'About', 'pc name specifications version processor ram', el => {
-  const spec = [['Device name', Store.get('deviceName', 'NEO31-PC')], ['Processor', 'Intel 80486DX2 @ 66 MHz'], ['Installed RAM', '8.00 MB'], ['Device ID', '1A2B3C4D-0310-1992-0031-NEO31NEO10'], ['System type', '16-bit operating system, x86-based processor'], ['Pen and touch', 'No pen or touch input is available for this display']];
+  const spec = [['Device name', PC.name()], ['Processor', 'Intel 80486DX2 @ 66 MHz'], ['Installed RAM', '8.00 MB'], ['Device ID', PC.get().deviceId], ['Product ID', PC.get().productId], ['System type', '16-bit operating system, x86-based processor'], ['Pen and touch', 'No pen or touch input is available for this display']];
   const win = [['Edition', 'Neo10 Home'], ['Version', '22H2'], ['Installed on', Intl31.date(new Date(WIN_DATE))], ['OS build', '19045.3803 (on Windows 3.1)'], ['Experience', 'Windows 3.1 Feature Experience Pack 1992.3.10']];
   el.append(SP.h1('About'), h('div', { class: 'neo-sfield' }, iconImg('neologo'), SP.p('Your PC is monitored and protected.')),
     SP.h2('Device specifications'), SP.info(spec),
     h('div', { class: 'neo-sfield neo-btnrow' },
       SP.button('Copy', () => Sys.setClipboard({ type: 'text', data: spec.concat(win).map(r => r.join('\t')).join('\n') })),
       SP.button('Rename this PC', async () => {
-        const v = await new Promise(res => dialog({ title: 'Rename your PC', w: 280, h: 70, build(d) { const t = UI.text(Store.get('deviceName', 'NEO31-PC'), { maxLength: 15 }); d.add(UI.label('&Name:', t), 10, 8); d.add(t, 10, 26, 180); d.add(UI.button('Next', { default: true, onClick: () => d.close(t.value.trim()) }), 200, 6, 70, 25); d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close(null) }), 200, 36, 70, 25); } }).promise.then(res));
+        const v = await new Promise(res => dialog({ title: 'Rename your PC', w: 280, h: 70, build(d) { const t = UI.text(PC.name(), { maxLength: 15 }); d.add(UI.label('&Name:', t), 10, 8); d.add(t, 10, 26, 180); d.add(UI.button('Next', { default: true, onClick: () => d.close(t.value.trim()) }), 200, 6, 70, 25); d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close(null) }), 200, 36, 70, 25); } }).promise.then(res));
         if (v) { Store.set('deviceName', v.toUpperCase()); Sys.run('settings10', { args: 'system/about' }); }
       })),
     SP.h2('Windows specifications'), SP.info(win), SP.p('Copyright © 1985-1992 Microsoft Corp. Neo10 is a fan re-creation running inside a simulated Windows 3.1 PC.'));
@@ -173,7 +173,7 @@ page('network/status', 'Status', 'network internet airplane ip connected', el =>
   const air = Store.get('airplane', false);
   el.append(SP.h1('Status'), h('div', { class: 'neo-sfield neo-srow' }, iconImg('cpNetwork'), SP.p(air ? 'Airplane mode is on.' : 'You\'re connected to the Internet. (Neo31 Network)')),
     SP.toggle('Airplane mode', () => Store.get('airplane', false), v => { Store.set('airplane', v); Shell10.renderTaskbar(); }),
-    SP.h2('Properties'), SP.info([['Name', 'Neo31 Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', '192.168.31.10'], ['Physical address', '00-03-10-19-92-31'], ['Speed', '10 Mbps']]),
+    SP.h2('Properties'), SP.info([['Name', 'Neo31 Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', PC.get().ip], ['Physical address', PC.get().mac], ['Speed', '10 Mbps']]),
     SP.link('Open Terminal (dial-up)', () => Sys.launch('TERMINAL.EXE')));
 });
 
@@ -385,33 +385,37 @@ page('ease/mouse', 'Mouse pointer', 'cursor pointer size large', el => {
 });
 
 /* ======================= UPDATE & SECURITY ======================= */
-page('update/windowsupdate', 'Windows Update', 'update check updates history', el => {
-  const st = h('div', { class: 'neo-sfield neo-srow' }, iconImg('neologo'), h('div', {}, h('div', { class: 'neo-h2', text: 'You\'re up to date' }), SP.p('Last checked: ' + (Store.get('wu.last') ? `${Intl31.date(new Date(Store.get('wu.last')))}, ${Intl31.time(new Date(Store.get('wu.last')))}` : 'never'))));
-  const btn = SP.button('Check for updates', async () => {
-    btn.disabled = true;
-    st.innerHTML = '';
-    const sp = Shell10.spinner('#000000');
-    const msg = h('div', { class: 'neo-h2', text: 'Checking for updates...' });
-    st.append(sp.el, msg);
-    await sleep(1800); msg.textContent = 'Downloading definitions for 16-colour displays...';
-    await sleep(1600);
-    sp.stop();
-    Store.set('wu.last', Date.now());
-    Shell10.notify({ app: 'Windows Update', icon: 'neologo', title: 'You\'re up to date', text: 'Neo10 22H2 on Windows 3.1 is the latest version.' });
-    Sys.run('settings10', { args: 'update/windowsupdate' });
-  });
-  el.append(SP.h1('Windows Update'), st, h('div', { class: 'neo-sfield' }, btn), SP.h2('Update history'),
-    SP.info([['Feature update to Neo10, version 22H2', 'Successfully installed on ' + Intl31.date(new Date(WIN_DATE))], ['Windows 3.1 Feature Experience Pack', 'Successfully installed on ' + Intl31.date(new Date(WIN_DATE))], ['Definition Update for Program Manager', 'Successfully installed on ' + Intl31.date(new Date(DOS_DATE))]]));
+page('update/windowsupdate', 'Windows Update', 'update check updates history restart', el => {
+  const st = h('div', { class: 'neo-sfield' }), btns = h('div', { class: 'neo-sfield neo-btnrow' });
+  const last = () => Store.get('wu.last') ? `${Intl31.date(new Date(Store.get('wu.last')))}, ${Intl31.time(new Date(Store.get('wu.last')))}` : 'never';
+  const draw = () => {
+    const { phase, items } = Updates.state;
+    st._sp?.stop(); st._sp = null;
+    st.innerHTML = ''; btns.innerHTML = '';
+    const head = (title, text) => h('div', { class: 'neo-srow' }, iconImg('neologo'), h('div', {}, h('div', { class: 'neo-h2', text: title }), text ? SP.p(text) : null));
+    if (phase === 'checking') { const sp = Shell10.spinner('#000000'); st.append(h('div', { class: 'neo-srow' }, sp.el, h('div', { class: 'neo-h2', text: 'Checking for updates...' }))); st._sp = sp; return; }
+    if (phase === 'working' || items.length) {
+      st.append(head(phase === 'working' ? 'Updates available' : Updates.needsRestart() ? 'Restart required' : 'You\'re up to date', `Last checked: ${last()}`),
+        ...items.map(it => h('div', { class: 'neo-srow', style: { justifyContent: 'space-between', gap: '16px' } }, h('span', { style: { flex: 1 }, text: it.title }), h('span', { style: { flex: 'none', width: '150px' }, text: `Status: ${it.status}` }))));
+    } else if (Updates.needsRestart()) st.append(head('Restart required', 'Your PC will finish installing these updates when it restarts:'), ...Updates.pending().map(u => SP.p('• ' + u.title)));
+    else st.append(head('You\'re up to date', `Last checked: ${last()}`));
+    if (phase === 'working') return;
+    if (Updates.needsRestart()) btns.append(SP.button('Restart now', () => Shell10.shutdown(true)));
+    btns.append(SP.button('Check for updates', () => Updates.run()));
+  };
+  const off = Updates.on('change', () => { if (!el.isConnected) { off(); return; } draw(); });
+  draw();
+  el.append(SP.h1('Windows Update'), st, btns, SP.h2('Update history'),
+    SP.info(Updates.history().slice(0, 12).map(u => [u.title, 'Successfully installed on ' + Intl31.date(new Date(u.date))])));
 });
-page('update/recovery', 'Recovery', 'backup restore reset this pc factory go back windows 3.1', el => {
+page('update/recovery', 'Recovery', 'backup restore reset this pc factory advanced startup recovery environment', el => {
   el.append(SP.h1('Recovery'),
+    SP.h2('Reset this PC'), SP.p('If your PC isn\'t running well, resetting it might help. This lets you choose to keep your personal files or remove them, and then reinstalls Windows.'),
+    h('div', { class: 'neo-sfield' }, SP.button('Get started', () => Recovery.resetWizard())),
+    SP.h2('Advanced startup'), SP.p('Start up from the Windows Recovery Environment to repair or reset Windows, or uninstall updates. This will restart your PC.'),
+    h('div', { class: 'neo-sfield' }, SP.button('Restart now', () => Recovery.advancedStartup())),
     SP.h2('Backup and restore'), SP.p('Download all saved files and settings. Restore a backup to replace this PC and restart.'),
-    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Download backup', () => HostFiles.backup()), SP.button('Restore backup...', () => HostFiles.restore())),
-    SP.h2('Reset this PC'), SP.p('Restores drive C: and every setting to factory condition. Your files will be removed.'),
-    h('div', { class: 'neo-sfield' }, SP.button('Get started', async () => {
-      if (await msgBox('Reset this PC?\n\nThis removes all files you created and returns every setting to its factory default.', 'Reset this PC', { buttons: 'okcancel', icon: 'exclaim' }) !== 'ok') return;
-      Store.wipe(); location.hash = ''; location.reload();
-    })));
+    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Download backup', () => HostFiles.backup()), SP.button('Restore backup...', () => HostFiles.restore())));
 });
 
 /* ======================= THE APP ======================= */

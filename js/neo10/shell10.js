@@ -68,6 +68,10 @@ const Shell10 = {
     Sys.deskEl.classList.add('hidden', 'neo');
     const boot = this.bootScreen();
     await sleep(Store.get('fastBoot') ? 600 : 2600);
+    // Setup, pending updates, resets and the recovery environment all run before the desktop
+    const setup = await Setup.beforeDesktop();
+    if (setup === 'off') { boot.remove(); Sys.screen.classList.remove('busy'); await DOS.offScreen(); return DOS.boot(); }
+    Sys.mode = 'windows';
     IniSync.read();
     if (!Store.get('neo.inited')) {
       Store.set('neo.inited', true);
@@ -80,6 +84,7 @@ const Shell10 = {
     Sys.deskEl.classList.remove('hidden');
     boot.remove();
     Sys.screen.classList.remove('busy');
+    if (setup === 'oobe') { Sys.textKey = null; this.afterSignIn(); return; }
     await this.lockAndSignIn(true);
   },
 
@@ -250,6 +255,7 @@ const Shell10 = {
     if (!(await this.closeAllWindows())) return;
     Saver.stop();
     Store.flush(); FS.flush();
+    if (!opts.skipUpdates && Updates.needsRestart() && !Store.get('wu.stage2')) await Updates.beforeRestart();
     const el = h('div', { class: 'neo-full', style: { background: 'var(--active-title)' } });
     const sp = this.spinner('#ffffff');
     el.append(h('div', { class: 'neo-center', style: { gap: '24px' } }, sp.el, h('div', { class: 'neo-bigtext', text: restart ? 'Restarting' : 'Shutting down' })));
@@ -296,8 +302,9 @@ const Shell10 = {
   powerItems(signin) {
     return [
       { label: '&Sleep', action: () => this.sleep() },
-      { label: 'Sh&ut down', action: () => this.shutdown(false) },
-      { label: '&Restart', action: () => this.shutdown(true) }
+      ...(Updates.needsRestart() ? [{ label: 'Update and shut &down', action: () => this.shutdown(false) }, { label: 'Update and r&estart', action: () => this.shutdown(true) }] : []),
+      { label: 'Sh&ut down', action: () => this.shutdown(false, { skipUpdates: true }) },
+      { label: '&Restart', action: () => this.shutdown(true, { skipUpdates: true }) }
     ];
   },
 
