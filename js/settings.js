@@ -201,7 +201,7 @@ const IniSync = {
       for (const [k, n] of Object.entries(this.COLOR_KEYS)) ini.set('colors', n, this.rgb(colors[k]));
       const bits = this.patternBits(Store.get('pattern', '(None)'));
       ini.set('Desktop', 'Pattern', bits ? bits.join(' ') : '(None)');
-      const wp = Store.get('wallpaper', '(None)');
+      const wp = Store.get('wallpaper') || '(None)';
       ini.set('Desktop', 'Wallpaper', wp === '(None)' ? '(None)' : wp.toLowerCase());
       ini.set('Desktop', 'TileWallpaper', Store.get('wallTile', true) ? '1' : '0');
       ini.set('Desktop', 'IconSpacing', String(Store.get('iconSpacing', 75)));

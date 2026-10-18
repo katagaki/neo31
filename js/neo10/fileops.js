@@ -6,7 +6,7 @@ const FileOps = {
   TYPES: {
     TXT: 'Text Document', HTM: 'HTML Document', HTML: 'HTML Document', INI: 'Configuration settings', LOG: 'Text Document', BAT: 'Windows Batch File', SYS: 'System file',
     EXE: 'Application', COM: 'MS-DOS Application', PIF: 'Shortcut to MS-DOS Program', DLL: 'Application extension', DRV: 'Device driver',
-    BMP: 'Bitmap image', PCX: 'PCX image', WRI: 'Write Document', WAV: 'Wave Sound', MID: 'MIDI Sequence', HLP: 'Help file',
+    BMP: 'Bitmap image', PCX: 'PCX image', PNG: 'PNG image', JPG: 'JPEG image', JPEG: 'JPEG image', GIF: 'GIF image', WEBP: 'WebP image', DOC: 'Microsoft Word Document', XLS: 'Microsoft Excel Worksheet', CSV: 'Microsoft Excel Comma Separated Values File', PPT: 'Microsoft PowerPoint Presentation', WRI: 'Write Document', WAV: 'Wave Sound', MID: 'MIDI Sequence', HLP: 'Help file',
     CRD: 'Cardfile Document', CAL: 'Calendar File', TRM: 'Terminal Settings', FON: 'Font file', TTF: 'TrueType font file', FOT: 'Font resource',
     GRP: 'Program Group', SCR: 'Screen saver', CLP: 'Clipboard File', '386': 'Virtual device driver', '3GR': 'Grabber'
   },
@@ -25,7 +25,7 @@ const FileOps = {
     const e = FS.ext(name);
     if (node && node.a) { const app = Sys.apps[node.a]; return big ? (app && app.icon) || 'app' : 's_exe'; }
     if (['EXE', 'COM', 'BAT', 'PIF'].includes(e)) return big ? 'app' : 's_exe';
-    const bigMap = { HTM: 'edge', HTML: 'edge', TXT: 'notepad', INI: 'notepad', LOG: 'notepad', WRI: 'wri', BMP: 'bmp', PCX: 'bmp', WAV: 'wav', MID: 'mplayer', HLP: 'help', CRD: 'cardfile', CAL: 'calendar', TRM: 'terminal' };
+    const bigMap = { HTM: 'edge', HTML: 'edge', TXT: 'notepad', INI: 'notepad', LOG: 'notepad', WRI: 'wri', BMP: 'bmp', PCX: 'bmp', PNG: 'bmp', JPG: 'bmp', JPEG: 'bmp', GIF: 'bmp', WEBP: 'bmp', DOC: 'winword', XLS: 'excel', CSV: 'excel', PPT: 'powerpoint', WAV: 'wav', MID: 'mplayer', HLP: 'help', CRD: 'cardfile', CAL: 'calendar', TRM: 'terminal' };
     if (big) return bigMap[e] || 'doc';
     return Sys.association(name) ? 's_doc' : 's_file';
   },

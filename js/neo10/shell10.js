@@ -34,6 +34,7 @@ const NEO_APPS = [
   { name: 'Voice Recorder', cmd: 'SOUNDREC.EXE', icon: 'soundrec' },
   { name: 'Microsoft Solitaire Collection', cmd: 'SOL.EXE', icon: 'sol' },
   { name: 'Microsoft Edge', cmd: 'MSEDGE.EXE', icon: 'edge' },
+  { name: 'Photos', cmd: 'PHOTOS.EXE', icon: 'photos' },
   { name: 'Minesweeper', cmd: 'WINMINE.EXE', icon: 'winmine' },
   { name: 'Settings', cmd: 'SETTINGS', icon: 'settings10' },
   { name: 'Weather', cmd: 'WEATHER', icon: 'weather' },
@@ -105,6 +106,8 @@ const Shell10 = {
     const ext = readIni('C:\\WINDOWS\\WIN.INI', 'Extensions');
     if (!ext.htm) writeIni('C:\\WINDOWS\\WIN.INI', 'Extensions', 'htm', 'msedge.exe ^.htm');
     if (!ext.html) writeIni('C:\\WINDOWS\\WIN.INI', 'Extensions', 'html', 'msedge.exe ^.html');
+    // pictures open in Photos now, unless the user associated them with something else
+    for (const e of ['bmp', 'pcx']) if (/^pbrush\.exe/i.test(ext[e] || '')) writeIni('C:\\WINDOWS\\WIN.INI', 'Extensions', e, `photos.exe ^.${e}`);
     if (!FS.exists(KNOWN.documents + '\\WELCOME.TXT'))
       FS.write(KNOWN.documents + '\\Welcome.txt', 'Welcome to Neo10!\n\nThis is Windows 10, drawn with the pixels of Windows 3.1.\n\n- Click Start (or press Ctrl+Esc) for your apps and live tiles.\n- Type in the search box to find apps, settings and files.\n- Drag a window to the left or right edge of the screen to snap it.\n- Task View (next to search) shows your windows and virtual desktops.\n- Action Center (far right of the taskbar) holds notifications and quick actions.\n- Settings > System > Shell switches back to the classic Windows 3.1 Program Manager.\n');
     FS.save();
@@ -756,7 +759,7 @@ const Shell10 = {
   defaultTiles() {
     return [
       { cmd: 'CALENDAR.EXE', size: 'wide', color: '#000080' }, { cmd: 'CLOCK.EXE', size: 'med', color: '#008080' },
-      { cmd: 'WEATHER', size: 'wide', color: '#0000ff' }, { cmd: 'PBRUSH.EXE', size: 'med', color: '#800080', live: 'photos' },
+      { cmd: 'WEATHER', size: 'wide', color: '#0000ff' }, { cmd: 'PHOTOS.EXE', size: 'med', color: '#800080', live: 'photos' },
       { cmd: 'SOL.EXE', size: 'med', color: '#008000' }, { cmd: 'WINMINE.EXE', size: 'med', color: '#808080' },
       { cmd: 'EXPLORER', size: 'med', color: '#808000' }, { cmd: 'SETTINGS', size: 'med', color: '#404040' },
       { cmd: 'MSEDGE.EXE', size: 'med', color: '#000080' }
