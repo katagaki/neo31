@@ -180,37 +180,30 @@ function pageIcon(g, x, y, w, hh, lines = 'K') {
 }
 
 /* Rasterised waving Windows flag (no anti-aliasing) */
+/* The Windows flag, Windows 11 style: four flat squares with an even gap */
 function flagGrid(W, H) {
   const g = new PixGrid(W, H);
-  const panes = [[0, 0, 'R'], [1, 0, 'L'], [0, 1, 'B'], [1, 1, 'Y']];
-  const fx0 = W * 0.30, fw = W * 0.66, fy0 = H * 0.12, fh = H * 0.74, gap = Math.max(1, Math.round(W / 40));
-  const wave = x => Math.round(Math.sin((x - fx0) / fw * Math.PI * 2) * H * 0.045);
-  for (let x = Math.floor(fx0); x < fx0 + fw; x++) {
-    const col = (x - fx0) < fw / 2 ? 0 : 1;
-    const local = (x - fx0) - col * fw / 2;
-    if (local < gap / 2 && col === 1 || local > fw / 2 - gap / 2 && col === 0) continue;
-    const top = Math.round(fy0 + wave(x) - (x - fx0) * 0.06);
-    for (let y = top; y < top + fh; y++) {
-      const row = (y - top) < fh / 2 ? 0 : 1;
-      const ly = (y - top) - row * fh / 2;
-      if (ly < gap / 2 && row === 1 || ly > fh / 2 - gap / 2 && row === 0) continue;
-      g.p(x, y, panes.find(p => p[0] === col && p[1] === row)[2]);
-    }
-  }
-  // black outline around coloured cells
-  const src = g.d.slice();
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    if (src[y * W + x]) continue;
-    const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const xx = x + dx, yy = y + dy; return xx >= 0 && yy >= 0 && xx < W && yy < H && src[yy * W + xx]; });
-    if (n) g.p(x, y, 'K');
-  }
-  // trailing squares (the "motion" blocks to the left of the flag)
-  const sq = Math.max(1, Math.round(W / 16));
-  const trail = [[0.22, 0.20, 'R'], [0.14, 0.24, 'R'], [0.07, 0.30, 'R'], [0.22, 0.58, 'B'], [0.13, 0.62, 'B'], [0.05, 0.66, 'B']];
-  trail.forEach(([fx, fy, c], i) => { const s = Math.max(1, sq - (i % 3)); g.b(Math.round(W * fx), Math.round(H * fy), s + 1, s + 1, c); });
+  const side = Math.min(W, H), gap = Math.max(1, Math.round(side / 16)), sq = Math.floor((side - gap) / 2);
+  const ox = Math.floor((W - (sq * 2 + gap)) / 2), oy = Math.floor((H - (sq * 2 + gap)) / 2);
+  [['R', 0, 0], ['L', 1, 0], ['B', 0, 1], ['Y', 1, 1]].forEach(([c, i, j]) => g.f(ox + i * (sq + gap), oy + j * (sq + gap), sq, sq, c));
   return g;
 }
 
+/* Office apps: a page with the app's content and a coloured letter tile in front,
+   as on the modern Office icons */
+const OFFICE_LETTERS = {
+  W: ['W...W', 'W...W', 'W.W.W', 'W.W.W', 'WW.WW', 'W...W'],
+  X: ['W...W', '.W.W.', '..W..', '..W..', '.W.W.', 'W...W'],
+  P: ['WWWW.', 'W...W', 'W...W', 'WWWW.', 'W....', 'W....']
+};
+function officeIcon(g, dark, light, letter, content) {
+  g.b(12, 3, 18, 26, 'W');
+  if (content === 'lines') for (let y = 8; y < 26; y += 3) g.l(19, y, 27, y, light);
+  if (content === 'grid') { for (let y = 7; y < 27; y += 4) g.l(19, y, 27, y, dark); for (let x = 19; x < 28; x += 4) g.l(x, 7, x, 27, dark); }
+  if (content === 'slide') { g.o(18, 8, 10, 8, dark); g.f(19, 9, 8, 6, light); g.l(18, 20, 27, 20, dark); g.l(18, 23, 25, 23, dark); }
+  g.f(2, 8, 17, 17, dark); g.o(2, 8, 17, 17, 'K');
+  letter.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'W') g.f(5 + x * 2, 10 + y * 2, 2, 2, 'W'); }));
+}
 const ICON_DEFS = {
   progman: g => {
     g.b(1, 3, 30, 26, 'W'); g.f(2, 4, 28, 4, 'N'); g.f(2, 4, 4, 4, 'S'); g.l(3, 6, 4, 6, 'W'); g.l(6, 4, 6, 7, 'K');
@@ -286,17 +279,14 @@ const ICON_DEFS = {
       '..KKK.............',
       '..K...............']);
   },
-  winword: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'N'); g.l(4, 2, 26, 2, 'B'); g.t(7, 3, 'W', 'W', 2);
-    g.l(8, 12, 23, 12, 'K'); g.l(8, 17, 23, 17, 'K'); g.l(8, 22, 20, 22, 'K');
-  },
-  excel: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'g'); g.l(4, 2, 26, 2, 'L'); g.t(6, 3, 'X', 'W', 2);
-    g.o(8, 11, 16, 15, 'K'); g.l(16, 12, 16, 24, 'K'); g.l(9, 16, 22, 16, 'K'); g.l(9, 20, 22, 20, 'K');
-  },
-  powerpoint: g => {
-    pageIcon(g, 3, 2, 25, 28); g.f(3, 2, 25, 5, 'r'); g.l(4, 2, 26, 2, 'R'); g.t(6, 3, 'P', 'W', 2);
-    g.o(7, 12, 17, 13, 'K'); g.f(15, 15, 3, 8, 'R'); g.l(18, 19, 24, 19, 'K');
+  winword: g => officeIcon(g, 'N', 'B', OFFICE_LETTERS.W, 'lines'),
+  excel: g => officeIcon(g, 'g', 'L', OFFICE_LETTERS.X, 'grid'),
+  powerpoint: g => officeIcon(g, 'r', 'R', OFFICE_LETTERS.P, 'slide'),
+  photos: g => {
+    g.b(2, 5, 28, 23, 'N'); g.o(3, 6, 26, 21, 'B');
+    g.f(4, 7, 24, 19, 'C');
+    g.ell ? g.ell(19, 9, 6, 6, 'Y', 'Y') : g.f(20, 9, 5, 5, 'Y');
+    for (let x = 4; x < 28; x++) { const hgt = Math.max(Math.round(10 - Math.abs(x - 11) * 1.2), Math.round(7 - Math.abs(x - 22) * 0.9), 2); g.f(x, 26 - hgt, 1, hgt, x < 17 ? 'g' : 'L'); }
   },
   pbrush: g => {
     g.ell(1, 9, 25, 21, 'S', 'K');
@@ -992,17 +982,9 @@ const Raster = {
 /* The Neo10 emblem: the Windows 10 four-pane window in perspective, in the
    Windows 3.1 flag colours. Works at any size. */
 function neoLogoGrid(S = 32) {
-  const g = new PixGrid(S, S);
-  const m = Math.round(S * 0.47), gap = Math.max(1, Math.round(S / 24));
-  for (let x = 1; x < S - 1; x++) {
-    const f = x / (S - 1), top = Math.round(S * 0.04 + f * S * 0.16), bot = Math.round(S * 0.96 - f * S * 0.16);
-    const midY = Math.round((top + bot) / 2);
-    if (Math.abs(x - m) < gap) continue;
-    for (let y = top; y <= bot; y++) {
-      if (Math.abs(y - midY) < gap) continue;
-      g.p(x, y, x < m ? (y < midY ? 'R' : 'B') : (y < midY ? 'L' : 'Y'));
-    }
-  }
+  // a 1-pixel margin keeps the squares off the edge of icons and tiles
+  const g = new PixGrid(S, S), f = flagGrid(S - 2, S - 2);
+  for (let y = 0; y < S - 2; y++) for (let x = 0; x < S - 2; x++) if (f.d[y * (S - 2) + x]) g.p(x + 1, y + 1, f.d[y * (S - 2) + x]);
   return g;
 }
 const FOLDER_BIG = g => {
@@ -1100,7 +1082,7 @@ Object.assign(ICON_DEFS, {
   s_lock: g => { g.o(5, 1, 6, 7, 'K'); g.bev(3, 7, 10, 8, 'Y'); g.f(7, 10, 2, 3, 'K'); },
   s_signout: g => { g.o(2, 1, 8, 14, 'K'); g.f(3, 2, 6, 12, 'S'); g.l(7, 8, 14, 8, 'K'); g.l(12, 6, 14, 8, 'K'); g.l(12, 10, 14, 8, 'K'); },
   s_restart: g => g.m(2, 1, ['....KKKK.K.', '..KK....KK.', '.K.....KKK.', '.K.........', 'K..........', 'K..........', 'K..........', '.K........K', '.K.......K.', '..KK...KK..', '....KKK....']),
-  s_sleep: g => g.m(3, 2, ['...KKK....', '.KK.......', 'K.........', 'K.........', 'K.........', 'K.........', 'K.........', '.KK....K..', '...KKKK...']),
+  s_sleep: g => g.m(3, 2, ['...KKK....', '.KKK......', '.KK.......', 'KKK.......', 'KKK.......', 'KKK.......', 'KKKK......', '.KKKK....K', '.KKKKKKKKK', '...KKKKK..']),
   s_plus: g => { g.f(7, 2, 2, 12, 'K'); g.f(2, 7, 12, 2, 'K'); },
   s_back: g => g.m(2, 3, ['....K.....', '...KK.....', '..KKKKKKKK', '.KKKKKKKKK', '..KKKKKKKK', '...KK.....', '....K.....']),
   s_fwd: g => g.m(4, 3, ['.....K....', '.....KK...', 'KKKKKKKK..', 'KKKKKKKKK.', 'KKKKKKKK..', '.....KK...', '.....K....']),
