@@ -121,6 +121,20 @@
     if (Sys.isNeo() && typeof Shell10 !== 'undefined') Shell10.notify({ app: APP, icon: 'clock', title, text, onClick });
   };
   const openView = view => Sys.run('clock', { args: view });
+  /* Away from the desktop (lock screen or sleep) the alarm dialog would be hidden, so a
+     card with the same buttons is drawn above the lock screen; sleep wakes up for it. */
+  const lockCard = (title, text, buttons) => {
+    if (Sys.mode === 'asleep') document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
+    if (Sys.mode !== 'locked') return null;
+    const row = h('div', { class: 'clock-lockbtns' });
+    const card = h('div', { class: 'clock-lockcard raised', role: 'alertdialog', 'aria-label': title },
+      h('div', { class: 'clock-lockhead' }, iconImg('clock'), h('div', {}, h('b', { text: title }), h('div', { text })), ), row);
+    for (const [label, fn] of buttons) row.appendChild(UI.button(label, { onClick: () => { card.remove(); fn(); } }));
+    card.addEventListener('keydown', e => e.stopPropagation());   // keys work the buttons instead of opening sign-in
+    Sys.screen.appendChild(card);
+    row.lastChild.focus();
+    return card;
+  };
 
   const Alarms = {
     listeners: new Set(),
@@ -186,9 +200,10 @@
       const when = Intl31.time(atTime(a.h, a.m));
       const title = a.name || 'Alarm';
       toast(title, `${when}${a.snoozed ? '  (snoozed)' : ''}  ·  ${repeatText(a.days)}`, () => openView('alarms'));
+      let card = null;
       const d = dialog({
         title: APP, w: 250, h: a.snooze ? 150 : 112, modal: false, cancelValue: 'dismiss',
-        onClose: () => { stop(); if (this.ringing.get(a.id) === d) this.ringing.delete(a.id); },
+        onClose: () => { stop(); card?.remove(); if (this.ringing.get(a.id) === d) this.ringing.delete(a.id); },
         build: dd => {
           dd.add(iconImg('clock'), 12, 12);
           dd.add(h('div', { class: 'txt', style: { fontWeight: 'bold' }, text: title }), 54, 12, 180);
@@ -204,6 +219,9 @@
       });
       d.win.o.topmost = true; d.win.activate();
       this.ringing.set(a.id, d);
+      card = lockCard(title, `${when}${a.snoozed ? '  (snoozed)' : ''}`, [
+        ...(a.snooze ? [[`Snooze (${snoozeText(a.snooze)})`, () => { this.snooze(a, a.snooze); d.close('snooze'); }]] : []),
+        ['Dismiss', () => d.close('dismiss')]]);
     }
   };
 
@@ -221,9 +239,10 @@
       if (this.dlg) this.dlg.close();
       const stop = ringLoop('Xylophone');
       toast('Timer', `Your ${fmtDur(this.dur)} timer is done.`, () => openView('timer'));
+      let card = null;
       const d = this.dlg = dialog({
         title: 'Timer', w: 250, h: 100, modal: false,
-        onClose: () => { stop(); if (this.dlg === d) this.dlg = null; },
+        onClose: () => { stop(); card?.remove(); if (this.dlg === d) this.dlg = null; },
         build: dd => {
           dd.add(iconImg('clock'), 12, 12);
           dd.add(h('div', { class: 'txt', text: `Your ${fmtDur(this.dur)} timer is done.` }), 54, 20, 180);
@@ -232,6 +251,7 @@
         }
       });
       d.win.o.topmost = true; d.win.activate();
+      card = lockCard('Timer', `Your ${fmtDur(this.dur)} timer is done.`, [['Dismiss', () => { this.reset(); Alarms.changed(); d.close(); }]]);
     }
   };
 
@@ -245,7 +265,7 @@
   };
 
   setInterval(() => {
-    if (typeof Sys === 'undefined' || Sys.mode !== 'windows') return;
+    if (typeof Sys === 'undefined' || !['windows', 'locked', 'asleep'].includes(Sys.mode)) return;
     try { Alarms.tick(); Timer.tick(); } catch (e) { console.error(e); }
   }, 1000);
 
