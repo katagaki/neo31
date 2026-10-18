@@ -98,7 +98,7 @@
       };
       const movePicture = () => {
         if (!picture || !doc.contains(picture)) { msgBox('Click a picture in the document first.', 'Write', { owner: w }); return; }
-        movingPicture = picture; doc.style.cursor = 'crosshair';
+        movingPicture = picture; doc.style.cursor = 'var(--cur-cross)';
         status.firstChild.textContent = 'Click a destination for the picture. Esc cancels.';
         doc.focus();
       };

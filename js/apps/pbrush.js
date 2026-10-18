@@ -47,7 +47,7 @@
       const clear = () => { ctx.fillStyle = bg; ctx.fillRect(0, 0, cv.width, cv.height); };
       clear();
 
-      const stage = h('div', { style: { position: 'relative', display: 'inline-block', margin: '0', cursor: 'crosshair' } }, cv, ov);
+      const stage = h('div', { style: { position: 'relative', display: 'inline-block', margin: '0', cursor: 'var(--cur-cross)' } }, cv, ov);
       const scroller = h('div', { style: { position: 'absolute', left: '56px', top: 0, right: 0, bottom: '42px', overflow: 'scroll', background: 'var(--app-workspace)' } }, stage);
       const toolbox = h('div', { style: { position: 'absolute', left: 0, top: 0, width: '56px', bottom: '42px', background: 'var(--btn-face)', borderRight: '1px solid #000' } });
       const palette = h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '42px', background: 'var(--btn-face)', borderTop: '1px solid #000' } });

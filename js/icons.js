@@ -799,6 +799,48 @@ const CURSORS = {
     'KSSSSSSSSSSK',
     'KKKKKKKKKKKK']
 };
+/* Shapes drawn as white fill and given a 1-pixel black outline, as the Windows
+   resize, I-beam and crosshair pointers are: fn(x, y) says which pixels are white. */
+function outlinedCursor(w, hh, fn) {
+  const on = (x, y) => x >= 0 && y >= 0 && x < w && y < hh && fn(x, y);
+  return Array.from({ length: hh }, (_, y) => Array.from({ length: w }, (_, x) => {
+    if (on(x, y)) return 'W';
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (on(x + dx, y + dy)) return 'K';
+    return '.';
+  }).join(''));
+}
+Object.assign(CURSORS, {
+  // vertical double arrow; the others are the same shape transposed or sheared
+  sizeNS: outlinedCursor(11, 23, (x, y) => { const d = Math.abs(x - 5); return y <= 5 ? d <= y - 1 : y >= 17 ? d <= 21 - y : x === 5; }),
+  sizeEW: outlinedCursor(23, 11, (x, y) => { const d = Math.abs(y - 5); return x <= 5 ? d <= x - 1 : x >= 17 ? d <= 21 - x : y === 5; }),
+  sizeNWSE: outlinedCursor(17, 17, (x, y) => (x + y <= 7 && x >= 1 && y >= 1) || (x + y >= 25 && x <= 15 && y <= 15) || (x === y && x > 1 && x < 15)),
+  sizeNESW: outlinedCursor(17, 17, (x, y) => { const m = 16 - x; return (m + y <= 7 && m >= 1 && y >= 1) || (m + y >= 25 && m <= 15 && y <= 15) || (m === y && y > 1 && y < 15); }),
+  ibeam: outlinedCursor(9, 20, (x, y) => (y === 1 || y === 18) ? x >= 1 && x <= 7 && x !== 4 : y > 1 && y < 18 && x === 4),
+  cross: outlinedCursor(21, 21, (x, y) => (x === 10 && y >= 1 && y <= 19 && Math.abs(y - 10) > 1) || (y === 10 && x >= 1 && x <= 19 && Math.abs(x - 10) > 1)),
+  hand: [
+    '.....KK..........',
+    '....KWWK.........',
+    '....KWWK.........',
+    '....KWWK.........',
+    '....KWWK.........',
+    '....KWWKKK.......',
+    '....KWWKWWKKK....',
+    '....KWWKWWKWWKK..',
+    '.KK.KWWKWWKWWKWK.',
+    'KWWKKWWWWWWWWKWK.',
+    'KWWWKWWWWWWWWWWK.',
+    '.KWWKWWWWWWWWWWK.',
+    '..KWWWWWWWWWWWWK.',
+    '..KWWWWWWWWWWWWK.',
+    '...KWWWWWWWWWWWK.',
+    '...KWWWWWWWWWWK..',
+    '....KWWWWWWWWWK..',
+    '....KWWWWWWWWWK..',
+    '.....KWWWWWWWK...',
+    '.....KKKKKKKKK...']
+});
+/* hotspots, in cursor pixels */
+const CURSOR_HOT = { arrow: [0, 0], wait: [6, 9], sizeNS: [5, 11], sizeEW: [11, 5], sizeNWSE: [8, 8], sizeNESW: [8, 8], ibeam: [4, 10], cross: [10, 10], hand: [5, 0] };
 /* cursors can be drawn at 1x, 2x or 3x (Settings > Ease of Access > pointer size) */
 function cursorURL(name, k = 1) {
   const rows = CURSORS[name];
@@ -806,11 +848,16 @@ function cursorURL(name, k = 1) {
   rows.forEach((r, y) => [...r].forEach((c, x) => { if (c !== '.') g.f(x * k, y * k, k, k, c); }));
   return g.canvas().toDataURL();
 }
+/* CSS cursors aren't scaled by the #screen transform, so they're drawn at the
+   screen's scale too; every pointer then has the same pixels as the rest of the screen. */
 function installCursors() {
-  const k = clamp(Store.get('cursorScale', 1), 1, 3);
+  const k = clamp(Store.get('cursorScale', 1), 1, 3) * Math.max(1, Math.round((typeof Sys !== 'undefined' && Sys.scale) || 1));
   const st = document.documentElement.style;
-  st.setProperty('--cur-arrow', `url(${cursorURL('arrow', k)}) 0 0, default`);
-  st.setProperty('--cur-wait', `url(${cursorURL('wait', k)}) ${6 * k} ${9 * k}, wait`);
+  const fallback = { arrow: 'default', wait: 'wait', sizeNS: 'ns-resize', sizeEW: 'ew-resize', sizeNWSE: 'nwse-resize', sizeNESW: 'nesw-resize', ibeam: 'text', cross: 'crosshair', hand: 'pointer' };
+  for (const [name, css] of Object.entries(fallback)) {
+    const [x, y] = CURSOR_HOT[name];
+    st.setProperty('--cur-' + name, `url(${cursorURL(name, k)}) ${x * k} ${y * k}, ${css}`);
+  }
 }
 
 /* Bitmap glyphs for UI controls (check marks, check/radio boxes, arrows),
@@ -861,10 +908,10 @@ function installPixelUI() {
   .slider .ar::after { border: 0 !important; width: 4px; height: 7px; top: 4px !important; left: 6px !important; background-repeat: no-repeat; }
   .slider .ar.l::after { background-image: ${u('left')}; }
   .slider .ar.r::after { background-image: ${u('right')}; }
-  .body *::-webkit-scrollbar-button:vertical:decrement, .lb::-webkit-scrollbar-button:vertical:decrement { background-image: ${u('up')}; }
-  .body *::-webkit-scrollbar-button:vertical:increment, .lb::-webkit-scrollbar-button:vertical:increment { background-image: ${u('down')}; }
-  .body *::-webkit-scrollbar-button:horizontal:decrement { background-image: ${u('left')}; }
-  .body *::-webkit-scrollbar-button:horizontal:increment { background-image: ${u('right')}; }
+  #screen *::-webkit-scrollbar-button:vertical:decrement, .lb::-webkit-scrollbar-button:vertical:decrement { background-image: ${u('up')}; }
+  #screen *::-webkit-scrollbar-button:vertical:increment, .lb::-webkit-scrollbar-button:vertical:increment { background-image: ${u('down')}; }
+  #screen *::-webkit-scrollbar-button:horizontal:decrement { background-image: ${u('left')}; }
+  #screen *::-webkit-scrollbar-button:horizontal:increment { background-image: ${u('right')}; }
   `;
   document.head.appendChild(h('style', { text: css }));
 }

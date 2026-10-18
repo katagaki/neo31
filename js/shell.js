@@ -84,7 +84,7 @@ const Sys = Object.assign(new Emitter(), {
     const [W, H] = this.resolution();
     const vw = window.innerWidth, vh = window.innerHeight, dpr = window.devicePixelRatio || 1;
     const s = Store.get('display') === 'fit' ? 1 : this.sharpScale(W, H);
-    this.scale = s;
+    if (s !== this.scale) { this.scale = s; installCursors(); }
     const snap = v => Math.round(v * dpr) / dpr;
     Object.assign(this.screen.style, {
       width: W + 'px', height: H + 'px',

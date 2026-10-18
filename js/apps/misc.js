@@ -348,8 +348,8 @@ Sys.registerApp('winhelp', {
       const [title, html] = book.topics[t];
       if (!hist.length || hist[hist.length - 1] !== title) hist.push(title);
       view.innerHTML = `<div style="font-weight:bold;margin:4px 0 8px">${esc(title)}</div>${html}`;
-      view.querySelectorAll('a.hl').forEach(a => { a.style.cssText = 'color:#008000;text-decoration:underline;cursor:pointer'; a.onclick = () => { if (a.dataset.f) { id = a.dataset.f; book = HELP[id]; w.setTitle(book.title); } show(a.dataset.t); }; });
-      view.querySelectorAll('a.hd').forEach(a => { a.style.cssText = 'color:#008000;text-decoration:underline dotted;cursor:pointer'; a.onclick = e => popup(a, a.dataset.d); });
+      view.querySelectorAll('a.hl').forEach(a => { a.style.cssText = 'color:#008000;text-decoration:underline;cursor:var(--cur-hand)'; a.onclick = () => { if (a.dataset.f) { id = a.dataset.f; book = HELP[id]; w.setTitle(book.title); } show(a.dataset.t); }; });
+      view.querySelectorAll('a.hd').forEach(a => { a.style.cssText = 'color:#008000;text-decoration:underline dotted;cursor:var(--cur-hand)'; a.onclick = e => popup(a, a.dataset.d); });
       view.scrollTop = 0;
       bBack.disabled = !back.length;
       const o = order(), i = o.indexOf(t);

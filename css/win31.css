@@ -63,6 +63,11 @@ body { font: var(--sys-font); color: #000; user-select: none; -webkit-user-selec
   image-rendering: pixelated; contain: strict;
   -webkit-font-smoothing: none; font-smooth: never; font-synthesis: none; text-rendering: optimizeSpeed; font-kerning: none;
 }
+/* Only the pixel cursors are ever shown: nothing falls back to the browser's own pointers. */
+html, body, #stage { cursor: var(--cur-arrow); }
+:where(#screen) * { cursor: inherit; }
+#screen input:not([type=checkbox]):not([type=radio]):not([type=range]), #screen textarea, #screen [contenteditable=true], #screen [contenteditable=true] * { cursor: var(--cur-ibeam); }
+#screen a[href], #screen a[href] * { cursor: var(--cur-hand); }
 #screen.busy, #screen.busy * { cursor: var(--cur-wait) !important; }
 #screen.nocursor, #screen.nocursor * { cursor: none !important; }
 
@@ -151,18 +156,18 @@ body { font: var(--sys-font); color: #000; user-select: none; -webkit-user-selec
 /* sizing handles */
 .rs { position: absolute; z-index: 5; }
 .win { --rs: calc(var(--border-w) + 2px); }
-.rs.n { top: -1px; left: 22px; right: 22px; height: var(--rs); cursor: ns-resize; }
-.rs.s { bottom: -1px; left: 22px; right: 22px; height: var(--rs); cursor: ns-resize; }
-.rs.w { left: -1px; top: 22px; bottom: 22px; width: var(--rs); cursor: ew-resize; }
-.rs.e { right: -1px; top: 22px; bottom: 22px; width: var(--rs); cursor: ew-resize; }
-.rs.nw { left: -1px; top: -1px; width: 23px; height: var(--rs); cursor: nwse-resize; }
-.rs.nw2 { left: -1px; top: -1px; width: var(--rs); height: 23px; cursor: nwse-resize; }
-.rs.ne { right: -1px; top: -1px; width: 23px; height: var(--rs); cursor: nesw-resize; }
-.rs.ne2 { right: -1px; top: -1px; width: var(--rs); height: 23px; cursor: nesw-resize; }
-.rs.sw { left: -1px; bottom: -1px; width: 23px; height: var(--rs); cursor: nesw-resize; }
-.rs.sw2 { left: -1px; bottom: -1px; width: var(--rs); height: 23px; cursor: nesw-resize; }
-.rs.se { right: -1px; bottom: -1px; width: 23px; height: var(--rs); cursor: nwse-resize; }
-.rs.se2 { right: -1px; bottom: -1px; width: var(--rs); height: 23px; cursor: nwse-resize; }
+.rs.n { top: -1px; left: 22px; right: 22px; height: var(--rs); cursor: var(--cur-sizeNS); }
+.rs.s { bottom: -1px; left: 22px; right: 22px; height: var(--rs); cursor: var(--cur-sizeNS); }
+.rs.w { left: -1px; top: 22px; bottom: 22px; width: var(--rs); cursor: var(--cur-sizeEW); }
+.rs.e { right: -1px; top: 22px; bottom: 22px; width: var(--rs); cursor: var(--cur-sizeEW); }
+.rs.nw { left: -1px; top: -1px; width: 23px; height: var(--rs); cursor: var(--cur-sizeNWSE); }
+.rs.nw2 { left: -1px; top: -1px; width: var(--rs); height: 23px; cursor: var(--cur-sizeNWSE); }
+.rs.ne { right: -1px; top: -1px; width: 23px; height: var(--rs); cursor: var(--cur-sizeNESW); }
+.rs.ne2 { right: -1px; top: -1px; width: var(--rs); height: 23px; cursor: var(--cur-sizeNESW); }
+.rs.sw { left: -1px; bottom: -1px; width: 23px; height: var(--rs); cursor: var(--cur-sizeNESW); }
+.rs.sw2 { left: -1px; bottom: -1px; width: var(--rs); height: 23px; cursor: var(--cur-sizeNESW); }
+.rs.se { right: -1px; bottom: -1px; width: 23px; height: var(--rs); cursor: var(--cur-sizeNWSE); }
+.rs.se2 { right: -1px; bottom: -1px; width: var(--rs); height: 23px; cursor: var(--cur-sizeNWSE); }
 .win.max .rs, .win.dlg .rs { display: none; }
 
 /* XOR drag rectangle */
@@ -271,14 +276,14 @@ fieldset.grp legend { padding: 0 2px; font: var(--dlg-font); margin-left: 4px; }
 
 /* Win 3.1 scrollbars */
 .scroll31, .scroll31 * { scrollbar-width: auto; }
-.scroll31::-webkit-scrollbar, .scroll31 *::-webkit-scrollbar, .lb::-webkit-scrollbar, textarea::-webkit-scrollbar, .body *::-webkit-scrollbar { width: 17px; height: 17px; }
-.body *::-webkit-scrollbar-track, .lb::-webkit-scrollbar-track { background: var(--scrollbar); }
-.body *::-webkit-scrollbar-thumb, .lb::-webkit-scrollbar-thumb { background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
-.body *::-webkit-scrollbar-button, .lb::-webkit-scrollbar-button { display: block; width: 17px; height: 17px; background-color: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); background-repeat: no-repeat; background-position: center; }
-.body *::-webkit-scrollbar-button:vertical:start:increment, .body *::-webkit-scrollbar-button:vertical:end:decrement,
-.body *::-webkit-scrollbar-button:horizontal:start:increment, .body *::-webkit-scrollbar-button:horizontal:end:decrement,
+.scroll31::-webkit-scrollbar, .scroll31 *::-webkit-scrollbar, .lb::-webkit-scrollbar, textarea::-webkit-scrollbar, #screen *::-webkit-scrollbar { width: 17px; height: 17px; }
+#screen *::-webkit-scrollbar-track, .lb::-webkit-scrollbar-track { background: var(--scrollbar); }
+#screen *::-webkit-scrollbar-thumb, .lb::-webkit-scrollbar-thumb { background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+#screen *::-webkit-scrollbar-button, .lb::-webkit-scrollbar-button { display: block; width: 17px; height: 17px; background-color: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); background-repeat: no-repeat; background-position: center; }
+#screen *::-webkit-scrollbar-button:vertical:start:increment, #screen *::-webkit-scrollbar-button:vertical:end:decrement,
+#screen *::-webkit-scrollbar-button:horizontal:start:increment, #screen *::-webkit-scrollbar-button:horizontal:end:decrement,
 .lb::-webkit-scrollbar-button:vertical:start:increment, .lb::-webkit-scrollbar-button:vertical:end:decrement { display: none; }
-.body *::-webkit-scrollbar-corner { background: var(--btn-face); }
+#screen *::-webkit-scrollbar-corner { background: var(--btn-face); }
 
 /* dialogs */
 .dlgc { position: absolute; inset: 0; }
