@@ -11,12 +11,13 @@
     name: 'Task Manager', icon: 'taskmgr', single: true,
     run() {
       const tabs = ['Processes', 'Performance', 'Startup'];
-      let tab = 0, sel = null;
+      let tab = 0, sel = null, lastDown = 0;
       const hist = { cpu: Array(60).fill(0), mem: Array(60).fill(0) };
       const tabbar = h('div', { class: 'neo-tabs' });
       const pane = h('div', { class: 'neo-tabpane sunken' });
       const foot = h('div', { class: 'neo-tmfoot' });
-      const endBtn = UI.button('&End task', { onClick: () => { if (sel && sel.win) sel.win.close(); } });
+      const endBtn = UI.button('&End task', { onClick: async () => { const t = sel && sel.win; if (t && !t.closed && await t.close()) { sel = null; sample(); } } });
+      const same = (a, b) => !!a && !!b && (a.win ? a.win === b.win : a.name === b.name);
       foot.appendChild(endBtn);
       const w = new Win({ title: 'Task Manager', icon: 'taskmgr', w: 520, h: 460, persist: 'taskmgr',
         menu: [
@@ -41,7 +42,7 @@
         const mem = Math.min(8, 2.1 + procs.reduce((a, p) => a + p.mem, 0));
         hist.cpu.push(cpu); hist.cpu.shift(); hist.mem.push(mem / 8 * 100); hist.mem.shift();
         hist.cpuNow = cpu; hist.memNow = mem;
-        draw();
+        if (Date.now() - lastDown > 700) draw();
       };
       const graph = (data, color) => {
         const c = h('canvas', { width: 300, height: 120, class: 'neo-graph' });
@@ -66,10 +67,12 @@
           const section = (label, list) => {
             pane.appendChild(h('div', { class: 'neo-applabel', text: `${label} (${list.length})` }));
             for (const p of list) {
-              const r = h('div', { class: 'it neo-xrow' + (sel && sel.name === p.name ? ' sel' : '') },
+              if (same(sel, p)) sel = p;
+              const r = h('div', { class: 'it neo-xrow' + (same(sel, p) ? ' sel' : ''), role: 'row', 'aria-selected': String(same(sel, p)) },
                 h('span', { style: { width: '250px' } }, iconImg(p.icon, 16), h('span', { class: 'neo-xname', text: p.name })),
                 h('span', { style: { width: '70px', textAlign: 'right' }, text: p.cpu.toFixed(1) + '%' }), h('span', { style: { width: '80px', textAlign: 'right' }, text: (p.mem * 1024).toFixed(0) + ' KB' }), h('span', { style: { width: '60px', textAlign: 'right' }, text: '0 MB/s' }));
-              r.addEventListener('pointerdown', () => { sel = p; endBtn.disabled = !p.win; draw(); });
+              // select in place: rebuilding the rows mid-click would swallow the double-click
+              r.addEventListener('pointerdown', () => { sel = p; lastDown = Date.now(); pane.querySelectorAll('.neo-xrow.sel').forEach(x => { x.classList.remove('sel'); x.setAttribute('aria-selected', 'false'); }); r.classList.add('sel'); r.setAttribute('aria-selected', 'true'); endBtn.disabled = !p.win; });
               r.addEventListener('dblclick', () => { if (p.win) { p.win.isMin ? p.win.restore() : p.win.activate(); } });
               pane.appendChild(r);
             }

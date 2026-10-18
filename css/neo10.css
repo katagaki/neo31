@@ -160,6 +160,7 @@
 .neo-xhead { position: sticky; top: 0; display: flex; z-index: 2; background: var(--btn-face); }
 .neo-xcol { padding: 1px 6px; font: var(--neo-small); flex: none; overflow: hidden; white-space: nowrap; background: var(--btn-face); color: var(--btn-text); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
 .neo-xrow { display: flex !important; align-items: center; min-height: 20px; white-space: nowrap; }
+.neo-taskmgr .neo-xrow.sel { background: var(--highlight); color: var(--highlight-text); }
 .neo-xrow > span { flex: none; display: flex; align-items: center; gap: 6px; overflow: hidden; padding: 0 6px; }
 .neo-xname { overflow: hidden; text-overflow: ellipsis; }
 .view-icons .neo-xgrid { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; gap: 4px; }
