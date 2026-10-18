@@ -38,13 +38,13 @@ const NEO_APPS = [
   { name: 'Minesweeper', cmd: 'WINMINE.EXE', icon: 'winmine' },
   { name: 'Settings', cmd: 'SETTINGS', icon: 'settings10' },
   { name: 'Weather', cmd: 'WEATHER', icon: 'weather' },
-  { name: 'Cardfile', cmd: 'CARDFILE.EXE', icon: 'cardfile', folder: 'Windows 3.1 Classics' },
-  { name: 'Program Manager', cmd: 'PROGMAN.EXE', icon: 'progman', folder: 'Windows 3.1 Classics' },
-  { name: 'File Manager', cmd: 'WINFILE.EXE', icon: 'winfile', folder: 'Windows 3.1 Classics' },
-  { name: 'Terminal', cmd: 'TERMINAL.EXE', icon: 'terminal', folder: 'Windows 3.1 Classics' },
-  { name: 'Windows Setup', cmd: 'SETUP.EXE', icon: 'setup', folder: 'Windows 3.1 Classics' },
-  { name: 'Read Me', cmd: 'WRITE.EXE C:\\WINDOWS\\README.WRI', icon: 'wri', folder: 'Windows 3.1 Classics' },
-  { name: 'Help', cmd: 'WINHELP.EXE progman', icon: 'help', folder: 'Windows 3.1 Classics' }
+  { name: 'Cardfile', cmd: 'CARDFILE.EXE', icon: 'cardfile', folder: 'Windows Accessories' },
+  { name: 'Program Manager', cmd: 'PROGMAN.EXE', icon: 'progman', folder: 'Windows System' },
+  { name: 'File Manager', cmd: 'WINFILE.EXE', icon: 'winfile', folder: 'Windows System' },
+  { name: 'Terminal', cmd: 'TERMINAL.EXE', icon: 'terminal', folder: 'Windows Accessories' },
+  { name: 'Windows Setup', cmd: 'SETUP.EXE', icon: 'setup', folder: 'Windows System' },
+  { name: 'Read Me', cmd: 'WRITE.EXE C:\\WINDOWS\\README.WRI', icon: 'wri', folder: 'Windows Accessories' },
+  { name: 'Help', cmd: 'WINHELP.EXE progman', icon: 'help', folder: 'Windows Accessories' }
 ];
 const appByCmd = cmd => NEO_APPS.find(a => a.cmd.toUpperCase() === String(cmd).toUpperCase());
 /* which app (by registry id) a catalogue entry starts — used to group taskbar buttons */
