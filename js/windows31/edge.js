@@ -10,7 +10,7 @@ const OfflineWeb = {
   NEWS: [
     { slug: 'browser', title: 'Windows 31 gets a web browser', tags: 'edge browser internet web tabs favorites history',
       body: ['Microsoft Edge has arrived on Windows 31. It opens pages in tabs, remembers your favourites and history, finds text with Ctrl+F and zooms in whole steps so every pixel stays square.',
-        'Pages on the Windows 31 Network live inside your computer and work without a connection. Other addresses open the live web inside the window. Some sites refuse to be shown inside another page; for those, choose Open in new window.',
+        'Pages on the Kronos Network live inside your computer and work without a connection. Other addresses open the live web inside the window. Some sites refuse to be shown inside another page; for those, choose Open in new window.',
         'Edge can also show your own files: type C:\\ in the address bar to browse the disk.'] },
     { slug: 'windows-31', title: 'Looking back: Windows 3.1', tags: 'windows 3.1 history 1992 truetype ole minesweeper file manager',
       body: ['Windows 3.1 was released in April 1992. It brought TrueType fonts, so text looked the same on screen as on paper, and OLE, which let one program\'s document live inside another\'s.',
@@ -20,8 +20,8 @@ const OfflineWeb = {
       body: ['When three numbers read 1-2-1 along a straight edge of uncovered squares, the mines are next to the two 1s. The square next to the 2 is safe.',
         'Look for 1-2-2-1 too: there the mines sit next to the two 2s.',
         'Right-click to flag a mine. Click with both buttons on a number whose mines are all flagged to uncover its other neighbours at once.'] },
-    { slug: 'tokyo-autumn', title: 'Autumn comes to Tokyo', tags: 'tokyo weather autumn october rain typhoon japan',
-      body: ['October in Tokyo usually brings highs around 72°F (22°C) and cooler, drier air after the late-summer typhoons.',
+    { slug: 'kivotos-autumn', title: 'Autumn comes to Kivotos', tags: 'kivotos shiratori weather autumn october rain typhoon',
+      body: ['October in the Shiratori District usually brings highs around 72°F (22°C) and cooler, drier air after the late-summer typhoons.',
         'The rainy season, tsuyu, runs from about early June to mid-July. September is often the wettest month of autumn.',
         'Windows 31\'s Weather app follows the same seasons. Its forecast is simulated, so take an umbrella anyway.'] },
     { slug: 'square-pixels', title: 'Why every pixel here is square', tags: 'pixels display scaling sharp fonts wallpaper tile',
@@ -48,14 +48,14 @@ const OfflineWeb = {
   isOurs(host) { return host === 'windows31.net' || host.endsWith('.windows31.net'); },
   host(u) { return u.hostname.toLowerCase().replace(/^www\./, ''); },
 
-  /* page chrome shared by every Windows 31 Network site */
+  /* page chrome shared by every Kronos Network site */
   site(active, ...content) {
     return h('div', { class: 'nw' },
       h('div', { class: 'nw-head' },
-        h('a', { href: 'https://windows31.net/', class: 'nw-brand' }, iconImg('winlogo'), h('span', { text: 'Windows 31 Network' })),
+        h('a', { href: 'https://windows31.net/', class: 'nw-brand' }, iconImg('winlogo'), h('span', { text: 'Kronos Network' })),
         h('div', { class: 'nw-nav' }, ...this.NAV.map(([k, label, url]) => h('a', { href: url, class: k === active ? 'on' : null, text: label })))),
       h('div', { class: 'nw-body' }, ...content),
-      h('div', { class: 'nw-foot', text: '© 1992–2026 Windows 31 Network. Every page here lives inside your computer.' }));
+      h('div', { class: 'nw-foot', text: '© 1992–2026 Kronos Network. Every page here lives inside your computer.' }));
   },
   searchForm(q = '') {
     const inp = h('input', { class: 'tx', name: 'q', value: q, spellcheck: false, style: { width: '320px' } });
@@ -80,17 +80,17 @@ const OfflineWeb = {
     return f.g ? { name: f.name, extra: { g: f.g, s: f.size } } : { name: f.name, text: this.shortcuts.map(([k, v]) => k.padEnd(28) + v).join('\r\n') + '\r\n' };
   },
 
-  /* every offline page with its text, for Windows 31 Search */
+  /* every offline page with its text, for Arona Search */
   index() {
     const pages = [
-      { url: 'https://windows31.net/', title: 'Windows 31 Network — Home', text: 'News, weather, games and downloads for Windows 31. Search the Windows 31 Network.' },
-      { url: 'https://windows31.net/news/', title: 'News — Windows 31 Network', text: 'All the latest stories. ' + this.NEWS.map(n => n.title).join('. ') },
-      { url: 'https://weather.windows31.net/', title: `Weather for ${Weather.city} — Windows 31 Network`, text: `Today and the next five days in ${Weather.city}. Temperature, forecast, rain, sunny, cloudy.` },
-      { url: 'https://games.windows31.net/', title: 'Games — Windows 31 Network', text: this.GAMES.map(g => g.name + ' ' + g.text).join(' ') },
-      { url: 'https://downloads.windows31.net/', title: 'Downloads — Windows 31 Network', text: 'Free wallpapers and files. ' + this.FILES.map(f => f.title + ' ' + f.name + ' ' + f.text).join(' ') },
-      { url: 'https://help.windows31.net/', title: 'Microsoft Edge help — Windows 31 Network', text: 'How to use Microsoft Edge: tabs, favourites, history, downloads, keyboard shortcuts. ' + this.shortcuts.map(s => s.join(' ')).join(' ') }
+      { url: 'https://windows31.net/', title: 'Kronos Network — Home', text: 'News, weather, games and downloads for Windows 31. Search the Kronos Network.' },
+      { url: 'https://windows31.net/news/', title: 'News — Kronos Network', text: 'All the latest stories. ' + this.NEWS.map(n => n.title).join('. ') },
+      { url: 'https://weather.windows31.net/', title: `Weather for ${Weather.city} — Kronos Network`, text: `Today and the next five days in ${Weather.city}. Temperature, forecast, rain, sunny, cloudy.` },
+      { url: 'https://games.windows31.net/', title: 'Game Development Department — Kronos Network', text: this.GAMES.map(g => g.name + ' ' + g.text).join(' ') },
+      { url: 'https://downloads.windows31.net/', title: 'Angel 24 Downloads — Kronos Network', text: 'Free wallpapers and files. ' + this.FILES.map(f => f.title + ' ' + f.name + ' ' + f.text).join(' ') },
+      { url: 'https://help.windows31.net/', title: 'Microsoft Edge help — Kronos Network', text: 'How to use Microsoft Edge: tabs, favourites, history, downloads, keyboard shortcuts. ' + this.shortcuts.map(s => s.join(' ')).join(' ') }
     ];
-    for (const n of this.NEWS) pages.push({ url: 'https://windows31.net/news/' + n.slug, title: n.title + ' — Windows 31 News', text: n.body.join(' '), keys: n.tags });
+    for (const n of this.NEWS) pages.push({ url: 'https://windows31.net/news/' + n.slug, title: n.title + ' — Kronos Press', text: n.body.join(' '), keys: n.tags });
     return pages;
   },
   search(q) {
@@ -118,7 +118,7 @@ const OfflineWeb = {
     const P = t => h('p', { text: t });
     if (host === 'windows31.net' && path === '/') {
       const hr = Sys.now().getHours(), greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
-      return { title: 'Windows 31 Network', node: this.site('home',
+      return { title: 'Kronos Network', node: this.site('home',
         h('h1', { text: `${greet}, ${Store.get('userName', 'User')}` }), this.searchForm(),
         h('div', { class: 'nw-cols' },
           h('div', {}, h('h2', { text: 'Headlines' }), ...this.NEWS.map((n, i) => h('div', { class: 'nw-item' }, h('a', { href: 'https://windows31.net/news/' + n.slug, text: n.title }), h('div', { class: 'nw-date', text: this.newsDate(i) })))),
@@ -130,12 +130,12 @@ const OfflineWeb = {
               h('div', {}, h('a', { href: 'https://en.wikipedia.org/wiki/Windows_3.1x', text: 'Windows 3.1 on Wikipedia (live)' })))))) };
     }
     if (host === 'windows31.net' && path === '/news')
-      return { title: 'News — Windows 31 Network', node: this.site('news', h('h1', { text: 'News' }), ...this.NEWS.map((n, i) => h('div', { class: 'nw-item' }, h('a', { href: 'https://windows31.net/news/' + n.slug, text: n.title }), h('div', { class: 'nw-date', text: this.newsDate(i) }), P(n.body[0])))) };
+      return { title: 'News — Kronos Network', node: this.site('news', h('h1', { text: 'News' }), ...this.NEWS.map((n, i) => h('div', { class: 'nw-item' }, h('a', { href: 'https://windows31.net/news/' + n.slug, text: n.title }), h('div', { class: 'nw-date', text: this.newsDate(i) }), P(n.body[0])))) };
     const nm = host === 'windows31.net' && path.match(/^\/news\/([\w-]+)$/);
     const story = nm && this.NEWS.find(n => n.slug === nm[1]);
     if (story) {
       const i = this.NEWS.indexOf(story), next = this.NEWS[(i + 1) % this.NEWS.length];
-      return { title: story.title + ' — Windows 31 News', node: this.site('news', h('h1', { text: story.title }), h('div', { class: 'nw-date', text: this.newsDate(i) + ' · Windows 31 News' }), h('br'), ...story.body.map(P),
+      return { title: story.title + ' — Kronos Press', node: this.site('news', h('h1', { text: story.title }), h('div', { class: 'nw-date', text: this.newsDate(i) + ' · Kronos Press' }), h('br'), ...story.body.map(P),
         h('div', { class: 'nw-box' }, 'Next: ', h('a', { href: 'https://windows31.net/news/' + next.slug, text: next.title }))) };
     }
     if (host === 'weather.windows31.net' && path === '/') {
@@ -146,29 +146,29 @@ const OfflineWeb = {
         const f = Weather.day(d);
         rows.push(h('tr', {}, h('td', { text: i ? Intl31.DAYS[d.getDay()] : 'Today' }), h('td', {}, iconImg(f.icon, 16)), h('td', { text: f.cond }), h('td', { text: `${Weather.unit(f.hi)}° / ${Weather.unit(f.lo)}°` })));
       }
-      return { title: `${Weather.city} weather — Windows 31 Network`, node: this.site('weather', h('h1', { text: `Weather for ${Weather.city}` }),
+      return { title: `${Weather.city} weather — Kronos Network`, node: this.site('weather', h('h1', { text: `Weather for ${Weather.city}` }),
         h('div', { class: 'nw-wx big' }, iconImg(now.icon), h('span', { class: 'nw-wxt', text: `${now.temp}°${unit}` }), h('span', { text: now.cond })),
         h('h2', { text: 'Five-day forecast' }), h('table', { class: 'nw-table' }, ...rows),
         P(`Temperatures in °${unit}; change units in Settings > Time & Language > Region. The forecast is simulated.`),
         h('a', { href: 'windows31-run:WEATHER', text: 'Open the Weather app' })) };
     }
     if (host === 'games.windows31.net' && path === '/')
-      return { title: 'Games — Windows 31 Network', node: this.site('games', h('h1', { text: 'Games' }), P('Every game here is already installed. Click Play to start it.'),
+      return { title: 'Game Development Department — Kronos Network', node: this.site('games', h('h1', { text: 'Game Development Department' }), P('Every game here is already installed. Click Play to start it.'),
         ...this.GAMES.map(g => h('div', { class: 'nw-card' }, iconImg(g.icon), h('div', { style: { flex: 1 } }, h('b', { text: g.name }), h('div', { text: g.text })), h('a', { href: 'windows31-run:' + g.cmd, text: 'Play' })))) };
     if (host === 'downloads.windows31.net' && path === '/')
-      return { title: 'Downloads — Windows 31 Network', node: this.site('downloads', h('h1', { text: 'Downloads' }), P('Files are saved to your Downloads folder.'),
+      return { title: 'Angel 24 Downloads — Kronos Network', node: this.site('downloads', h('h1', { text: 'Angel 24 Downloads' }), P('Files are saved to your Downloads folder.'),
         ...this.FILES.map(f => h('div', { class: 'nw-card' }, f.g ? h('div', { class: 'nw-thumb', style: { backgroundImage: `url(${Wallpapers.gen(f.g).toDataURL()})`, backgroundPosition: f.g === 'LOCK10' ? 'left bottom' : 'left top' } }) : iconImg('notepad'),
           h('div', { style: { flex: 1 } }, h('b', { text: f.title }), h('div', { text: f.text }), h('div', { class: 'nw-date', text: `${f.name}${f.size ? ` · ${fmtNum(Math.ceil(f.size / 1024))} KB` : ''}` })),
           h('a', { href: 'https://downloads.windows31.net/get/' + f.name, text: 'Download' })))) };
     if (host === 'help.windows31.net' && path === '/')
-      return { title: 'Microsoft Edge help — Windows 31 Network', node: this.site('help', h('h1', { text: 'Using Microsoft Edge' }),
+      return { title: 'Microsoft Edge help — Kronos Network', node: this.site('help', h('h1', { text: 'Using Microsoft Edge' }),
         P('Type an address or a search in the address bar and press Enter. Press Alt+Enter to open it in a new tab. Click a link with Ctrl held, or with the middle button, to open it in a new tab.'),
         P('Click the star to add the page to your favourites. The Hub button lists favourites, history and downloads.'),
         h('h2', { text: 'Keyboard shortcuts' }), h('table', { class: 'nw-table' }, ...this.shortcuts.map(([k, v]) => h('tr', {}, h('td', {}, h('b', { text: k })), h('td', { text: v }))))) };
     if (host === 'search.windows31.net') {
       const q = (u.searchParams.get('q') || '').trim(), res = this.search(q), enc = encodeURIComponent(q);
-      return { title: q ? `${q} - Windows 31 Search` : 'Windows 31 Search', node: this.site(null, h('h1', { text: 'Windows 31 Search' }), this.searchForm(q),
-        q ? h('div', { class: 'nw-date', text: res.length ? `${res.length} result${res.length === 1 ? '' : 's'} on the Windows 31 Network` : `No pages on the Windows 31 Network match "${q}".` }) : null,
+      return { title: q ? `${q} - Arona Search` : 'Arona Search', node: this.site(null, h('h1', { text: 'Arona Search' }), this.searchForm(q),
+        q ? h('div', { class: 'nw-date', text: res.length ? `${res.length} result${res.length === 1 ? '' : 's'} on the Kronos Network` : `No pages on the Kronos Network match "${q}".` }) : null,
         ...res.map(r => h('div', { class: 'nw-res' }, h('a', { href: r.url, text: r.title }), h('div', { class: 'nw-url', text: r.url.replace(/^https:\/\//, '') }), h('div', { text: this.snippet(r.text, q) }))),
         q ? h('div', { class: 'nw-box' }, h('div', { class: 'nw-boxhead', text: 'Search the live web' }),
           h('div', {}, h('a', { href: `https://en.wikipedia.org/w/index.php?search=${enc}`, text: `Wikipedia: ${q}` })),
@@ -176,7 +176,7 @@ const OfflineWeb = {
           h('div', {}, h('a', { href: `https://www.bing.com/search?q=${enc}`, 'data-external': '1', text: `Bing: ${q} (opens outside Windows 31)` })),
           h('div', {}, h('a', { href: `https://duckduckgo.com/?q=${enc}`, 'data-external': '1', text: `DuckDuckGo: ${q} (opens outside Windows 31)` }))) : null) };
     }
-    return { title: 'Page not found', node: this.site(null, h('h1', { text: 'Page not found' }), P(`There's no page at ${u.href.replace(/^https:\/\//, '')}.`), h('a', { href: 'https://windows31.net/', text: 'Go to the Windows 31 Network home page' })) };
+    return { title: 'Page not found', node: this.site(null, h('h1', { text: 'Page not found' }), P(`There's no page at ${u.href.replace(/^https:\/\//, '')}.`), h('a', { href: 'https://windows31.net/', text: 'Go to the Kronos Network home page' })) };
   }
 };
 
@@ -185,7 +185,7 @@ const Edge = {
   browsers: new Set(),
   opt(k, d) { return Store.get('edge.' + k, d); },
   set(k, v) { Store.set('edge.' + k, v); this.browsers.forEach(b => b.chrome()); },
-  favs() { return Store.get('edge.favs', [{ title: 'Windows 31 Network', url: 'https://windows31.net/' }, { title: 'Weather', url: 'https://weather.windows31.net/' }, { title: 'Games', url: 'https://games.windows31.net/' }, { title: 'Wikipedia', url: 'https://en.wikipedia.org/' }]); },
+  favs() { return Store.get('edge.favs', [{ title: 'Kronos Network', url: 'https://windows31.net/' }, { title: 'Weather', url: 'https://weather.windows31.net/' }, { title: 'Games', url: 'https://games.windows31.net/' }, { title: 'Wikipedia', url: 'https://en.wikipedia.org/' }]); },
   setFavs(f) { this.set('favs', f); },
   history() { return Store.get('edge.hist', []); },
   downloads() { return Store.get('edge.dl', []); },
@@ -295,7 +295,7 @@ const EdgePages = {
     const draw = () => {
       list.innerHTML = '';
       const dl = Edge.downloads();
-      if (!dl.length) { list.appendChild(h('p', {}, 'Files you download will show up here. Try ', h('a', { href: 'https://downloads.windows31.net/', text: 'Windows 31 Downloads' }), '.')); return; }
+      if (!dl.length) { list.appendChild(h('p', {}, 'Files you download will show up here. Try ', h('a', { href: 'https://downloads.windows31.net/', text: 'Angel 24 Downloads' }), '.')); return; }
       for (const d of dl) {
         const there = FS.exists(d.path);
         const open = h('a', { href: '#', text: 'Open', onclick: e => { e.preventDefault(); FileOps.open(d.path); } });
@@ -304,7 +304,7 @@ const EdgePages = {
       }
     };
     draw();
-    return { title: 'Downloads', node: h('div', { class: 'nw nw-body' }, h('h1', { text: 'Downloads' }), h('div', { class: 'nw-search' }, UI.button('Open Downloads folder', { onClick: () => Sys.launch('EXPLORER ' + KNOWN.downloads) }), UI.button('Clear list', { onClick: () => { Store.set('edge.dl', []); draw(); } })), list) };
+    return { title: 'Downloads', node: h('div', { class: 'nw nw-body' }, h('h1', { text: 'Angel 24 Downloads' }), h('div', { class: 'nw-search' }, UI.button('Open Downloads folder', { onClick: () => Sys.launch('EXPLORER ' + KNOWN.downloads) }), UI.button('Clear list', { onClick: () => { Store.set('edge.dl', []); draw(); } })), list) };
   },
   settings(b) {
     const el = h('div', { class: 'nw nw-body edge-set' });
@@ -319,7 +319,7 @@ const EdgePages = {
       SP.combo('Home button opens', [['newtab', 'New tab page'], ['url', 'A specific page']], () => Edge.opt('home', 'newtab'), v => Edge.set('home', v)),
       h('div', { class: 'w31-sfield' }, h('div', { class: 'w31-slabel', text: 'Home page' }), homeURL),
       SP.combo('Show the favourites bar', [['newtab', 'Only on new tabs'], ['always', 'Always'], ['never', 'Never']], () => Edge.opt('favbar', 'newtab'), v => Edge.set('favbar', v)),
-      SP.combo('Search in the address bar with', [['offline', 'Windows 31 Search (offline)'], ['wikipedia', 'Wikipedia (live)'], ['google', 'Google (live)']], () => Edge.opt('engine', 'offline'), v => Edge.set('engine', v)),
+      SP.combo('Search in the address bar with', [['offline', 'Arona Search (offline)'], ['wikipedia', 'Wikipedia (live)'], ['google', 'Google (live)']], () => Edge.opt('engine', 'offline'), v => Edge.set('engine', v)),
       SP.combo('Default zoom', [['1', '100%'], ['2', '200%'], ['3', '300%']], () => String(Edge.opt('zoom', 1)), v => Edge.set('zoom', +v)),
       SP.toggle('Save browsing history', () => Edge.opt('keepHistory', true), v => Edge.set('keepHistory', v)),
       h('div', { class: 'w31-sfield' }, h('div', { class: 'w31-slabel', text: 'Clear browsing data' }), SP.p('Deletes your history, the downloads list and saved tabs. Downloaded files stay in your Downloads folder.'),

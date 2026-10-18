@@ -515,7 +515,7 @@ const Shell31 = {
     this.searchIconBtn = this.tbIcon('s_search', 'Search', () => this.toggle('search'), 'w31-searchicon');
     this.tvBtn = this.tbIcon('s_taskview', 'Task View', () => this.taskView());
     this.apps = h('div', { class: 'w31-tbapps' });
-    this.netBtn = this.tbIcon('s_network', 'Windows 31 Network\nInternet access', () => this.toggle('network'));
+    this.netBtn = this.tbIcon('s_network', 'Schale Network\nInternet access', () => this.toggle('network'));
     this.volBtn = this.tbIcon('s_volume', 'Speakers', () => this.toggle('volume'));
     this.clockBtn = h('div', { class: 'w31-tbtn w31-clock' }, h('div'), h('div'));
     this.clockBtn.addEventListener('pointerdown', e => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); this.toggle('clock'); } });
@@ -1003,13 +1003,13 @@ const Shell31 = {
     sl.el.style.position = 'relative'; sl.el.style.width = '190px';
     pct.textContent = Store.get('volume', 80);
     sl.el.addEventListener('pointerup', () => Snd.beep());
-    el.append(h('div', { class: 'w31-kind', text: 'Speakers (Windows 31 Sound Synthesizer)' }), h('div', { class: 'w31-volrow' }, mute, sl.el, pct));
+    el.append(h('div', { class: 'w31-kind', text: 'Speakers (Hyakkiyako FM Synthesizer)' }), h('div', { class: 'w31-volrow' }, mute, sl.el, pct));
     return el;
   },
   networkFlyout() {
     const el = h('div', { class: 'w31-fly w31-flynet raised' });
     const air = Store.get('airplane', false);
-    const net = h('div', { class: 'w31-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'w31-ttitle', text: 'Windows 31 Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
+    const net = h('div', { class: 'w31-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'w31-ttitle', text: 'Schale Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
     const set = h('div', { class: 'w31-link', text: 'Network & Internet settings' });
     set.addEventListener('pointerup', () => { this.closePanels(); Sys.launch('SETTINGS network/status'); });
     const ab = h('div', { class: 'w31-qa' + (air ? ' on' : '') }, iconImg('s_netoff'), h('span', { text: 'Airplane mode' }));

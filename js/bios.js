@@ -65,7 +65,7 @@ const BIOS = {
     this.fill(con, 0, 24, this.A.body);
     this.put(con, 0, 0, ('  ROM PCI/ISA BIOS (2A69KN4B)').padEnd(80), this.A.hi);
     this.put(con, 0, 1, (' '.repeat(Math.floor((80 - title.length) / 2)) + title).padEnd(80), this.A.hi);
-    this.put(con, 0, 2, ('                       NEO SOFTWARE, INC.').padEnd(80), this.A.hi);
+    this.put(con, 0, 2, ('                     VERITAS SOFTWARE, INC.').padEnd(80), this.A.hi);
     this.put(con, 0, 3, '═'.repeat(80), this.A.body);
     this.put(con, 0, 21, '═'.repeat(80), this.A.body);
     help.forEach((l, i) => this.put(con, 1, 22 + i, l.padEnd(78), this.A.body));
@@ -78,7 +78,7 @@ const BIOS = {
       'STANDARD CMOS SETUP': [
         ['Date (mm:dd:yy)', 'date', null, () => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now().getDay()]}, ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now().getMonth()]} ${now().getDate()} ${now().getFullYear()}`],
         ['Time (hh:mm:ss)', 'time', null, () => `${pad(now().getHours())} : ${pad(now().getMinutes())} : ${pad(now().getSeconds())}`],
-        ['Primary Master', 'hdd', null, () => 'NEO-AT125     125MB  CYLS 1001 HEAD 15 SECT 17'],
+        ['Primary Master', 'hdd', null, () => 'SHITTIM-AT125 125MB  CYLS 1001 HEAD 15 SECT 17'],
         ['Primary Slave', 'hdd2', null, () => 'None'],
         ['Drive A', 'driveA', ['None', '360K, 5.25 in.', '1.2M, 5.25 in.', '720K, 3.5 in.', '1.44M, 3.5 in.']],
         ['Drive B', 'driveB', ['None', '360K, 5.25 in.', '1.2M, 5.25 in.', '720K, 3.5 in.', '1.44M, 3.5 in.']],

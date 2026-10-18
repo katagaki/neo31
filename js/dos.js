@@ -704,7 +704,7 @@ DosShell.cmds = {
     this.out('Mouse driver installed');
   },
   async MSD() {
-    await this.more(['Microsoft Diagnostics version 2.01', '', 'Computer:     Neo 486DX2/66', 'Memory:       640K, 7168K Ext, 0K EMS, 4901K XMS',
+    await this.more(['Microsoft Diagnostics version 2.01', '', 'Computer:     Kaiser PC 486DX2/66', 'Memory:       640K, 7168K Ext, 0K EMS, 4901K XMS',
       'Video:        VGA, Generic', 'Network:      No Network', 'OS Version:   MS-DOS Version 6.00, Windows 3.10', 'Mouse:        Serial Mouse 8.20',
       'Other Adapters: Game Adapter', 'Disk Drives:  A: C:', 'LPT Ports:    1', 'COM Ports:    2', 'IRQ Status:   ...', 'TSR Programs: ...', 'Device Drivers: ...']);
   },
@@ -789,8 +789,8 @@ const DOS = {
     con.setPos(0, 24); con.write('  Press DEL or F2 to enter SETUP, ESC to skip memory test');
     con.setPos(0, 0);
     con.writeln('');
-    con.writeln('  Neo Modular BIOS v4.51PG, An Energy Star Ally', 'c-hi');
-    con.writeln('  Copyright (C) 1984-92, Neo Software, Inc.');
+    con.writeln('  Veritas Modular BIOS v4.51PG, An Energy Star Ally', 'c-hi');
+    con.writeln('  Copyright (C) 1984-92, Veritas Software, Inc.');
     con.writeln('');
     con.writeln(`  486DX2 CPU at 66MHz${cmos.cache === 'Enabled' ? ', 8K internal cache, 256K external cache' : ''}`);
     const memY = con.cy;
@@ -802,14 +802,14 @@ const DOS = {
     con.writeln('');
     con.writeln('');
     await w(300);
-    con.writeln(cmos.ide === 'Enabled' ? '  Detecting HDD Primary Master  ... NEO-AT125 125MB' : '  Onboard IDE controller disabled');
+    con.writeln(cmos.ide === 'Enabled' ? '  Detecting HDD Primary Master  ... SHITTIM-AT125 125MB' : '  Onboard IDE controller disabled');
     await w(300);
     con.writeln('  Detecting HDD Primary Slave   ... None');
     await w(200);
     con.writeln(`  Floppy Drive A:                ... ${cmos.driveA}`);
     if (cmos.driveB !== 'None') con.writeln(`  Floppy Drive B:                ... ${cmos.driveB}`);
     con.writeln('');
-    con.writeln('  03/10/92-NEO-486-W31-00', 'c-hi');
+    con.writeln('  03/10/92-KAISER-486-W31-00', 'c-hi');
     this.beep();
     await w(1200);
     if (enterSetup) {

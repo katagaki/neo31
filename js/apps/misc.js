@@ -12,7 +12,7 @@ function aboutBox(appName, iconName, owner, extraLine) {
       d.add(iconName && iconName !== 'winlogo' ? iconImg(iconName) : flagImg(0, 1, 48, 42), 14, 14);
       d.add(h('div', { class: 'txt', html: `Microsoft Windows ${esc(appName)}<br>Version 3.1${extraLine ? '<br>' + esc(extraLine) : ''}<br>Copyright © 1985-1992 Microsoft Corp.` }), 76, 14, 290);
       d.add(h('div', { style: { borderTop: '1px solid #000' } }), 76, 82, 290, 1);
-      d.add(h('div', { class: 'txt', html: `This product is licensed to:<br>&nbsp;&nbsp;${esc(Store.get('userName', 'Windows 31 User'))}<br>&nbsp;&nbsp;${esc(Store.get('userOrg', 'Windows 31 Simulation'))}` }), 76, 90, 290);
+      d.add(h('div', { class: 'txt', html: `This product is licensed to:<br>&nbsp;&nbsp;${esc(Store.get('userName', 'Sensei'))}<br>&nbsp;&nbsp;${esc(Store.get('userOrg', 'Schale'))}` }), 76, 90, 290);
       d.add(h('div', { style: { borderTop: '1px solid #000' } }), 76, 146, 290, 1);
       d.add(h('div', { class: 'txt', html: `386 Enhanced Mode<br>Memory:&nbsp;&nbsp;&nbsp;${fmtNum(freeMemKB())} KB Free<br>System Resources:&nbsp;&nbsp;&nbsp;${sysResources()}% Free` }), 76, 154, 290);
       d.add(UI.button('OK', { default: true, onClick: () => d.close() }), 300, 14, 66, 25);

@@ -4,13 +4,15 @@ A modern Windows desktop drawn entirely in Windows 3.1's pixels, running in the 
 
 The desktop has lock and sign-in screens, a taskbar, a Start menu with live tiles, search, Action Center with notifications, Task View with virtual desktops, window snapping, File Explorer with a Recycle Bin, Settings, Task Manager, Weather, Photos, Alarms & Clock and Microsoft Edge. The Windows 3.1 programs (Program Manager, File Manager, Write, Paintbrush, Terminal and the rest) still run as apps.
 
-Edge has tabs, favourites, history, downloads, find on page and whole-step zoom. Pages on `windows31.net` (news, weather, games, downloads, help, search) are built in and work offline. `C:\` paths show your files. Any other address loads the live web inside the window. Sites that refuse to be framed (Bing, DuckDuckGo and many others) stay blank; use *Open in new window* for those.
+Edge has tabs, favourites, history, downloads, find on page and whole-step zoom. Pages on `windows31.net`, the Kronos Network (Kronos Press news, weather, the Game Development Department, Angel 24 Downloads, help and Arona Search), are built in and work offline. `C:\` paths show your files. Any other address loads the live web inside the window. Sites that refuse to be framed (Bing, DuckDuckGo and many others) stay blank; use *Open in new window* for those.
 
 The **Office** apps are simulated Microsoft Word, Excel, and PowerPoint. Word edits and formats documents, Excel provides cell formulas (`+ - * / ^`, cell references, ranges, and `SUM`/`AVERAGE`/`MIN`/`MAX`/`COUNT`) plus CSV import/export, and PowerPoint builds, reorders, themes, and presents slides. Their `.DOC`, `.XLS`, and `.PPT` files use Windows 31's own JSON-backed formats rather than native Microsoft Office binary formats.
 
 **Photos** shows every picture in Pictures and the Windows wallpapers, with whole-step pixel-sharp zoom, rotate, slideshow, Set as desktop background and Edit in Paint. **Alarms & Clock** has alarms (they ring with the app closed), a timer and a stopwatch.
 
 All graphics are pixel art. Icons, cursors, cards, wallpapers, the Windows flag and control glyphs are bitmaps in the 16-colour VGA palette, plotted pixel by pixel and scaled with nearest-neighbour. Nothing is drawn as vector art.
+
+The PC's made-up hardware and services borrow names from Kivotos (Blue Archive): a Kaiser PC with a Veritas BIOS and a SHITTIM hard disk, the Schale Network, a Hyakkiyako FM Synthesizer and an Engineering Club modem.
 
 Text uses the original bitmap fonts: System for title bars, menus and dialogs; MS Sans Serif 8 for icon labels, File Manager and status bars; Fixedsys for Notepad; and the IBM VGA 8×16 ROM font for the BIOS, MS-DOS and Terminal. Large headings (Settings page titles, the lock-screen clock, tiles, Weather) use W31 Sans, a 1-bit rasterization of Liberation Sans at fixed pixel sizes. They come from Wine's pixel clones of the Windows fonts, the Linux kernel's VGA font and Liberation Sans; see `fonts/LICENSE.md`. The screen is scaled by whole device pixels, so every font and icon pixel lands on a physical pixel. The default *Best Sharp Fit* display mode picks 640×480, 800×600 or 1024×768, whichever fills your window best; change it in Windows Setup (`SETUP.EXE`).
 
@@ -40,7 +42,7 @@ URL options: `#fast` shortens the BIOS checks, `#win` goes straight to Windows, 
 | Desktop | Start, taskbar, search, Action Center, Task View, snapping, File Explorer, Settings, Task Manager, Weather, Photos, Edge, Alarms & Clock |
 | Command Prompt | `COMMAND.COM` interpreter: `DIR` (`/W /P /B`), `CD`, `MD`, `RD`, `DEL`, `COPY` (incl. `COPY CON`), `MOVE`, `REN`, `TYPE`, `MORE`, `MEM`, `TREE`, `CHKDSK`, `SET`, `PATH`, `PROMPT`, `ECHO`, batch files with `GOTO`/`IF`, `>` redirection, history |
 | Office | Microsoft Word, Excel and PowerPoint |
-| Classic programs | Program Manager, File Manager, Control Panel, Print Manager, Clipboard Viewer, Windows Setup (screen resolution), Write, Paintbrush, Terminal (with a dial-up BBS at 555-0131), Notepad, Cardfile, Calendar, Calculator, Character Map, Media Player, Sound Recorder, WinHelp |
+| Classic programs | Program Manager, File Manager, Control Panel, Print Manager, Clipboard Viewer, Windows Setup (screen resolution), Write, Paintbrush, Terminal (with the MomoTalk dial-up BBS at 555-0131), Notepad, Cardfile, Calendar, Calculator, Character Map, Media Player, Sound Recorder, WinHelp |
 | Games | Solitaire (with the bouncing-card finale) and Minesweeper |
 
 Files live on a virtual drive C: that is persisted to `localStorage`. Associations come from the `[Extensions]` section of `C:\WINDOWS\WIN.INI`. PCs saved by an older release get any programs and file types added since then installed at start-up.

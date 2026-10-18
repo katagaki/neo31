@@ -110,13 +110,13 @@
 
 /* ======================= WEATHER ======================= */
 const Weather = {
-  city: 'Tokyo',
+  city: 'Shiratori District',
   CONDS: [['Sunny', 'weather'], ['Partly cloudy', 'weather'], ['Cloudy', 'weather'], ['Rain showers', 'weather']],
   rng(seed) { let s = seed; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; },
   day(d) {
     const seed = d.getFullYear() * 400 + d.getMonth() * 32 + d.getDate();
     const r = this.rng(seed); r(); r();
-    // Tokyo: highs ~50°F in January, ~88°F in early August; tsuyu rains in June–July.
+    // Shiratori District follows Tokyo's climate: highs ~50°F in January, ~88°F in early August; tsuyu rains in June–July.
     const m = d.getMonth(), season = Math.cos((m + d.getDate() / 31 - 7.2) / 12 * Math.PI * 2);
     const hi = Math.round(66 + season * 19 + r() * 6), lo = hi - 8 - Math.round(r() * 6);
     const wet = [0.10, 0.15, 0.25, 0.25, 0.25, 0.50, 0.40, 0.20, 0.40, 0.30, 0.20, 0.10][m];

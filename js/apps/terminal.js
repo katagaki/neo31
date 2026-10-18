@@ -36,7 +36,7 @@
         if (!c) return;
         if (!c.startsWith('AT')) { outln('ERROR'); return; }
         if (/^ATD[TP]?/.test(c)) { dial(c.replace(/^ATD[TP]?/, '').trim() || st.phone); return; }
-        if (c === 'ATI' || c === 'ATI0') { outln('Windows 31 Virtual Modem 2400'); outln('OK'); return; }
+        if (c === 'ATI' || c === 'ATI0') { outln('Engineering Club 2400 Modem'); outln('OK'); return; }
         if (c === 'ATH' || c === 'ATH0') { outln('OK'); return; }
         outln('OK');
       };
@@ -80,7 +80,7 @@
           '', '  ███╗   ██╗███████╗ ██████╗ ██████╗  ██╗', '  ████╗  ██║██╔════╝██╔═══██╗╚════██╗███║',
           '  ██╔██╗ ██║█████╗  ██║   ██║ █████╔╝╚██║', '  ██║╚██╗██║██╔══╝  ██║   ██║ ╚═══██╗ ██║',
           '  ██║ ╚████║███████╗╚██████╔╝██████╔╝ ██║', '  ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═════╝  ╚═╝', '',
-          '       The Windows 31 Bulletin Board System   -   Node 1 of 1', '       Running since 1992 on a 486DX2/66 with 2 phone lines', ''];
+          '       The MomoTalk Bulletin Board System     -   Node 1 of 1', '       Running since 1992 on a 486DX2/66 with 2 phone lines', ''];
         banner.forEach(outln);
         out('What is your first name? ');
         const menu = () => { outln(''); outln('  [B]ulletins   [F]iles   [M]essages   [G]ame   [W]ho   [T]ime   [Q]uit'); out(`\r\n${s.name}, command? `); };
@@ -130,7 +130,7 @@
         const node = FS.get(p);
         if (!node || node.t !== 'f') return;
         remoteFiles.set(FS.basename(p), JSON.parse(JSON.stringify(node)));
-        outln(`Uploaded ${FS.basename(p)} (${FS.size(node)} bytes) to the Windows 31 BBS.`);
+        outln(`Uploaded ${FS.basename(p)} (${FS.size(node)} bytes) to MomoTalk BBS.`);
       };
       const receiveBinary = () => dialog({ title: 'Receive Binary File', w: 300, h: 200, owner: w, build(d) {
         const names = [...remoteFiles.keys()];
@@ -209,7 +209,7 @@
       con.render();
       setTimeout(() => {
         if (!Store.get('term.seen')) { Store.set('term.seen', true); }
-        outln('Windows 31 Virtual Modem ready. Type ATDT 555-0131 or use Phone > Dial.');
+        outln('Engineering Club 2400 Modem ready. Type ATDT 555-0131 or use Phone > Dial.');
         outln('OK');
       }, 100);
       return w;

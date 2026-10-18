@@ -320,8 +320,8 @@ const Setup = {
       };
       const network = async () => {
         await busy('Let\'s connect you to a network', 1200);
-        const lb = UI.listbox({ label: 'Networks', items: [{ icon: 'cpNetwork', text: 'Ethernet  -  Windows 31 Network  -  Connected' }], sel: 0 }); lb.el.classList.add('setup-list'); lb.el.style.height = '60px';
-        page(1, 'You\'re connected', 'Windows 31 found a wired network. Setup will use it to get the latest updates.', [lb.el],
+        const lb = UI.listbox({ label: 'Networks', items: [{ icon: 'cpNetwork', text: 'Ethernet  -  Schale Network  -  Connected' }], sel: 0 }); lb.el.classList.add('setup-list'); lb.el.style.height = '60px';
+        page(1, 'You\'re connected', 'Windows 31 found the Schale wired network. Setup will use it to get the latest updates.', [lb.el],
           [['&Next', async () => { await busy('Checking for updates.', 1200); await updates(); }, { default: true }]], keyboard);
       };
       const updates = async () => {
@@ -337,7 +337,7 @@ const Setup = {
         who();
       };
       const who = () => {
-        const name = UI.text(Store.get('userName', ''), { maxLength: 20 }); name.placeholder = 'User name'; name.classList.add('setup-input');
+        const name = UI.text(Store.get('userName', ''), { maxLength: 20 }); name.placeholder = 'Sensei'; name.classList.add('setup-input');
         const go = () => { if (!name.value.trim()) return; Store.set('userName', name.value.trim()); password(); };
         const f = page(2, 'Who\'s going to use this PC?', 'What name do you want to use?', [name], [['&Next', go, { default: true, disabled: !name.value.trim() }]]);
         name.addEventListener('input', () => { f.querySelector('button[data-default]').disabled = !name.value.trim(); });

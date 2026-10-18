@@ -751,7 +751,7 @@
 
   function driversApplet(owner) {
     return dialog({ title: 'Drivers', w: 380, h: 130, owner, build(d) {
-      const lb = UI.listbox({ items: ['[MCI] CD Audio', '[MCI] MIDI Sequencer', '[MCI] Sound', 'MIDI Mapper', 'Windows 31 Sound Synthesizer', 'Timer'], sel: 0 });
+      const lb = UI.listbox({ items: ['[MCI] CD Audio', '[MCI] MIDI Sequencer', '[MCI] Sound', 'MIDI Mapper', 'Hyakkiyako FM Synthesizer', 'Timer'], sel: 0 });
       d.add(UI.label('&Installed Drivers:', lb), 8, 6); d.add(lb, 8, 24, 270, 100);
       d.add(UI.button('Close', { default: true, cancel: true, onClick: () => d.close() }), 292, 8, 80, 25);
       d.add(UI.button('&Add...', { onClick: () => msgBox('No additional drivers are available.', 'Add', { icon: 'info', owner: d.win }) }), 292, 38, 80, 25);

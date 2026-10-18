@@ -89,7 +89,7 @@ page('system/display', 'Display', 'resolution screen night light scale size', el
     SP.link('Classic Windows Setup', () => Sys.launch('SETUP.EXE')));
 });
 page('system/sound', 'Sound', 'volume speakers mute audio system sounds', el => {
-  el.append(SP.h1('Sound'), SP.h2('Output'), SP.p('Choose your output device: Speakers (Windows 31 Sound Synthesizer)'),
+  el.append(SP.h1('Sound'), SP.h2('Output'), SP.p('Choose your output device: Speakers (Hyakkiyako FM Synthesizer)'),
     SP.slider('Master volume', 0, 100, () => Store.get('volume', 80), v => { Store.set('volume', v); Shell31.renderTaskbar(); }, 2),
     SP.toggle('Mute', () => Store.get('muted', false), v => { Store.set('muted', v); Shell31.renderTaskbar(); }),
     SP.toggle('Play system sounds', () => Store.get('sounds', true), v => { Store.set('sounds', v); Settings.changed(); }),
@@ -171,9 +171,9 @@ page('devices/typing', 'Typing', 'keyboard repeat delay rate', el => {
 /* ======================= NETWORK ======================= */
 page('network/status', 'Status', 'network internet airplane ip connected', el => {
   const air = Store.get('airplane', false);
-  el.append(SP.h1('Status'), h('div', { class: 'w31-sfield w31-srow' }, iconImg('cpNetwork'), SP.p(air ? 'Airplane mode is on.' : 'You\'re connected to the Internet. (Windows 31 Network)')),
+  el.append(SP.h1('Status'), h('div', { class: 'w31-sfield w31-srow' }, iconImg('cpNetwork'), SP.p(air ? 'Airplane mode is on.' : 'You\'re connected to the Internet. (Schale Network)')),
     SP.toggle('Airplane mode', () => Store.get('airplane', false), v => { Store.set('airplane', v); Shell31.renderTaskbar(); }),
-    SP.h2('Properties'), SP.info([['Name', 'Windows 31 Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', PC.get().ip], ['Physical address', PC.get().mac], ['Speed', '10 Mbps']]),
+    SP.h2('Properties'), SP.info([['Name', 'Schale Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', PC.get().ip], ['Physical address', PC.get().mac], ['Speed', '10 Mbps']]),
     SP.link('Open Terminal (dial-up)', () => Sys.launch('TERMINAL.EXE')));
 });
 
@@ -318,7 +318,7 @@ page('apps/startup', 'Startup', 'startup apps run at sign in', el => {
 
 /* ======================= ACCOUNTS ======================= */
 page('accounts/info', 'Your info', 'name account user organisation', el => {
-  const nm = UI.text(Store.get('userName', 'User')), org = UI.text(Store.get('userOrg', 'Windows 31 Simulation'));
+  const nm = UI.text(Store.get('userName', 'User')), org = UI.text(Store.get('userOrg', 'Schale'));
   [nm, org].forEach(t => { t.style.position = 'relative'; t.style.width = '260px'; });
   const av = iconImg('user'); av.style.width = av.style.height = '96px';
   el.append(SP.h1('Your info'), h('div', { class: 'w31-sfield' }, av), SP.p('Local account'),
