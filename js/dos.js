@@ -64,11 +64,16 @@ class TextConsole {
   render() {
     const x = this.ctx, { bg, fg } = this.colors();
     x.fillStyle = bg; x.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // attributes written as "foreground|background" (the BIOS setup screens) paint their cell first
+    for (let y = 0; y < this.rows; y++) for (let c = 0; c < this.cols; c++) {
+      const cls = this.buf[y][c][1];
+      if (cls && cls.includes('|')) { x.fillStyle = cls.split('|')[1]; x.fillRect(c * 8, y * 16, 8, 16); }
+    }
     x.font = '16px "W31 VGA"'; x.textBaseline = 'alphabetic';
     for (let y = 0; y < this.rows; y++) {
       let run = '', cur = '', start = 0;
       const flush = end => {
-        if (run.trim()) { x.fillStyle = cur ? VGA_COLORS[cur] || fg : fg; x.fillText(run, start * 8, y * 16 + 12); }
+        if (run.trim()) { x.fillStyle = cur ? (cur.includes('|') ? cur.split('|')[0] : VGA_COLORS[cur] || fg) : fg; x.fillText(run, start * 8, y * 16 + 12); }
         run = ''; start = end;
       };
       for (let c = 0; c < this.cols; c++) {
@@ -772,35 +777,57 @@ const DOS = {
     Sys.mode = 'boot';
     const con = this.showText();
     con.clear(); con.cursor = false;
-    const fast = Store.get('fastBoot');
-    let skip = fast;
-    Sys.textKey = e => { if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') skip = true; };
-    const w = async ms => { if (!skip) await sleep(ms); };
+    const cmos = BIOS.all();
+    let skip = Store.get('fastBoot'), enterSetup = false;
+    // DEL (Delete or Backspace on Mac keyboards) or F2 opens BIOS setup; Esc skips the memory test
+    Sys.textKey = e => {
+      if (['Delete', 'Backspace', 'F2'].includes(e.key)) { e.preventDefault(); enterSetup = true; con.setPos(2, 24); con.write('Entering SETUP...'.padEnd(60)); }
+      else if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') skip = true;
+    };
+    const w = async ms => { if (!skip && !enterSetup) await sleep(ms); };
 
+    con.setPos(0, 24); con.write('  Press DEL or F2 to enter SETUP, ESC to skip memory test');
+    con.setPos(0, 0);
     con.writeln('');
     con.writeln('  Neo Modular BIOS v4.51PG, An Energy Star Ally', 'c-hi');
     con.writeln('  Copyright (C) 1984-92, Neo Software, Inc.');
     con.writeln('');
-    con.writeln('  486DX2 CPU at 66MHz');
+    con.writeln(`  486DX2 CPU at 66MHz${cmos.cache === 'Enabled' ? ', 8K internal cache, 256K external cache' : ''}`);
     const memY = con.cy;
     for (let k = 0; k <= 8192; k += 128) {
+      if (cmos.quickPost === 'Enabled' && k < 8192) continue;
       con.setPos(0, memY); con.write(`  Memory Test :  ${String(k).padStart(5)}K${k === 8192 ? ' OK' : ''}`);
       await w(12);
     }
     con.writeln('');
     con.writeln('');
     await w(300);
-    con.writeln('  Detecting HDD Primary Master  ... NEO-AT125 125MB');
+    con.writeln(cmos.ide === 'Enabled' ? '  Detecting HDD Primary Master  ... NEO-AT125 125MB' : '  Onboard IDE controller disabled');
     await w(300);
     con.writeln('  Detecting HDD Primary Slave   ... None');
     await w(200);
-    con.writeln('  Floppy Drive A:                ... 1.44M, 3.5 in.');
+    con.writeln(`  Floppy Drive A:                ... ${cmos.driveA}`);
+    if (cmos.driveB !== 'None') con.writeln(`  Floppy Drive B:                ... ${cmos.driveB}`);
     con.writeln('');
-    con.writeln('');
-    con.writeln('  Press DEL to enter SETUP, ESC to skip memory test');
     con.writeln('  03/10/92-NEO-486-W31-00', 'c-hi');
     this.beep();
     await w(1200);
+    if (enterSetup) {
+      await BIOS.setup(con);
+      con.clear(); Sys.mode = 'off';
+      await sleep(400);
+      return this.boot();
+    }
+    if (cmos.security === 'System' && BIOS.password()) {
+      const queue = []; let waiter = null;
+      Sys.textKey = e => { e.preventDefault(); if (waiter) { const f = waiter; waiter = null; f(e); } else queue.push(e); };
+      if (!(await BIOS.askPassword(con, () => queue.length ? Promise.resolve(queue.shift()) : new Promise(r => waiter = r)))) {
+        con.clear(); con.writeln(''); con.writeln('  System halted. Incorrect password.', 'c-hi');
+        Sys.textKey = null; return;
+      }
+    }
+    if (cmos.bootSeq === 'A, C' && cmos.driveA !== 'None') { con.writeln('  Searching for boot record from floppy disk.. Not found'); await w(500); }
+    if (cmos.ide !== 'Enabled') { con.writeln(''); con.writeln('  DISK BOOT FAILURE, INSERT SYSTEM DISK AND PRESS ENTER', 'c-hi'); Sys.textKey = e => { if (e.key === 'Enter') this.boot(); }; return; }
     con.clear();
     // Windows boots straight from the BIOS; MS-DOS lives on as the Command Prompt
     this.leave();
