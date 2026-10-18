@@ -130,14 +130,6 @@ page('system/multitasking', 'Multitasking', 'snap windows virtual desktops', el 
     SP.h2('Virtual desktops'),
     SP.combo('On the taskbar, show windows that are open on', [['cur', 'Only the desktop I\'m using'], ['all', 'All desktops']], () => Store.get('vd.all', false) ? 'all' : 'cur', v => { Store.set('vd.all', v === 'all'); Shell10.renderTaskbar(); }));
 });
-page('system/shell', 'Shell', 'windows 3.1 program manager classic shell neo10', el => {
-  el.append(SP.h1('Shell'), SP.p('Choose which Windows experience starts when you sign in. Your files, settings and programs are shared by both.'),
-    SP.radios('Start Windows with', [['neo10', 'Neo10 (Windows 10 experience)'], ['win31', 'Windows 3.1 Program Manager (classic)']], () => Store.get('shell', 'neo10'), async v => {
-      if (v === Store.get('shell', 'neo10')) return;
-      const r = await msgBox('You need to restart your PC to switch shells.\n\nRestart now?', 'Settings', { buttons: 'yesno', icon: 'question' });
-      if (r === 'yes') { Store.set('shell', v); Shell10.shutdown(true); }
-    }));
-});
 page('system/about', 'About', 'pc name specifications version processor ram', el => {
   const spec = [['Device name', Store.get('deviceName', 'NEO31-PC')], ['Processor', 'Intel 80486DX2 @ 66 MHz'], ['Installed RAM', '8.00 MB'], ['Device ID', '1A2B3C4D-0310-1992-0031-NEO31NEO10'], ['System type', '16-bit operating system, x86-based processor'], ['Pen and touch', 'No pen or touch input is available for this display']];
   const win = [['Edition', 'Neo10 Home'], ['Version', '22H2'], ['Installed on', Intl31.date(new Date(WIN_DATE))], ['OS build', '19045.3803 (on Windows 3.1)'], ['Experience', 'Windows 3.1 Feature Experience Pack 1992.3.10']];
@@ -419,10 +411,6 @@ page('update/recovery', 'Recovery', 'backup restore reset this pc factory go bac
     h('div', { class: 'neo-sfield' }, SP.button('Get started', async () => {
       if (await msgBox('Reset this PC?\n\nThis removes all files you created and returns every setting to its factory default.', 'Reset this PC', { buttons: 'okcancel', icon: 'exclaim' }) !== 'ok') return;
       Store.wipe(); location.hash = ''; location.reload();
-    })),
-    SP.h2('Go back to Windows 3.1'), SP.p('Restart into the classic Program Manager shell. You can come back from Windows Setup or by choosing Neo10 under Settings > System > Shell.'),
-    h('div', { class: 'neo-sfield' }, SP.button('Get started', async () => {
-      if (await msgBox('Restart into Windows 3.1?', 'Recovery', { buttons: 'yesno', icon: 'question' }) === 'yes') { Store.set('shell', 'win31'); Shell10.shutdown(true); }
     })));
 });
 

@@ -12,9 +12,8 @@ const Sys = Object.assign(new Emitter(), {
   clipboard: null,
   tracking: false,
   vd: 0,
-  /* Which shell is running: 'neo10' (Windows 10 experience) or 'win31' (Program Manager) */
-  shellMode: 'win31',
-  isNeo() { return this.shellMode === 'neo10'; },
+  /* The modern shell is the only shell; classic programs keep their 3.1 behaviour where this is false */
+  isNeo() { return true; },
 
   init() {
     installCursors();
@@ -385,73 +384,10 @@ const Sys = Object.assign(new Emitter(), {
   async startWindows() {
     this.mode = 'windows';
     this.textKey = null;
-    this.shellMode = Store.get('shell', 'neo10');
-    if (this.isNeo()) return Shell10.start();
-    this.deskEl.classList.add('hidden');
-    const splash = h('div', { class: 'splash' },
-      h('div', { class: 'box' },
-        flagImg(0, 3, 48, 42),
-        h('div', {},
-          h('div', { class: 't1', text: 'Microsoft®' }),
-          h('div', { class: 't2', text: 'Windows™' }),
-          h('div', { class: 't3', text: 'Version 3.1' }),
-          h('div', { class: 't4', html: 'Copyright © 1985-1992 Microsoft Corp.<br>Neo31 re-creation — all simulated, nothing real was harmed.' }))));
-    this.screen.appendChild(splash);
-    this.screen.classList.add('busy');
-    await sleep(Store.get('fastBoot') ? 400 : 2200);
-    splash.remove();
-    this.deskEl.classList.remove('hidden');
-    IniSync.read();
-    this.applyScheme();
-    this.applyDesktop();
-    IniSync.write();
-    await sleep(250);
-    this.screen.classList.remove('busy');
-    this.run('progman', { quiet: true });
-    Snd.event('SystemStart');
-    Saver.reset();
-    this.emit('started');
+    return Shell10.start();
   },
 
-  async exitWindows(opts = {}) {
-    if (this.isNeo()) return Shell10.shutdown(false, opts);
-    if (this.exiting) return;
-    if (!opts.noPrompt) {
-      const r = await new Promise(res => {
-        const d = dialog({
-          title: 'Exit Windows', w: 250, h: 80, owner: opts.owner,
-          build(d) {
-            d.add(UI.label('This will end your Windows session.'), 12, 14);
-            d.add(UI.button('OK', { default: true, onClick: () => d.close('ok') }), 54, 44, 62, 26);
-            d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close('cancel') }), 134, 44, 62, 26);
-          }
-        });
-        d.promise.then(res);
-      });
-      if (r !== 'ok') return;
-    }
-    this.exiting = true;
-    // close windows; any may veto
-    const wins = this.desktop.ordered().reverse();
-    for (const w of wins) {
-      if (w.closed) continue;
-      if (w.app && w.app.id === 'progman') continue;
-      const ok = await w.close();
-      if (!ok) { this.exiting = false; return; }
-    }
-    this.emit('exiting');
-    for (const w of this.desktop.wins.slice()) await w.close(true);
-    this.exiting = false;
-    Store.flush(); FS.flush();
-    Saver.stop();
-    Snd.event('SystemExit');
-    this.screen.classList.add('busy');
-    await sleep(600);
-    this.screen.classList.remove('busy');
-    this.deskEl.classList.add('hidden');
-    this.mode = 'dos';
-    DOS.returnFromWindows();
-  }
+  exitWindows(opts = {}) { return Shell10.shutdown(false, opts); }
 });
 
 /* ======================= WALLPAPERS ======================= */

@@ -14,12 +14,12 @@ window.runNeo31Regression = async function () {
       button(document, 'Sign in')?.click(); await wait(400);
     }
     await cleanWindows();
-    await check('backup round trip, persisted shell and files', () => {
-      FS.write('C:\\REGRESS.TXT', 'Round trip'); Store.set('shell', 'win31'); FS.flush();
+    await check('backup round trip, persisted settings and files', () => {
+      FS.write('C:\\REGRESS.TXT', 'Round trip'); Store.set('regressMarker', 'set'); FS.flush();
       const saved = JSON.parse(localStorage.getItem(Store.key + '.fs'));
-      assert(saved.fs.c['REGRESS.TXT'].x === 'Round trip' && saved.cfg.shell === 'win31', 'Snapshot lost files or shell');
+      assert(saved.fs.c['REGRESS.TXT'].x === 'Round trip' && saved.cfg.regressMarker === 'set', 'Snapshot lost files or settings');
       HostFiles.applyBackup(original);
-      assert(Store.get('shell', 'neo10') === (original.cfg.shell || 'neo10'), 'Shell was not restored');
+      assert(Store.get('regressMarker') === original.cfg.regressMarker, 'Settings were not restored');
     });
     await check('text and binary host import/export with name collisions', async () => {
       const dir = FS.join('C:\\', FileOps.uniqueName('C:\\', 'NEOTEST')); FS.mkdir(dir);

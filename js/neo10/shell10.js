@@ -260,7 +260,7 @@ const Shell10 = {
     this.teardown();
     el.remove();
     Sys.mode = 'off';
-    if (!restart) await DOS.powerScreen();
+    if (!restart) await DOS.offScreen();
     DOS.boot();
   },
 

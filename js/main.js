@@ -1,5 +1,5 @@
 'use strict';
-/* Boot entry point. URL options: #fast (skip power-on & BIOS), #win (straight to Windows), #reset (factory reset). */
+/* Boot entry point. URL options: #fast (short BIOS checks), #win (straight to Windows), #reset (factory reset). */
 (async () => {
   if (location.hash === '#reset') { Store.wipe(); location.hash = ''; location.reload(); return; }
   // Bitmap fonts must be ready before any canvas text (DOS console) is drawn
@@ -8,7 +8,6 @@
   Sys.init();
   const hash = location.hash;
   if (hash === '#win') { Store.set('fastBoot', true); await Sys.startWindows(); return; }
-  if (hash !== '#fast') await DOS.powerScreen();
-  else Store.set('fastBoot', true);
+  Store.set('fastBoot', hash === '#fast');
   await DOS.boot();
 })();

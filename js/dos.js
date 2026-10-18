@@ -744,20 +744,19 @@ const DOS = {
     Sys.textKey = null;
   },
 
-  powerScreen() {
+  /* Shown after Shut down: the PC is off until the user clicks or presses a key. */
+  offScreen() {
     return new Promise(res => {
-      const el = h('div', { class: 'power' },
-        h('div', { class: 'pbtn', text: '⏻' }),
-        h('div', { html: 'NEO31<br><span>Click the power button or press any key to switch on.<br>Hold <b>Shift</b> while starting to skip the BIOS checks.</span>' }));
+      Sys.mode = 'off';
+      const el = h('div', { class: 'poweroff' }, h('div', { class: 'poweroff-msg', text: 'It\'s now safe to turn off\nyour computer.' }),
+        h('div', { class: 'poweroff-hint', text: 'Click or press any key to turn the computer on.' }));
       const go = e => {
-        Store.set('fastBoot', !!(e && e.shiftKey));
-        document.removeEventListener('keydown', go);
-        Snd.ensure();
-        el.remove();
-        res();
+        if (e.type === 'keydown' && ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+        document.removeEventListener('keydown', go, true); el.removeEventListener('pointerdown', go);
+        Store.set('fastBoot', !!e.shiftKey);
+        Snd.ensure(); el.remove(); res();
       };
-      el.querySelector('.pbtn').addEventListener('click', go);
-      document.addEventListener('keydown', go);
+      setTimeout(() => { document.addEventListener('keydown', go, true); el.addEventListener('pointerdown', go); }, 400);
       Sys.screen.appendChild(el);
     });
   },
@@ -803,57 +802,14 @@ const DOS = {
     this.beep();
     await w(1200);
     con.clear();
-    // Neo10 boots straight into Windows; MS-DOS lives on as the Command Prompt
-    if (Store.get('shell', 'neo10') === 'neo10') { this.leave(); await Sys.startWindows(); return; }
-    con.cursor = true;
-    await w(400);
-    con.writeln('Starting MS-DOS...');
-    con.writeln('');
-    await w(900);
-
-    // CONFIG.SYS
-    const cfg = FS.read('C:\\CONFIG.SYS') || '';
-    for (const line of cfg.split(/\r?\n/)) {
-      const u = line.toUpperCase();
-      if (/HIMEM\.SYS/.test(u)) {
-        ['HIMEM: DOS XMS Driver, Version 3.10 - 03/10/93', 'Extended Memory Specification (XMS) Version 3.0', 'Copyright 1988-1993 Microsoft Corp.', '',
-          'Installed A20 handler number 1.', '64K High Memory Area is available.', ''].forEach(l => con.writeln(l));
-        await w(350);
-      } else if (/EMM386/.test(u)) {
-        ['MICROSOFT Expanded Memory Manager 386  Version 4.45', 'Copyright Microsoft Corporation 1986, 1993', '',
-          '        Available expanded memory . . . . . . . . 0 KB', '', '        LIM/EMS version . . . . . . . . . . . . . 4.0',
-          '        Total expanded memory pages . . . . . . . 0', '        Available expanded memory pages . . . . . 0',
-          '        Total handles . . . . . . . . . . . . . . 64', '        Upper memory blocks . . . . . . . . . . . 152 KB', '',
-          '        EMM386 Active.', ''].forEach(l => con.writeln(l));
-        await w(350);
-      }
-    }
-    // AUTOEXEC.BAT
-    this.newShell('C:\\');
-    const sh = this.shell;
-    sh.busy = true;
-    Sys.textKey = e => sh.key(e);
-    Sys.mode = 'dos';
-    if (FS.exists('C:\\AUTOEXEC.BAT')) await sh.runBatch('C:\\AUTOEXEC.BAT', '');
-    else { await DosShell.cmds.DATE.call(sh, []); await DosShell.cmds.TIME.call(sh, []); }
-    sh.busy = false;
-    if (sh.startingWin) return;
-    sh.echo = true;
-    con.newline();
-    sh.showPrompt();
+    // Windows boots straight from the BIOS; MS-DOS lives on as the Command Prompt
+    this.leave();
+    await Sys.startWindows();
   },
 
   newShell(cwd) {
     this.shell = new DosShell(this.con, { inWindows: false, cwd });
   },
-
-  returnFromWindows() {
-    const con = this.showText();
-    con.clear(); con.cursor = true;
-    this.newShell('C:\\');
-    Sys.mode = 'dos';
-    this.shell.showPrompt();
-  }
 };
 
 /* =================== MS-DOS PROMPT (windowed) =================== */

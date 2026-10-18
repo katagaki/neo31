@@ -228,15 +228,13 @@ Sys.registerApp('setup', {
         const kb = UI.combo({ items: ['Enhanced 101 or 102 key US and Non US keyboards', 'AT-type keyboard (84 - 86 keys)'] });
         const ms = UI.combo({ items: ['Microsoft, or IBM PS/2', 'Logitech serial mouse', 'No mouse or other pointing device'] });
         const net = UI.combo({ items: ['No Network Installed'] });
-        const shells = [['win31', 'Windows 3.1 Program Manager'], ['neo10', 'Neo10 (Windows 10 experience)']];
-        const sh = UI.combo({ items: shells.map(x => x[1]), index: shells.findIndex(x => x[0] === Store.get('shell', 'neo10')) });
-        [['&Display:', disp], ['&Keyboard:', kb], ['&Mouse:', ms], ['&Network:', net], ['&Shell:', sh]].forEach(([l, c], i) => {
+        [['&Display:', disp], ['&Keyboard:', kb], ['&Mouse:', ms], ['&Network:', net]].forEach(([l, c], i) => {
           d.add(UI.label(l, c), 10, 14 + i * 28); d.add(c, 80, 10 + i * 28, 310);
         });
         d.add(UI.button('OK', { default: true, onClick: async () => {
-          const nd = app.displays[disp.index][0], ns = shells[sh.index][0];
+          const nd = app.displays[disp.index][0];
           d.close();
-          if (nd === Store.get('display', 'auto') && ns === Store.get('shell', 'neo10')) return;
+          if (nd === Store.get('display', 'auto')) return;
           const r = await new Promise(res => dialog({
             title: 'Exit Windows', w: 330, h: 90, owner: w,
             build(d2) {
@@ -246,18 +244,10 @@ Sys.registerApp('setup', {
             }
           }).promise.then(res));
           Store.set('display', nd);
-          Store.set('shell', ns);
-          if (r === 'r') {
-            if (Sys.isNeo()) { Shell10.shutdown(true); return; }
-            await Sys.exitWindows({ noPrompt: true });
-            if (Sys.mode === 'dos') {
-              Sys.layoutScreen();
-              DOS.leave();
-              Sys.startWindows();
-            }
-          } else render();
-        } }), 120, 150, 80, 25);
-        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 210, 150, 80, 25);
+          if (r === 'r') Shell10.shutdown(true);
+          else { Sys.layoutScreen(); render(); }
+        } }), 120, 122, 80, 25);
+        d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 210, 122, 80, 25);
       }
     });
 

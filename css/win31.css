@@ -310,22 +310,13 @@ fieldset.grp legend { padding: 0 2px; font: var(--dlg-font); margin-left: 4px; }
 .dosgrid .c-cy { color: #55ffff; }
 .dosgrid .c-ye { color: #ffff55; }
 
-.power {
+.poweroff {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: #aaa; background: #000; font: var(--mono); z-index: 300000; gap: 18px; text-align: center;
+  background: #000; z-index: 300000; gap: 48px; text-align: center;
 }
-.power .pbtn {
-  width: 70px; height: 70px; border: 3px solid #444; image-rendering: pixelated; display: flex; align-items: center; justify-content: center;
-  color: #6f6; font-size: 30px; cursor: pointer; background: radial-gradient(#222, #111); box-shadow: 0 0 20px #030;
-}
-.power .pbtn:hover { border-color: #6f6; }
+.poweroff-msg { color: #ffaa00; font: 32px/40px "W31 Sans 32"; white-space: pre-line; }
+.poweroff-hint { color: #555; font: var(--mono); }
 
-.splash { position: absolute; inset: 0; background: #000; z-index: 250000; display: flex; align-items: center; justify-content: center; }
-.splash .box { display: flex; gap: 24px; align-items: center; color: #fff; }
-.splash .t1 { font: bold 24px/28px "W31 Sans 24"; }
-.splash .t2 { font: bold 64px/72px "W31 Sans 64"; margin: 0 0 4px; }
-.splash .t3 { font: 24px/28px "W31 Sans 24"; color: #c0c0c0; }
-.splash .t4 { font: var(--icon-font); color: #c0c0c0; margin-top: 30px; }
 
 /* screen saver */
 .saver { position: absolute; inset: 0; z-index: 400000; background: #000; }
