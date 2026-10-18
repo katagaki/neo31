@@ -253,9 +253,9 @@
       // ruler
       const tick = h('div', { style: { position: 'absolute', left: '14px', right: '4px', top: '2px', height: '16px', borderBottom: '1px solid #000', background: 'repeating-linear-gradient(90deg, #000 0 1px, transparent 1px 12px)', backgroundSize: '12px 5px', backgroundRepeat: 'repeat-x', backgroundPosition: 'bottom' } });
       rulerEl.appendChild(tick);
-      const rb = (txt, fn, x) => { const b = h('div', { class: 'raised', style: { position: 'absolute', left: x + 'px', top: '20px', width: '22px', height: '18px', border: '1px solid #000', textAlign: 'center', fontSize: '10px', lineHeight: '16px' }, text: txt }); b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); }); rulerEl.appendChild(b); };
+      const rb = (txt, fn, x) => { const b = h('div', { class: 'raised', style: { position: 'absolute', left: x + 'px', top: '20px', width: '22px', height: '18px', border: '1px solid #000', textAlign: 'center', fontSize: '10px', lineHeight: '16px' } }, txt); b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); }); rulerEl.appendChild(b); };
       rb('1', () => block({ lineHeight: '1.35' }), 14); rb('1½', () => block({ lineHeight: '2' }), 38); rb('2', () => block({ lineHeight: '2.7' }), 62);
-      rb('⇤', () => exec('justifyLeft'), 110); rb('≡', () => exec('justifyCenter'), 134); rb('⇥', () => exec('justifyRight'), 158); rb('▤', () => exec('justifyFull'), 182);
+      rb(glyphImg('alignLeft', 'Align left'), () => exec('justifyLeft'), 110); rb(glyphImg('alignCenter', 'Center'), () => exec('justifyCenter'), 134); rb(glyphImg('alignRight', 'Align right'), () => exec('justifyRight'), 158); rb(glyphImg('justify', 'Justify'), () => exec('justifyFull'), 182);
 
       w.body.style.display = 'flex'; w.body.style.flexDirection = 'column';
       w.body.append(rulerEl, wrap, status);

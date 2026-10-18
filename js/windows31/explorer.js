@@ -98,7 +98,7 @@
             : [['name', 'Name', 210], ['date', 'Date modified', 150], ['type', 'Type', 140], ['size', 'Size', 80]];
           const head = h('div', { class: 'w31-xhead' });
           for (const [k, label, wd] of cols) {
-            const c = h('div', { class: 'w31-xcol raised', style: { width: wd + 'px' }, text: label + (st.sort === k ? (st.desc ? ' ▼' : ' ▲') : '') });
+            const c = h('div', { class: 'w31-xcol raised', style: { width: wd + 'px' } }, label, st.sort === k ? ' ' : '', st.sort === k ? glyphImg(st.desc ? 'down' : 'up') : '');
             c.addEventListener('pointerup', () => { if (k === 'orig') return; if (st.sort === k) st.desc = !st.desc; else { st.sort = k; st.desc = false; } save(); render(); });
             head.appendChild(c);
           }

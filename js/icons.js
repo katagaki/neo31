@@ -77,6 +77,13 @@ class PixGrid {
     return this;
   }
   b(x, y, w, hh, fill, c = 'K') { this.f(x, y, w, hh, fill); return this.o(x, y, w, hh, c); }
+  /* trace a 1px outline around everything drawn so far (the icon style's black edge) */
+  outline(c = 'K') {
+    const src = this.d.slice(), at = (x, y) => x >= 0 && y >= 0 && x < this.w && y < this.h && src[y * this.w + x];
+    for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++)
+      if (!src[y * this.w + x] && (at(x + 1, y) || at(x - 1, y) || at(x, y + 1) || at(x, y - 1))) this.d[y * this.w + x] = c;
+    return this;
+  }
   /* raised 3D box with black outline */
   bev(x, y, w, hh, face = 'S') {
     this.b(x, y, w, hh, face);
@@ -185,7 +192,7 @@ function flagGrid(W, H) {
   const g = new PixGrid(W, H);
   const side = Math.min(W, H), gap = Math.max(1, Math.round(side / 16)), sq = Math.floor((side - gap) / 2);
   const ox = Math.floor((W - (sq * 2 + gap)) / 2), oy = Math.floor((H - (sq * 2 + gap)) / 2);
-  [['R', 0, 0], ['L', 1, 0], ['B', 0, 1], ['Y', 1, 1]].forEach(([c, i, j]) => g.f(ox + i * (sq + gap), oy + j * (sq + gap), sq, sq, c));
+  [['R', 0, 0], ['L', 1, 0], ['B', 0, 1], ['Y', 1, 1]].forEach(([c, i, j]) => g.b(ox + i * (sq + gap), oy + j * (sq + gap), sq, sq, c));
   return g;
 }
 
@@ -865,8 +872,23 @@ const UI_GLYPHS = {
   restore: ['...K...', '..KKK..', '.KKKKK.', 'KKKKKKK', '.......', 'KKKKKKK', '.KKKKK.', '..KKK..', '...K...'],
   comboDown: ['KKKKKKK', '.KKKKK.', '..KKK..', '...K...', '.......', 'KKKKKKK'],
   sysbar: ['KKKKKKKKKKKKK', 'KWWWWWWWWWWWKG', 'KKKKKKKKKKKKKG', '.GGGGGGGGGGGGG'],
-  sysbarS: ['KKKKKKKKKK', 'KWWWWWWWWKG', 'KKKKKKKKKKG', '.GGGGGGGGGG']
+  sysbarS: ['KKKKKKKKKK', 'KWWWWWWWWKG', 'KKKKKKKKKKG', '.GGGGGGGGGG'],
+  arrowLeft: ['...K.....', '..KK.....', '.KKKKKKKK', 'KKKKKKKKK', '.KKKKKKKK', '..KK.....', '...K.....'],
+  arrowRight: ['.....K...', '.....KK..', 'KKKKKKKK.', 'KKKKKKKKK', 'KKKKKKKK.', '.....KK..', '.....K...'],
+  alignLeft: ['KKKKKKKKK', '.........', 'KKKKKK...', '.........', 'KKKKKKKKK', '.........', 'KKKKKK...'],
+  alignCenter: ['KKKKKKKKK', '.........', '.KKKKKKK.', '.........', 'KKKKKKKKK', '.........', '.KKKKKKK.'],
+  alignRight: ['KKKKKKKKK', '.........', '...KKKKKK', '.........', 'KKKKKKKKK', '.........', '...KKKKKK'],
+  justify: ['KKKKKKKKK', '.........', 'KKKKKKKKK', '.........', 'KKKKKKKKK', '.........', 'KKKKKKKKK'],
+  note: ['..KKK', '..K.K', '..K..', '..K..', 'KKK..', 'KKK..', '.K...']
 };
+/* A UI glyph drawn in the text colour (a mask over currentColor), for the arrows and
+   symbols the bitmap fonts don't have: they turn white on highlights and grey when disabled. */
+function glyphImg(name, label) {
+  const rows = UI_GLYPHS[name], w = Math.max(...rows.map(r => r.length)), hh = rows.length, url = `url(${glyphURL(name)})`;
+  const el = h('span', { class: 'glyph', style: { width: w + 'px', height: hh + 'px', maskImage: url, webkitMaskImage: url } });
+  if (label) { el.setAttribute('role', 'img'); el.setAttribute('aria-label', label); } else el.setAttribute('aria-hidden', 'true');
+  return el;
+}
 function glyphURL(name) {
   const rows = UI_GLYPHS[name];
   const g = new PixGrid(Math.max(...rows.map(r => r.length)), rows.length);
@@ -1035,10 +1057,15 @@ Object.assign(ICON_DEFS, {
     const pts = [[3, 22], [7, 20], [10, 23], [13, 15], [16, 18], [19, 12], [22, 16], [25, 13], [28, 17]];
     for (let i = 1; i < pts.length; i++) g.l(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 'L'); },
   cmd: g => { g.b(1, 3, 30, 26, 'W'); g.f(2, 4, 28, 4, 'N'); g.f(2, 4, 4, 4, 'S'); g.l(2, 8, 29, 8, 'K'); g.f(2, 9, 28, 19, 'K'); g.t(4, 12, 'C:', 'S'); g.f(13, 17, 5, 1, 'S'); g.l(10, 12, 12, 17, 'S'); },
-  user: g => { g.b(1, 1, 30, 30, 'S'); g.disc(15.5, 11.5, 5.5, 'G'); g.f(8, 20, 16, 10, 'G'); g.disc(15.5, 22.5, 7.5, 'G'); g.f(2, 30, 28, 1, 'S'); g.o(1, 1, 30, 30, 'K'); },
+  user: g => {
+    // head and shoulders, outlined, lit from the top left
+    g.disc(15.5, 10, 6.5, 'S'); g.disc(15.5, 31, 12.5, 'B'); g.f(0, 31, 32, 1, null);
+    g.outline();
+    g.l(11, 7, 13, 5, 'W'); g.l(11, 8, 11, 9, 'W'); g.l(7, 26, 10, 23, 'C');
+  },
   weather: g => { g.disc(11.5, 11.5, 7, 'Y'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.l(11.5 + Math.cos(a) * 8.5, 11.5 + Math.sin(a) * 8.5, 11.5 + Math.cos(a) * 10.5, 11.5 + Math.sin(a) * 10.5, 'Y'); }
     g.disc(17, 21, 5, 'W'); g.disc(23, 19, 6, 'W'); g.disc(11, 23, 4, 'W'); g.f(11, 23, 18, 5, 'W');
-    g.ring(17, 21, 5, 'S'); },
+    g.ring(17, 21, 5, 'S'); g.outline(); },
   store: g => { g.b(4, 9, 24, 20, 'W'); g.l(10, 9, 12, 3, 'K'); g.l(22, 9, 20, 3, 'K'); g.l(12, 3, 20, 3, 'K'); const n = winLogoGrid(16); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const c = n.get(x, y); if (c) g.p(8 + x, 11 + y, c); } },
   lock: g => { g.ring(15.5, 11, 6, 'K'); g.ring(15.5, 11, 5, 'K'); g.bev(7, 13, 18, 15, 'Y'); g.f(15, 18, 2, 5, 'K'); },
   globe: g => {
@@ -1073,12 +1100,12 @@ Object.assign(ICON_DEFS, {
   s_volume: g => { g.m(1, 3, ['....K...', '...KK...', 'KKKSK...', 'KWWSK...', 'KWWSK...', 'KKKSK...', '...KK...', '....K...']); g.m(9, 3, ['.K....', '..K...', 'K..K..', '.K.K..', '.K.K..', 'K..K..', '..K...', '.K....']); },
   s_mute: g => { ICON_DEFS.s_volume(g); g.f(9, 3, 7, 9, null); g.l(10, 5, 14, 9, 'R'); g.l(14, 5, 10, 9, 'R'); },
   s_power: g => g.m(2, 1, ['.....K.....', '..K..K..K..', '.K...K...K.', 'K....K....K', 'K.........K', 'K.........K', 'K.........K', '.K.......K.', '..K.....K..', '...KKKKK...']),
-  s_gear: g => g.m(1, 1, ['.....KKK......', '.KK..KSK..KK..', '.KSKKKSKKKSK..', '..KSSSSSSSK...', 'KKKSSKKKSSKKK.', 'KSSSK...KSSSK.', 'KSSSK...KSSSK.', 'KKKSSKKKSSKKK.', '..KSSSSSSSK...', '.KSKKKSKKKSK..', '.KK..KSK..KK..', '.....KKK......']),
-  s_user: g => { g.disc(7.5, 5, 3, 'G'); g.ring(7.5, 5, 3, 'K'); g.m(2, 9, ['...KKKKK...', '.KKGGGGGKK.', 'KGGGGGGGGGK', 'KGGGGGGGGGK', 'KKKKKKKKKKK']); },
+  s_gear: g => g.m(1, 1, ['.....KKK......', '.KK..KWK..KK..', '.KWKKKWKKKWK..', '..KWWWWWWWK...', 'KKKWWKKKWWKKK.', 'KWWWK...KWWWK.', 'KWWWK...KWWWK.', 'KKKWWKKKWWKKK.', '..KWWWWWWWK...', '.KWKKKWKKKWK..', '.KK..KWK..KK..', '.....KKK......']),
+  s_user: g => { g.disc(7.5, 5, 3, 'W'); g.ring(7.5, 5, 3, 'K'); g.m(2, 9, ['...KKKKK...', '.KKWWWWWKK.', 'KWWWWWWWWWK', 'KWWWWWWWWWK', 'KKKKKKKKKKK']); },
   s_docs: g => { g.m(2, 0, ['KKKKKKKK....', 'KWWWWWWKK...', 'KWKKKKWKWK..', 'KWWWWWWKKKK.', 'KWKKKKKKKWK.', 'KWWWWWWWWWK.', 'KWKKKKKKKWK.', 'KWWWWWWWWWK.', 'KWKKKKKKKWK.', 'KWWWWWWWWWK.', 'KWKKKKKKKWK.', 'KWWWWWWWWWK.', 'KKKKKKKKKKK.']); },
   s_pics: g => { g.b(1, 2, 14, 12, 'C'); g.m(2, 7, ['...K....K...', '..KgK..KgK..', '.KgggKKgggK.', 'gggggggggggg', 'gggggggggggg', 'gggggggggggg']); g.f(11, 4, 2, 2, 'Y'); },
-  s_lock: g => { g.o(5, 1, 6, 7, 'K'); g.bev(3, 7, 10, 8, 'Y'); g.f(7, 10, 2, 3, 'K'); },
-  s_signout: g => { g.o(2, 1, 8, 14, 'K'); g.f(3, 2, 6, 12, 'S'); g.l(7, 8, 14, 8, 'K'); g.l(12, 6, 14, 8, 'K'); g.l(12, 10, 14, 8, 'K'); },
+  s_lock: g => { g.o(5, 1, 6, 7, 'K'); g.b(3, 7, 10, 8, 'W'); g.f(7, 10, 2, 3, 'K'); },
+  s_signout: g => { g.o(2, 1, 8, 14, 'K'); g.f(3, 2, 6, 12, 'W'); g.l(7, 8, 14, 8, 'K'); g.l(12, 6, 14, 8, 'K'); g.l(12, 10, 14, 8, 'K'); },
   s_restart: g => g.m(2, 1, ['....KKKK.K.', '..KK....KK.', '.K.....KKK.', '.K.........', 'K..........', 'K..........', 'K..........', '.K........K', '.K.......K.', '..KK...KK..', '....KKK....']),
   s_sleep: g => g.m(3, 2, ['...KKK....', '.KKK......', '.KK.......', 'KKK.......', 'KKK.......', 'KKK.......', 'KKKK......', '.KKKK....K', '.KKKKKKKKK', '...KKKKK..']),
   s_plus: g => { g.f(7, 2, 2, 12, 'K'); g.f(2, 7, 12, 2, 'K'); },
@@ -1095,5 +1122,5 @@ Object.assign(ICON_DEFS, {
   s_hub: g => { g.m(1, 1, ['..K..', '.KYK.', 'KYYYK', '.KYK.', 'K.K.K']); for (const y of [3, 8, 13]) g.f(7, y, 8, 2, 'K'); g.f(1, 8, 3, 2, 'K'); g.f(1, 13, 3, 2, 'K'); },
   s_staroff: g => g.m(1, 1, ['......K......', '.....K.K.....', '.....K.K.....', 'KKKKK...KKKKK', '.K.........K.', '..K.......K..', '...K.....K...', '..K..KKK..K..', '..K.K...K.K..', '.KK.......KK.']),
   s_globe: g => { g.disc(7.5, 7.5, 6.6, 'B'); g.m(3, 3, ['..gg.....', '.gggg..g.', '.ggg..gg.', '..g..ggg.', '.....gg..', '......g..', '...g.....', '..ggg....', '...g.....']); g.ring(7.5, 7.5, 6.6, 'K'); },
-  s_music: g => g.m(3, 1, ['....KKKKKK', '....KNNNNK', '....KK..KK', '....K....K', '....K....K', '.KKKK..KKK', 'KNNNK.KNNK', 'KNNNK.KNNK', '.KKK...KK.'])
+  s_music: g => { g.b(2, 1, 12, 14, 'W'); g.m(4, 4, ['..NNNNNN', '..N....N', '..N....N', '..N....N', 'NNN..NNN', 'NNN..NNN']); }
 });

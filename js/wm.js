@@ -93,7 +93,7 @@ const Menu = {
       const row = h('div', { class: 'mi' + (dis ? ' dis' : ''), role: it.checked != null ? 'menuitemcheckbox' : 'menuitem', 'aria-label': stripAmp(lab), 'aria-disabled': String(!!dis), 'aria-checked': it.checked != null ? String(!!chk) : null, 'aria-haspopup': it.items ? 'menu' : null, id: 'menu-item-' + UI.nextId++, tabindex: '-1' },
         h('span', { class: 'chk' + (chk ? ' on' : '') }),
         h('span', { class: 'lab', html: mnemonicHTML(lab) }),
-        it.items ? h('span', { class: 'sub', text: '▸' }) : h('span', { class: 'acc', text: it.key ? it.keyLabel || it.key : '' }));
+        it.items ? h('span', { class: 'sub' }, glyphImg('right')) : h('span', { class: 'acc', text: it.key ? it.keyLabel || it.key : '' }));
       row.addEventListener('pointerenter', () => this.setHot(level, i, true));
       row.addEventListener('pointerup', e => { if (e.button === 0) this.choose(level, i); });
       row.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (it.items) this.choose(level, i); });

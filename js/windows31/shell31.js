@@ -207,7 +207,7 @@ const Shell31 = {
     const msg = h('div', { class: 'w31-signmsg' });
     if (pw) {
       input = h('input', { class: 'tx w31-pw', type: 'password', placeholder: 'Password' });
-      const arrow = UI.button('→', { default: true, onClick: go });
+      const arrow = UI.button('', { default: true, onClick: go }); arrow.firstChild.appendChild(glyphImg('arrowRight')); arrow.setAttribute('aria-label', 'Sign in');
       box.append(h('div', { class: 'w31-pwrow' }, input, arrow), msg);
       input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
       Sys.textKey = null;
@@ -738,7 +738,7 @@ const Shell31 = {
         if (L !== letter) { letter = L; list.appendChild(h('div', { class: 'w31-applabel', text: L })); }
         if (it.folder) {
           const open = openFolders.has(it.folder);
-          const r = h('div', { class: 'w31-appitem' }, iconImg(open ? 's_folderOpen' : 's_folder', 16), h('span', { text: it.folder }), h('span', { class: 'w31-chev', text: open ? '▲' : '▼' }));
+          const r = h('div', { class: 'w31-appitem' }, iconImg(open ? 's_folderOpen' : 's_folder', 16), h('span', { text: it.folder }), h('span', { class: 'w31-chev' }, glyphImg(open ? 'up' : 'down')));
           r.addEventListener('pointerup', () => { open ? openFolders.delete(it.folder) : openFolders.add(it.folder); this._openFolders = [...openFolders]; const st = list.scrollTop; renderList(); list.scrollTop = st; });
           list.appendChild(r);
           if (open) START_APPS.filter(a => a.folder === it.folder).sort((a, b) => a.name.localeCompare(b.name)).forEach(a => item(a, true));
@@ -971,7 +971,7 @@ const Shell31 = {
       big.textContent = Intl31.time(n, true); date.textContent = Intl31.longDate(n);
       cal.innerHTML = '';
       const hd = h('div', { class: 'w31-calhead' });
-      const prev = h('span', { class: 'w31-link', text: '◄' }), next = h('span', { class: 'w31-link', text: '►' });
+      const prev = h('span', { class: 'w31-link', role: 'button', 'aria-label': 'Previous month' }, glyphImg('left')), next = h('span', { class: 'w31-link', role: 'button', 'aria-label': 'Next month' }, glyphImg('right'));
       prev.addEventListener('pointerup', () => { month.setMonth(month.getMonth() - 1); draw(); });
       next.addEventListener('pointerup', () => { month.setMonth(month.getMonth() + 1); draw(); });
       hd.append(h('span', { text: `${Intl31.MONTHS[month.getMonth()]} ${month.getFullYear()}` }), h('span', {}, prev, ' ', next));

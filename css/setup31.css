@@ -23,8 +23,6 @@
 .setup-task.on { color: var(--btn-text); font-weight: bold; }
 .setup-task.done { color: var(--btn-text); }
 .setup-tick { width: 14px; text-align: center; }
-.setup-task.done .setup-tick::before { content: '\221A'; }
-.setup-task.on .setup-tick::before { content: '\25BA'; }
 .setup-bar { height: 18px; background: var(--window); }
 .setup-bar > div { height: 100%; width: 0; background: var(--highlight); }
 

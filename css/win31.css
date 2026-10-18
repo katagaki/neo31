@@ -364,3 +364,7 @@ canvas.dosgrid { display: block; image-rendering: pixelated; }
 .xl-rowhead { background: #e4e4e4; border: 1px solid #888; text-align: center; user-select: none; }
 .xl-cell { overflow: hidden; white-space: nowrap; border-right: 1px solid #d0d0d0; border-bottom: 1px solid #d0d0d0; padding: 2px 4px; }
 .xl-cell.sel { outline: 2px solid #217346; outline-offset: -2px; }
+
+/* pixel glyphs drawn in the current text colour (see glyphImg) */
+.glyph { display: inline-block; flex: none; vertical-align: middle; background-color: currentColor; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.btn .bl:has(.glyph) { display: inline-flex; align-items: center; justify-content: center; height: 16px; }

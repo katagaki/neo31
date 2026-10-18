@@ -47,7 +47,7 @@
           const inp = h('input', { class: 'tx', spellcheck: false, style: { border: 0, flex: 1, height: '18px', padding: '0 4px', background: 'transparent', color: 'inherit' } });
           inp.value = appts[t] || '';
           inp.addEventListener('input', () => { data.appts[k] ||= {}; if (inp.value) data.appts[k][t] = inp.value; else delete data.appts[k][t]; touch(); });
-          const bell = h('span', { style: { width: '14px', textAlign: 'center' }, text: data.alarms[k + ' ' + t] ? '♪' : '' });
+          const bell = h('span', { style: { width: '14px', textAlign: 'center' } }, data.alarms[k + ' ' + t] ? glyphImg('note', 'Alarm') : '');
           const row = h('div', { style: { display: 'flex', alignItems: 'center', borderBottom: '1px dotted #808080', height: '20px', fontWeight: 'normal' } },
             bell, h('span', { style: { width: '74px', textAlign: 'right', paddingRight: '6px' }, text: lbl }), inp);
           row.dataset.t = t;

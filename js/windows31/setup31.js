@@ -243,11 +243,11 @@ const Setup = {
         step([h('div', { class: 'setup-h', text: 'Installing Windows' }), h('div', { class: 'setup-note', text: 'Status' }), ...rows,
           h('div', { class: 'setup-note', text: 'Your computer will restart several times. This might take a while.' })], []);
         for (let i = 0; i < tasks.length; i++) {
-          rows[i].classList.add('on');
+          rows[i].classList.add('on'); rows[i].firstChild.replaceChildren(glyphImg('right'));
           const label = rows[i].lastChild;
           if (i === 1) await SetupUI.ramp(0, 100, 7000, p => { label.textContent = `${tasks[i]} (${p}%)`; });
           else await SetupUI.wait([1500, 0, 1800, 1400, 1200][i]);
-          rows[i].classList.remove('on'); rows[i].classList.add('done');
+          rows[i].classList.remove('on'); rows[i].classList.add('done'); rows[i].firstChild.replaceChildren(glyphImg('check'));
         }
         restart();
       };
@@ -464,7 +464,7 @@ const Recovery = {
       const screen = (title, tiles, onBack) => {
         head.textContent = title; list.innerHTML = ''; list.append(...tiles);
         back.innerHTML = '';
-        if (onBack) { const b = UI.button('←', { onClick: onBack }); b.setAttribute('aria-label', 'Back'); back.appendChild(b); }
+        if (onBack) { const b = UI.button('', { onClick: onBack }); b.firstChild.appendChild(glyphImg('arrowLeft')); b.setAttribute('aria-label', 'Back'); back.appendChild(b); }
         list.querySelector('.setup-tile')?.focus();
       };
       const leave = r => { el.remove(); resolve(r); };
