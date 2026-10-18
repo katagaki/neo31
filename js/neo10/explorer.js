@@ -126,7 +126,7 @@
       const renderThisPC = () => {
         items = [];
         main.appendChild(h('div', { class: 'neo-applabel', text: 'Folders (5)' }));
-        const g1 = h('div', { class: 'neo-xgrid' });
+        const g1 = h('div', { class: 'neo-pcgrid' });
         for (const k of ['desktop', 'documents', 'downloads', 'music', 'pictures']) {
           const n = FS.get(KNOWN[k]); if (!n) continue;
           const el = h('div', { class: 'icon neo-xicon' }, h('div', { class: 'img' }, iconImg(FileOps.iconFor(FS.basename(KNOWN[k]), n, 32))), h('div', { class: 'lbl', text: FileOps.shownName(FS.basename(KNOWN[k]), n) }));
@@ -143,8 +143,8 @@
           d.addEventListener('dblclick', fn);
           return d;
         };
-        main.append(drive('Local Disk (C:)', 'thispc', FS.free(), FS.totalBytes, () => go('C:\\')),
-          drive('3½ Floppy (A:)', 'floppy', 0, 0, () => msgBox('A:\\ is not accessible.\n\nThe device is not ready.', 'Location is not available', { icon: 'stop', owner: w })));
+        main.appendChild(h('div', { class: 'neo-pcdrives' }, drive('Local Disk (C:)', 'thispc', FS.free(), FS.totalBytes, () => go('C:\\')),
+          drive('3½ Floppy (A:)', 'floppy', 0, 0, () => msgBox('A:\\ is not accessible.\n\nThe device is not ready.', 'Location is not available', { icon: 'stop', owner: w }))));
         status.children[0].textContent = '7 items'; status.children[1].textContent = '';
       };
 

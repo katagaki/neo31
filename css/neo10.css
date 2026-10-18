@@ -170,6 +170,10 @@
 .view-list .neo-xgrid { display: flex; flex-direction: column; flex-wrap: wrap; height: 100%; align-content: flex-start; }
 .neo-xlist { width: 200px; }
 .neo-xmain .neo-xgrid .icon { left: auto; top: auto; }
+/* This PC lays out the same in every view, like Windows 10 */
+.neo-pcgrid { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; gap: 4px; }
+.neo-pcgrid .icon { left: auto; top: auto; }
+.neo-pcdrives { display: flex; flex-wrap: wrap; }
 .neo-drive { display: inline-flex; gap: 10px; padding: 8px; margin: 4px 8px; width: 270px; align-items: center; }
 .neo-drive:hover { background: var(--btn-face); }
 .neo-usage { height: 12px; width: 190px; margin: 4px 0; background: var(--window); position: relative; }
