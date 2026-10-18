@@ -84,6 +84,7 @@ const Shell10 = {
   },
 
   ensureProfile() {
+    FS.repairSystem();
     const mk = p => { if (!FS.exists(p)) { try { FS.mkdir(p); } catch {} } };
     mk('C:\\USERS'); mk(USER_HOME);
     const names = { DESKTOP: 'Desktop', DOCUMENTS: 'Documents', DOWNLOADS: 'Downloads', PICTURES: 'Pictures', MUSIC: 'Music' };

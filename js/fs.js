@@ -508,9 +508,23 @@ midimapper=midimap.drv
 const FS = new VFS();
 window.addEventListener('pagehide', () => FS.flush());
 
+/* PCs saved by an older release keep their old C: drive, so programs and file
+   types added since then are installed here at start-up (Windows Update style). */
+FS.repairSystem = function () {
+  const fresh = VFS.defaultTree().c.WINDOWS, win = this.get('C:\\WINDOWS');
+  if (!win || win.t !== 'd') return [];
+  const added = [];
+  for (const [name, node] of Object.entries(fresh.c)) if (node.a && !win.c[name]) { win.c[name] = node; added.push(name); }
+  const want = readIni({ x: fresh.c['WIN.INI'].x }, 'Extensions'), have = readIni('C:\\WINDOWS\\WIN.INI', 'Extensions');
+  const missing = Object.entries(want).filter(([k]) => !have[k]);
+  if (missing.length) editIni('C:\\WINDOWS\\WIN.INI', ini => missing.forEach(([k, v]) => ini.set('Extensions', k, v)));
+  if (added.length || missing.length) this.save();
+  return added;
+};
+
 /* Minimal INI file reader used for WIN.INI associations */
 function readIni(path, section) {
-  const txt = FS.read(path) || '';
+  const txt = (typeof path === 'object' ? path.x : FS.read(path)) || '';
   const out = {};
   let cur = null;
   for (const raw of txt.split(/\r?\n/)) {

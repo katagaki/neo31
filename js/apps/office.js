@@ -17,7 +17,7 @@
     run(opts = {}) {
       let path = null, dirty = false, font = 'Arial', size = 12;
       const editor = h('div', { contenteditable: 'true', spellcheck: false, role: 'textbox', 'aria-label': 'Document', 'aria-multiline': 'true', style: { minHeight: '100%', width: '720px', maxWidth: '100%', margin: '18px auto', padding: '34px 44px', boxSizing: 'border-box', background: '#fff', color: '#111', font: '16px/1.45 Arial', outline: 'none', boxShadow: '0 1px 5px #777' } });
-      const scroll = h('div', { class: 'fill', style: { overflow: 'auto', background: '#b8b8b8', padding: '1px 0' } }, editor);
+      const scroll = h('div', { style: { flex: 1, minHeight: 0, overflow: 'auto', background: '#b8b8b8', padding: '1px 0' } }, editor);
       const status = h('div', { class: 'status', style: { justifyContent: 'space-between' } });
       const name = () => path ? FS.basename(path) : 'Document1.DOC';
       const stats = () => { const words = (editor.innerText.trim().match(/\S+/g) || []).length; status.innerHTML = ''; status.append(h('span', { text: `Page 1  ·  ${words} words` }), h('span', { text: dirty ? 'Modified' : 'Ready' })); };
@@ -148,7 +148,7 @@
         try { const v = expr(); if (i !== tokens.length || !Number.isFinite(v)) return '#VALUE!'; return v; } catch (e) { return e.message === 'Circular reference' ? '#CIRC!' : '#VALUE!'; }
       };
       const display = (r, c) => { const v = resolve(r, c); return typeof v === 'number' ? String(+v.toPrecision(10)) : String(v); };
-      const grid = h('div', { class: 'fill', tabindex: '0', role: 'grid', 'aria-label': 'Spreadsheet', style: { overflow: 'auto', background: '#fff', font: '13px Arial' } });
+      const grid = h('div', { tabindex: '0', role: 'grid', 'aria-label': 'Spreadsheet', style: { flex: 1, minHeight: 0, outline: 'none', overflow: 'auto', background: '#fff', font: '13px Arial' } });
       const formula = UI.text(''); formula.setAttribute('aria-label', 'Formula bar');
       const address = h('div', { class: 'tx', style: { width: '72px', flex: 'none', padding: '3px' } });
       const formulaRow = h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px', background: 'var(--btn-face)', borderBottom: '1px solid #000' } }, address, h('span', { class: 'txt', text: 'fx' }), formula);
@@ -223,7 +223,7 @@
       });
       w.body.style.display = 'flex'; w.body.style.flexDirection = 'column'; w.body.append(formulaRow, grid, status);
       formula.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); move(1, 0); } else if (e.key === 'Escape') { formula.value = getRaw(active.r, active.c); grid.focus(); } });
-      grid.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { e.preventDefault(); move(1, 0); } else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1, 0); } else if (e.key === 'ArrowLeft') { e.preventDefault(); move(0, -1); } else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); move(e.key === 'Enter' ? 1 : 0, e.key === 'ArrowRight' ? 1 : 0); } else if (e.key === 'F2') { formula.focus(); formula.select(); } else if (e.key === 'Delete') { delete cells[key(active.r, active.c)]; dirty = true; render(); title(); } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { formula.value = e.key; formula.focus(); } });
+      grid.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { e.preventDefault(); move(1, 0); } else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1, 0); } else if (e.key === 'ArrowLeft') { e.preventDefault(); move(0, -1); } else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); move(e.key === 'Enter' ? 1 : 0, e.key === 'ArrowRight' ? 1 : 0); } else if (e.key === 'F2') { formula.focus(); formula.select(); } else if (e.key === 'Delete') { delete cells[key(active.r, active.c)]; dirty = true; render(); title(); } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); formula.value = e.key; formula.focus(); } });
       render();
       if (opts.args) load(FS.full(opts.args.trim(), 'C:\\WINDOWS'));
       return w;
