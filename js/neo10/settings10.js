@@ -89,7 +89,7 @@ page('system/display', 'Display', 'resolution screen night light scale size', el
     SP.link('Classic Windows Setup', () => Sys.launch('SETUP.EXE')));
 });
 page('system/sound', 'Sound', 'volume speakers mute audio system sounds', el => {
-  el.append(SP.h1('Sound'), SP.h2('Output'), SP.p('Choose your output device: Speakers (Neo31 Sound Synthesizer)'),
+  el.append(SP.h1('Sound'), SP.h2('Output'), SP.p('Choose your output device: Speakers (Windows 31 Sound Synthesizer)'),
     SP.slider('Master volume', 0, 100, () => Store.get('volume', 80), v => { Store.set('volume', v); Shell10.renderTaskbar(); }, 2),
     SP.toggle('Mute', () => Store.get('muted', false), v => { Store.set('muted', v); Shell10.renderTaskbar(); }),
     SP.toggle('Play system sounds', () => Store.get('sounds', true), v => { Store.set('sounds', v); Settings.changed(); }),
@@ -132,7 +132,7 @@ page('system/multitasking', 'Multitasking', 'snap windows virtual desktops', el 
 });
 page('system/about', 'About', 'pc name specifications version processor ram', el => {
   const spec = [['Device name', PC.name()], ['Processor', 'Intel 80486DX2 @ 66 MHz'], ['Installed RAM', '8.00 MB'], ['Device ID', PC.get().deviceId], ['Product ID', PC.get().productId], ['System type', '16-bit operating system, x86-based processor'], ['Pen and touch', 'No pen or touch input is available for this display']];
-  const win = [['Edition', 'Neo10 Home'], ['Version', '22H2'], ['Installed on', Intl31.date(new Date(WIN_DATE))], ['OS build', '19045.3803 (on Windows 3.1)'], ['Experience', 'Windows 3.1 Feature Experience Pack 1992.3.10']];
+  const win = [['Edition', 'Windows 31 Home'], ['Version', '22H2'], ['Installed on', Intl31.date(new Date(WIN_DATE))], ['OS build', '19045.3803'], ['Experience', 'Windows 3.1 Feature Experience Pack 1992.3.10']];
   el.append(SP.h1('About'), h('div', { class: 'neo-sfield' }, iconImg('neologo'), SP.p('Your PC is monitored and protected.')),
     SP.h2('Device specifications'), SP.info(spec),
     h('div', { class: 'neo-sfield neo-btnrow' },
@@ -141,7 +141,7 @@ page('system/about', 'About', 'pc name specifications version processor ram', el
         const v = await new Promise(res => dialog({ title: 'Rename your PC', w: 280, h: 70, build(d) { const t = UI.text(PC.name(), { maxLength: 15 }); d.add(UI.label('&Name:', t), 10, 8); d.add(t, 10, 26, 180); d.add(UI.button('Next', { default: true, onClick: () => d.close(t.value.trim()) }), 200, 6, 70, 25); d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close(null) }), 200, 36, 70, 25); } }).promise.then(res));
         if (v) { Store.set('deviceName', v.toUpperCase()); Sys.run('settings10', { args: 'system/about' }); }
       })),
-    SP.h2('Windows specifications'), SP.info(win), SP.p('Copyright © 1985-1992 Microsoft Corp. Neo10 is a fan re-creation running inside a simulated Windows 3.1 PC.'));
+    SP.h2('Windows specifications'), SP.info(win), SP.p('Windows 31 is a fan-made simulation drawn with Windows 3.1\'s pixels. Microsoft and Windows are trademarks of Microsoft Corporation.'));
 });
 
 /* ======================= DEVICES ======================= */
@@ -149,7 +149,7 @@ page('devices/printers', 'Printers & scanners', 'printer print manager port', el
   el.append(SP.h1('Printers & scanners'), h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-srow' }, iconImg('printman'), h('div', {}, h('div', { class: 'neo-slabel', text: 'Generic / Text Only' }), SP.p(`Default · ${Store.get('printPort', 'LPT1')}:`)))),
     SP.combo('Port', ['LPT1', 'LPT2', 'LPT3', 'COM1', 'COM2', 'FILE'].map(p => [p, p + ':' + (p === 'FILE' ? ' (print to file)' : '')]), () => Store.get('printPort', 'LPT1'), v => { Store.set('printPort', v); IniSync.write(); }),
     SP.toggle('Use Print Manager', () => Store.get('usePrintMan', true), v => Store.set('usePrintMan', v)),
-    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Print a test page', () => printDoc('Settings', 'Test Page', 'Neo10 test page\n\nIf you can read this, printing works.')), SP.button('Open queue', () => Sys.launch('PRINTMAN.EXE'))));
+    h('div', { class: 'neo-sfield neo-btnrow' }, SP.button('Print a test page', () => printDoc('Settings', 'Test Page', 'Windows 31 test page\n\nIf you can read this, printing works.')), SP.button('Open queue', () => Sys.launch('PRINTMAN.EXE'))));
 });
 page('devices/mouse', 'Mouse', 'primary button double click speed pointer trails cursor', el => {
   el.append(SP.h1('Mouse'),
@@ -171,9 +171,9 @@ page('devices/typing', 'Typing', 'keyboard repeat delay rate', el => {
 /* ======================= NETWORK ======================= */
 page('network/status', 'Status', 'network internet airplane ip connected', el => {
   const air = Store.get('airplane', false);
-  el.append(SP.h1('Status'), h('div', { class: 'neo-sfield neo-srow' }, iconImg('cpNetwork'), SP.p(air ? 'Airplane mode is on.' : 'You\'re connected to the Internet. (Neo31 Network)')),
+  el.append(SP.h1('Status'), h('div', { class: 'neo-sfield neo-srow' }, iconImg('cpNetwork'), SP.p(air ? 'Airplane mode is on.' : 'You\'re connected to the Internet. (Windows 31 Network)')),
     SP.toggle('Airplane mode', () => Store.get('airplane', false), v => { Store.set('airplane', v); Shell10.renderTaskbar(); }),
-    SP.h2('Properties'), SP.info([['Name', 'Neo31 Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', PC.get().ip], ['Physical address', PC.get().mac], ['Speed', '10 Mbps']]),
+    SP.h2('Properties'), SP.info([['Name', 'Windows 31 Network'], ['Type', 'Ethernet (10BASE-T)'], ['IPv4 address', PC.get().ip], ['Physical address', PC.get().mac], ['Speed', '10 Mbps']]),
     SP.link('Open Terminal (dial-up)', () => Sys.launch('TERMINAL.EXE')));
 });
 
@@ -318,7 +318,7 @@ page('apps/startup', 'Startup', 'startup apps run at sign in', el => {
 
 /* ======================= ACCOUNTS ======================= */
 page('accounts/info', 'Your info', 'name account user organisation', el => {
-  const nm = UI.text(Store.get('userName', 'User')), org = UI.text(Store.get('userOrg', 'Neo31 Simulation'));
+  const nm = UI.text(Store.get('userName', 'User')), org = UI.text(Store.get('userOrg', 'Windows 31 Simulation'));
   [nm, org].forEach(t => { t.style.position = 'relative'; t.style.width = '260px'; });
   const av = iconImg('user'); av.style.width = av.style.height = '96px';
   el.append(SP.h1('Your info'), h('div', { class: 'neo-sfield' }, av), SP.p('Local account'),

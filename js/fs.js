@@ -8,7 +8,7 @@ const DOS_DATE = new Date(1993, 2, 10, 6, 0).getTime();
 class VFS extends Emitter {
   constructor() {
     super();
-    try { this.root = Store.state?.fs || JSON.parse(localStorage.getItem(Store.key + '.fs')); } catch { this.root = null; }
+    try { this.root = Store.state?.fs || JSON.parse(localStorage.getItem((Store.base || Store.key) + '.fs')); } catch { this.root = null; }
     if (!this.root || this.root.t !== 'd') this.root = VFS.defaultTree();
     this.totalBytes = 125 * 1024 * 1024;
     this.baseUsed = 78 * 1024 * 1024;
@@ -424,7 +424,7 @@ timer=timer.drv
 midimapper=midimap.drv
 `;
 
-    const readme = `<h2 style="text-align:center">NEO31 README</h2>
+    const readme = `<h2 style="text-align:center">WINDOWS 31 README</h2>
 <p style="text-align:center"><i>A re-creation of Microsoft Windows version 3.1</i></p>
 <p>Welcome! This file explains what is installed in this simulated copy of Windows. Use the scroll bars to read it, or choose Exit from the File menu to close Write.</p>
 <p><b>What's included</b></p>
@@ -468,7 +468,7 @@ midimapper=midimap.drv
         'WIN.COM': A(50904, 'win'), 'WIN.INI': F(winIni), 'SYSTEM.INI': F(systemIni),
         'PROGMAN.INI': F('[Settings]\nWindow=60 28 565 388 1\nSaveSettings=1\nMinOnRun=0\nAutoArrange=1\n\n[Groups]\nGroup1=C:\\WINDOWS\\MAIN.GRP\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\nGroup3=C:\\WINDOWS\\GAMES.GRP\nGroup4=C:\\WINDOWS\\STARTUP.GRP\nGroup5=C:\\WINDOWS\\OFFICE.GRP\n'),
         'OFFICE.GRP': S(6144),
-        'CONTROL.INI': F('[current]\ncolor schemes=Windows Default\n\n[Screen Saver.Marquee]\nText=Neo31 - Windows 3.1\n'),
+        'CONTROL.INI': F('[current]\ncolor schemes=Windows Default\n\n[Screen Saver.Marquee]\nText=Windows 31\n'),
         'MAIN.GRP': S(5215), 'ACCESSOR.GRP': S(9862), 'GAMES.GRP': S(1488), 'STARTUP.GRP': S(44),
         'PROGMAN.EXE': A(115312, 'progman'), 'WINFILE.EXE': A(146864, 'winfile'), 'CONTROL.EXE': A(13904, 'control'),
         'PRINTMAN.EXE': A(43968, 'printman'), 'CLIPBRD.EXE': A(18512, 'clipbrd'), 'SETUP.EXE': A(422080, 'setup'),

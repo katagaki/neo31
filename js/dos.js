@@ -636,7 +636,7 @@ DosShell.cmds = {
     if (this.inWin) { this.out('Cannot run FDISK while Windows is running.'); return; }
     this.out(''); this.out('MS-DOS Version 6 Fixed Disk Setup Program');
     this.out('(C)Copyright Microsoft Corp. 1983 - 1993'); this.out('');
-    this.out('WARNING! This will restore drive C: and all Neo31 settings');
+    this.out('WARNING! This will restore drive C: and all Windows 31 settings');
     this.out('to their factory state. All files you created will be lost.');
     this.con.write('Proceed with reset (Y/N)?');
     const k = await this.readKey(); this.con.write(k.key && k.key.length === 1 ? k.key : ''); this.con.newline();
@@ -655,7 +655,7 @@ DosShell.cmds = {
       this.out('DRIVE C: WILL BE LOST!');
       this.con.write('Proceed with Format (Y/N)?');
       const k = await this.readKey(); this.con.write(k.key && k.key.length === 1 ? k.key : ''); this.con.newline();
-      this.out(''); this.out('Format terminated. (Neo31 politely declines to erase itself.)');
+      this.out(''); this.out('Format terminated. (Windows 31 politely declines to erase itself.)');
       return;
     }
     this.out(`Insert new diskette for drive ${d[0]}:`);

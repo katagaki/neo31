@@ -126,15 +126,22 @@ class Emitter {
 
 /* Persisted settings blob. */
 const Store = {
-  key: 'neo31.v1',
+  key: 'windows31.v1',
+  legacyKey: 'neo31.v1',   // PCs saved before the Windows 31 name
   data: null,
   load() {
-    try { this.state = JSON.parse(localStorage.getItem(this.key + '.fs')); } catch { this.state = null; }
+    const has = k => localStorage.getItem(k + '.fs') != null || localStorage.getItem(k + '.cfg') != null;
+    // read from the old key until the first save moves everything to the new one
+    this.base = !has(this.key) && has(this.legacyKey) ? this.legacyKey : this.key;
+    try { this.state = JSON.parse(localStorage.getItem(this.base + '.fs')); } catch { this.state = null; }
     if (this.state && this.state.version === 1 && this.state.cfg && this.state.fs) this.data = this.state.cfg;
     else {
       this.state = null;
-      try { this.data = JSON.parse(localStorage.getItem(this.key + '.cfg')) || {}; } catch { this.data = {}; }
+      try { this.data = JSON.parse(localStorage.getItem(this.base + '.cfg')) || {}; } catch { this.data = {}; }
     }
+    // saved favourites, history and home pages pointed at the offline web's old address
+    if (this.base === this.legacyKey) this.data = JSON.parse(JSON.stringify(this.data).replace(/neo31\.net/g, 'windows31.net').replace(/neo31-run:/g, 'windows31-run:'));
+    if (this.state) this.state.cfg = this.data;
     return this.data;
   },
   get(k, d) { return Object.hasOwn(this.data, k) ? this.data[k] : d; },
@@ -149,16 +156,23 @@ const Store = {
     try {
       const fs = typeof FS !== 'undefined' ? FS.root : this.state?.fs;
       if (!fs) return false;
-      localStorage.setItem(this.key + '.fs', JSON.stringify({ version: 1, cfg: this.data, fs }));
+      const snapshot = JSON.stringify({ version: 1, cfg: this.data, fs });
+      const dropLegacy = () => { localStorage.removeItem(this.base + '.fs'); localStorage.removeItem(this.base + '.cfg'); this.base = this.key; };
+      try { localStorage.setItem(this.key + '.fs', snapshot); }
+      catch (e) {
+        // moving from the old key may not fit beside the old copy; the PC is still in memory
+        if (this.base === this.key) throw e;
+        dropLegacy(); localStorage.setItem(this.key + '.fs', snapshot);
+      }
       localStorage.removeItem(this.key + '.cfg');
+      if (this.base !== this.key) dropLegacy();
       Persistence.clear();
       return true;
     } catch (e) { Persistence.failed(e); return false; }
   },
   wipe() {
     this.wiped = true;
-    localStorage.removeItem(this.key + '.cfg');
-    localStorage.removeItem(this.key + '.fs');
+    for (const k of [this.key, this.legacyKey]) { localStorage.removeItem(k + '.cfg'); localStorage.removeItem(k + '.fs'); }
   }
 };
 const Persistence = {

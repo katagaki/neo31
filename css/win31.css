@@ -1,4 +1,4 @@
-/* ===== Neo31 — Windows 3.1 look & feel ===== */
+/* ===== Windows 31 — look & feel, drawn with Windows 3.1's pixels ===== */
 /* ===== Bitmap fonts (pixel-square outlines built by tools/build_fonts.py) ===== */
 @font-face { font-family: "W31 System"; src: url(../fonts/w31-system.ttf); font-weight: 100 900; font-display: block; }
 @font-face { font-family: "W31 MS Sans Serif"; src: url(../fonts/w31-mssans-8.ttf); font-weight: 100 549; font-display: block; }

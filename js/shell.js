@@ -700,7 +700,7 @@ const Saver = {
       };
     },
     'Marquee'(x, W, H) {
-      const text = Store.get('marqueeText', 'Neo31 — Windows 3.1');
+      const text = Store.get('marqueeText', 'Windows 31');
       const col = Store.get('marqueeColor', '#ffff00');
       const tg = new PixGrid(Math.max(8, text.length * 6), 6);
       tg.t(0, 0, text.toUpperCase(), 'W');

@@ -109,7 +109,7 @@ const Shell10 = {
     // pictures open in Photos now, unless the user associated them with something else
     for (const e of ['bmp', 'pcx']) if (/^pbrush\.exe/i.test(ext[e] || '')) writeIni('C:\\WINDOWS\\WIN.INI', 'Extensions', e, `photos.exe ^.${e}`);
     if (!FS.exists(KNOWN.documents + '\\WELCOME.TXT'))
-      FS.write(KNOWN.documents + '\\Welcome.txt', 'Welcome to Neo10!\n\nThis is Windows 10, drawn with the pixels of Windows 3.1.\n\n- Click Start (or press Ctrl+Esc) for your apps and live tiles.\n- Type in the search box to find apps, settings and files.\n- Drag a window to the left or right edge of the screen to snap it.\n- Task View (next to search) shows your windows and virtual desktops.\n- Action Center (far right of the taskbar) holds notifications and quick actions.\n- Settings > System > Shell switches back to the classic Windows 3.1 Program Manager.\n');
+      FS.write(KNOWN.documents + '\\Welcome.txt', 'Welcome to Windows 31!\n\nThis is a modern Windows, drawn with the pixels of Windows 3.1.\n\n- Click Start (or press Ctrl+Esc) for your apps and live tiles.\n- Type in the search box to find apps, settings and files.\n- Drag a window to the left or right edge of the screen to snap it.\n- Task View (next to search) shows your windows and virtual desktops.\n- Action Center (far right of the taskbar) holds notifications and quick actions.\n- Photos, Alarms & Clock, Word, Excel and PowerPoint are in Start.\n- Settings > Update & Security has Windows Update, Reset this PC and Advanced startup.\n- Press DEL or F2 while the PC starts to open BIOS setup.\n');
     FS.save();
   },
 
@@ -234,7 +234,7 @@ const Shell10 = {
     if (su) su.items.filter(it => !disabled.includes(it.name)).forEach((it, i) => setTimeout(() => Sys.launch(it.cmd, { quiet: true, show: it.runMin ? 'min' : undefined }), 500 + i * 300));
     if (!Store.get('neo.welcomed')) {
       Store.set('neo.welcomed', true);
-      setTimeout(() => this.notify({ app: 'Neo10', icon: 'neologo', title: 'Welcome to Neo10', text: 'Windows 10, rebuilt with Windows 3.1 pixels. Click here to read the welcome note.', onClick: () => Sys.launch('NOTEPAD.EXE ' + KNOWN.documents + '\\WELCOME.TXT') }), 1200);
+      setTimeout(() => this.notify({ app: 'Windows 31', icon: 'neologo', title: 'Welcome to Windows 31', text: 'Windows, rebuilt with Windows 3.1 pixels. Click here to read the welcome note.', onClick: () => Sys.launch('NOTEPAD.EXE ' + KNOWN.documents + '\\WELCOME.TXT') }), 1200);
     }
   },
 
@@ -362,7 +362,7 @@ const Shell10 = {
   },
   newOnDesktop(base, folder) {
     const name = FileOps.uniqueName(KNOWN.desktop, base);
-    try { folder ? FS.mkdir(FS.join(KNOWN.desktop, name)) : FS.write(FS.join(KNOWN.desktop, name), ''); } catch (e) { msgBox(e.message, 'Neo10', { icon: 'stop' }); }
+    try { folder ? FS.mkdir(FS.join(KNOWN.desktop, name)) : FS.write(FS.join(KNOWN.desktop, name), ''); } catch (e) { msgBox(e.message, 'Windows 31', { icon: 'stop' }); }
     setTimeout(() => this.renameIcon(name), 80);
   },
 
@@ -511,7 +511,7 @@ const Shell10 = {
     this.searchIconBtn = this.tbIcon('s_search', 'Search', () => this.toggle('search'), 'neo-searchicon');
     this.tvBtn = this.tbIcon('s_taskview', 'Task View', () => this.taskView());
     this.apps = h('div', { class: 'neo-tbapps' });
-    this.netBtn = this.tbIcon('s_network', 'Neo31 Network\nInternet access', () => this.toggle('network'));
+    this.netBtn = this.tbIcon('s_network', 'Windows 31 Network\nInternet access', () => this.toggle('network'));
     this.volBtn = this.tbIcon('s_volume', 'Speakers', () => this.toggle('volume'));
     this.clockBtn = h('div', { class: 'neo-tbtn neo-clock' }, h('div'), h('div'));
     this.clockBtn.addEventListener('pointerdown', e => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); this.toggle('clock'); } });
@@ -999,13 +999,13 @@ const Shell10 = {
     sl.el.style.position = 'relative'; sl.el.style.width = '190px';
     pct.textContent = Store.get('volume', 80);
     sl.el.addEventListener('pointerup', () => Snd.beep());
-    el.append(h('div', { class: 'neo-kind', text: 'Speakers (Neo31 Sound Synthesizer)' }), h('div', { class: 'neo-volrow' }, mute, sl.el, pct));
+    el.append(h('div', { class: 'neo-kind', text: 'Speakers (Windows 31 Sound Synthesizer)' }), h('div', { class: 'neo-volrow' }, mute, sl.el, pct));
     return el;
   },
   networkFlyout() {
     const el = h('div', { class: 'neo-fly neo-flynet raised' });
     const air = Store.get('airplane', false);
-    const net = h('div', { class: 'neo-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'neo-ttitle', text: 'Neo31 Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
+    const net = h('div', { class: 'neo-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'neo-ttitle', text: 'Windows 31 Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
     const set = h('div', { class: 'neo-link', text: 'Network & Internet settings' });
     set.addEventListener('pointerup', () => { this.closePanels(); Sys.launch('SETTINGS network/status'); });
     const ab = h('div', { class: 'neo-qa' + (air ? ' on' : '') }, iconImg('s_netoff'), h('span', { text: 'Airplane mode' }));

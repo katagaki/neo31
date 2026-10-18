@@ -439,7 +439,7 @@ Sys.registerApp('progman', {
     // first-run tip
     if (!Store.get('welcomed') && !Sys.isNeo()) {
       Store.set('welcomed', true);
-      setTimeout(() => msgBox('Welcome to Neo31, a re-creation of Windows 3.1.\n\nDouble-click an icon to start a program. Program groups shown as icons at the bottom of Program Manager can be opened by double-clicking them.\n\nOpen Read Me in the Main group for tips.', 'Welcome', { icon: 'info', owner: pm }), 900);
+      setTimeout(() => msgBox('Welcome to Windows 31, a re-creation of Windows 3.1.\n\nDouble-click an icon to start a program. Program groups shown as icons at the bottom of Program Manager can be opened by double-clicking them.\n\nOpen Read Me in the Main group for tips.', 'Welcome', { icon: 'info', owner: pm }), 900);
     }
     return pm;
   }

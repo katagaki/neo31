@@ -1,6 +1,6 @@
 /* Run in a disposable browser profile after opening index.html#win.
-   await runNeo31Regression() returns checks; temporary files/settings are restored. */
-window.runNeo31Regression = async function () {
+   await runWindows31Regression() returns checks; temporary files/settings are restored. */
+window.runWindows31Regression = async function () {
   const results = [], original = JSON.parse(JSON.stringify(HostFiles.snapshot()));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const assert = (ok, message) => { if (!ok) throw new Error(message); };

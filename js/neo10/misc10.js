@@ -4,7 +4,7 @@
 /* ======================= TASK MANAGER ======================= */
 (() => {
   const hash = s => { let x = 0; for (const c of String(s)) x = (x * 31 + c.charCodeAt(0)) | 0; return Math.abs(x); };
-  const BG = [['Neo10 Shell (Explorer)', 'neologo', 2.4], ['Desktop Window Manager', 'app', 1.6], ['Windows Audio', 'cpSound', .3], ['Print Spooler', 'printman', .2],
+  const BG = [['Windows Explorer', 'neologo', 2.4], ['Desktop Window Manager', 'app', 1.6], ['Windows Audio', 'cpSound', .3], ['Print Spooler', 'printman', .2],
     ['Service Host: Local System', 'cp386', .5], ['Program Manager Compatibility Host', 'progman', .2], ['COMMAND.COM', 'dos', .1], ['Typematic Service', 'cpKeyboard', .1]];
 
   Sys.registerApp('taskmgr', {

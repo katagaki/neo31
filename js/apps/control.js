@@ -295,7 +295,7 @@
     if (name === '(None)') return msgBox('No screen saver is selected.', 'Screen Saver', { icon: 'info', owner });
     const extras = {
       'Marquee': { h: 120, build(d) {
-        const t = UI.text(Store.get('marqueeText', 'Neo31 - Windows 3.1'));
+        const t = UI.text(Store.get('marqueeText', 'Windows 31'));
         const cols = { Yellow: '#ffff00', White: '#ffffff', Red: '#ff0000', Lime: '#00ff00', Aqua: '#00ffff', Fuchsia: '#ff00ff' };
         const col = UI.combo({ items: Object.keys(cols) });
         col.setText(Object.keys(cols).find(k => cols[k] === Store.get('marqueeColor', '#ffff00')) || 'Yellow');
@@ -751,7 +751,7 @@
 
   function driversApplet(owner) {
     return dialog({ title: 'Drivers', w: 380, h: 130, owner, build(d) {
-      const lb = UI.listbox({ items: ['[MCI] CD Audio', '[MCI] MIDI Sequencer', '[MCI] Sound', 'MIDI Mapper', 'Neo31 Sound Synthesizer', 'Timer'], sel: 0 });
+      const lb = UI.listbox({ items: ['[MCI] CD Audio', '[MCI] MIDI Sequencer', '[MCI] Sound', 'MIDI Mapper', 'Windows 31 Sound Synthesizer', 'Timer'], sel: 0 });
       d.add(UI.label('&Installed Drivers:', lb), 8, 6); d.add(lb, 8, 24, 270, 100);
       d.add(UI.button('Close', { default: true, cancel: true, onClick: () => d.close() }), 292, 8, 80, 25);
       d.add(UI.button('&Add...', { onClick: () => msgBox('No additional drivers are available.', 'Add', { icon: 'info', owner: d.win }) }), 292, 38, 80, 25);

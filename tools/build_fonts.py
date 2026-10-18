@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Neo31's pixel webfonts from bitmap sources.
+"""Build Windows 31's pixel webfonts from bitmap sources.
 
 Every glyph is emitted as a union of 1x1 pixel squares, so at
 font-size == cell height each font unit square maps to exactly one CSS

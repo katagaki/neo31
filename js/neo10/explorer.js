@@ -314,7 +314,7 @@
             { label: 'File name e&xtensions', checked: () => st.ext, action: () => { st.ext = !st.ext; save(); render(); } },
             { label: '&Hidden items', checked: () => st.hidden, action: () => { st.hidden = !st.hidden; save(); render(); } },
             '-', { label: 'S&ort by', items: sortItems() }, { label: '&Refresh', key: 'F5', action: render }] },
-          { label: '&Help', items: [{ label: '&About Neo10', action: () => Sys.launch('SETTINGS system/about') }] }
+          { label: '&Help', items: [{ label: '&About Windows 31', action: () => Sys.launch('SETTINGS system/about') }] }
         ],
         onKey: (e, name) => {
           if (document.activeElement === addr || document.activeElement === search) return false;

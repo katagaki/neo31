@@ -27,7 +27,8 @@ test('legacy files and settings migrate together and survive reload', () => {
   const old = pc({ 'neo31.v1.fs': tree, 'neo31.v1.cfg': JSON.stringify({ shell: 'win31', userName: 'Ada' }) });
   old.run("FS.write('C:\\\\TEST.TXT', 'Saved'); Store.set('shell', 'neo10'); FS.flush()");
   assert.equal(old.values.has('neo31.v1.cfg'), false);
-  assert.equal(JSON.parse(old.values.get('neo31.v1.fs')).version, 1);
+  assert.equal(old.values.has('neo31.v1.fs'), false);
+  assert.equal(JSON.parse(old.values.get('windows31.v1.fs')).version, 1);
   const loaded = pc(Object.fromEntries(old.values));
   assert.equal(loaded.run("FS.read('C:\\\\TEST.TXT')"), 'Saved');
   assert.equal(loaded.run("Store.get('shell')"), 'neo10');
@@ -35,10 +36,10 @@ test('legacy files and settings migrate together and survive reload', () => {
 });
 
 test('failed persistence keeps the saved snapshot and the current files recoverable', () => {
-  const app = pc(); app.run('FS.flush()'); const before = app.values.get('neo31.v1.fs');
+  const app = pc(); app.run('FS.flush()'); const before = app.values.get('windows31.v1.fs');
   app.fail(true); app.run("FS.write('C:\\\\UNSAVED.TXT', 'Recover me')");
   assert.equal(app.run('FS.flush()'), false);
-  assert.equal(app.values.get('neo31.v1.fs'), before);
+  assert.equal(app.values.get('windows31.v1.fs'), before);
   assert.equal(app.run("HostFiles.snapshot().fs.c['UNSAVED.TXT'].x"), 'Recover me');
   assert.ok(app.run('Persistence.error'));
   app.fail(false); assert.equal(app.run('Store.flush()'), true);
@@ -48,9 +49,9 @@ test('failed persistence keeps the saved snapshot and the current files recovera
 test('backup restore replaces files and settings atomically; failure preserves both', () => {
   const app = pc();
   app.run("FS.write('C:\\\\OLD.TXT', 'old'); Store.set('userName', 'Old'); FS.flush(); var backup = JSON.parse(JSON.stringify(HostFiles.snapshot())); backup.cfg.userName = 'New'; backup.fs.c['OLD.TXT'].x = 'new'");
-  const before = app.values.get('neo31.v1.fs'); app.fail(true);
+  const before = app.values.get('windows31.v1.fs'); app.fail(true);
   assert.throws(() => app.run('HostFiles.applyBackup(backup)'), /Quota/);
-  assert.equal(app.values.get('neo31.v1.fs'), before);
+  assert.equal(app.values.get('windows31.v1.fs'), before);
   assert.equal(app.run("FS.read('C:\\\\OLD.TXT')"), 'old');
   assert.equal(app.run("Store.get('userName')"), 'Old');
   app.fail(false); app.run('HostFiles.applyBackup(backup)');
@@ -60,10 +61,10 @@ test('backup restore replaces files and settings atomically; failure preserves b
 });
 
 test('invalid and malicious backups cannot change current storage', () => {
-  const app = pc(); app.run('FS.flush()'); const before = app.values.get('neo31.v1.fs');
+  const app = pc(); app.run('FS.flush()'); const before = app.values.get('windows31.v1.fs');
   for (const mutation of ["b.version = 9", "b.fs.c.WINDOWS = {t: 'f', x: 'wrong'}", "b.fs.c.BAD = {t: 'd', c: null}", "b.fs.c['../BAD'] = {t:'f',x:''}", "b.cfg = JSON.parse('{\"__proto__\":{\"bad\":true}}')", "b.fs.c.BAD = {t:'f',x:42}"]) {
     assert.throws(() => app.run(`var b = JSON.parse(JSON.stringify(HostFiles.snapshot())); ${mutation}; HostFiles.applyBackup(b)`));
-    assert.equal(app.values.get('neo31.v1.fs'), before);
+    assert.equal(app.values.get('windows31.v1.fs'), before);
   }
   app.close();
 });
@@ -80,12 +81,22 @@ test('file move and Recycle Bin restore preserve content across reload', async (
 });
 
 
+test('backups and saved addresses from before the Windows 31 name still work', () => {
+  const app = pc({ 'neo31.v1.cfg': JSON.stringify({ 'edge.favs': [{ title: 'Home', url: 'https://neo31.net/' }] }) });
+  assert.equal(app.run("Store.get('edge.favs')[0].url"), 'https://windows31.net/');
+  const backup = app.run("JSON.stringify({ ...HostFiles.snapshot(), format: 'Neo31 Backup' })");
+  assert.doesNotThrow(() => app.run(`HostFiles.validate(${backup})`));
+  assert.throws(() => app.run(`HostFiles.validate(${JSON.stringify({ ...JSON.parse(backup), format: 'Other Backup' })})`));
+  app.close();
+});
+
 test('migration fits without allocating a second copy of the filesystem', () => {
   const seed = pc(); seed.run("FS.write('C:\\\\LARGE.TXT', 'x'.repeat(100000))"); const tree = seed.run('JSON.stringify(FS.root)'); seed.close();
   const app = pc({ 'neo31.v1.fs': tree, 'neo31.v1.cfg': '{"shell":"neo10"}' });
   app.limit(tree.length + 2048);
   assert.equal(app.run('Store.flush()'), true);
-  assert.equal(JSON.parse(app.values.get('neo31.v1.fs')).fs.c['LARGE.TXT'].x.length, 100000); app.close();
+  assert.equal(JSON.parse(app.values.get('windows31.v1.fs')).fs.c['LARGE.TXT'].x.length, 100000);
+  assert.equal(app.values.has('neo31.v1.fs'), false); app.close();
 });
 
 test('sound export emits a valid mono PCM WAV header and samples', () => {

@@ -84,11 +84,12 @@ const HostFiles = {
     data.forEach((value, i) => bytes[44 + i] = clamp(Math.round(value * 127) + 128, 0, 255));
     return bytes;
   },
-  snapshot() { return { format: 'Neo31 Backup', version: 1, created: new Date().toISOString(), cfg: Store.data, fs: FS.root }; },
-  backup() { this.download(`Neo31-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(this.snapshot(), null, 2), 'application/json'); },
+  /* backups made before the Windows 31 name say "Neo31 Backup" and restore the same way */
+  snapshot() { return { format: 'Windows 31 Backup', version: 1, created: new Date().toISOString(), cfg: Store.data, fs: FS.root }; },
+  backup() { this.download(`Windows31-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(this.snapshot(), null, 2), 'application/json'); },
   validate(backup) {
     const object = x => x && typeof x === 'object' && !Array.isArray(x);
-    if (!object(backup) || backup.format !== 'Neo31 Backup' || backup.version !== 1 || !object(backup.cfg)) throw new Error('This is not a supported Neo31 backup.');
+    if (!object(backup) || !['Windows 31 Backup', 'Neo31 Backup'].includes(backup.format) || backup.version !== 1 || !object(backup.cfg)) throw new Error('This is not a supported Windows 31 backup.');
     let nodes = 0, files = 0;
     const safe = (value, depth = 0) => {
       if (depth > 64) throw new Error('The backup is too deeply nested.');
@@ -119,7 +120,7 @@ const HostFiles = {
     try {
       if (file.size > this.maxBackupBytes) throw new Error('The backup is too large (maximum 128 MB).');
       const backup = JSON.parse(await file.text()), summary = this.validate(backup);
-      if (await msgBox(`Restore ${summary.files} files and all settings from ${file.name}?\n\nThis replaces your current PC and restarts Neo31. Download a backup first if you want to keep your current files.`, 'Restore PC', { buttons: 'yesno', icon: 'exclaim', owner }) !== 'yes') return;
+      if (await msgBox(`Restore ${summary.files} files and all settings from ${file.name}?\n\nThis replaces your current PC and restarts Windows 31. Download a backup first if you want to keep your current files.`, 'Restore PC', { buttons: 'yesno', icon: 'exclaim', owner }) !== 'yes') return;
       this.applyBackup(backup);
       location.hash = '#win'; location.reload();
     } catch (e) { await msgBox(`Could not restore the backup. Your current PC is still active.\n\n${e.message}`, 'Restore PC', { owner, icon: 'stop' }); }
