@@ -22,7 +22,11 @@
 .w31-signmsg { font: 16px/16px "W31 System"; min-height: 16px; text-shadow: 1px 1px 0 #000; }
 .w31-welcome { display: flex; align-items: center; gap: 16px; font: 32px/36px "W31 Sans 32"; }
 .w31-signpower { position: absolute; right: 16px; bottom: 16px; }
-.w31-signpower .w31-tbtn { background: var(--btn-face); }
+/* sign-in screen power button: a bare white icon, as in Windows 10, outlined on hover */
+.w31-signpower .w31-tbtn { width: 44px; height: 44px; padding: 0; background: transparent; border: 1px solid transparent; box-shadow: none; }
+.w31-signpower .w31-tbtn img { width: 32px; height: 32px; image-rendering: pixelated; filter: invert(1); }
+.w31-signpower .w31-tbtn:hover { border-color: #fff; }
+.w31-signpower .w31-tbtn:active { border-color: #fff; background: rgba(255, 255, 255, .25); box-shadow: none; }
 
 /* ---------------- taskbar ---------------- */
 .w31-taskbar {
