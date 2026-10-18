@@ -156,8 +156,8 @@ const Updates = Object.assign(new Emitter(), {
 
 /* ======================= SETUP AND OUT-OF-BOX EXPERIENCE ======================= */
 const Setup = {
-  /* PCs saved before Setup existed have already been set up */
-  needed() { return !Store.get('oobe.done') && !Store.get('shell.inited'); },
+  /* every PC goes through Setup once, including PCs saved before Setup existed */
+  needed() { return !Store.get('oobe.done'); },
 
   /* Runs before the desktop appears. Returns 'oobe' when the user has just been
      created, so the shell signs straight in, or 'off' if the PC was turned off. */
