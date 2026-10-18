@@ -118,7 +118,7 @@
     return () => { alive = false; clearTimeout(timer); try { src && src.stop(); } catch { } };
   };
   const toast = (title, text, onClick) => {
-    if (Sys.isNeo() && typeof Shell10 !== 'undefined') Shell10.notify({ app: APP, icon: 'clock', title, text, onClick });
+    if (typeof Shell31 !== 'undefined') Shell31.notify({ app: APP, icon: 'clock', title, text, onClick });
   };
   const openView = view => Sys.run('clock', { args: view });
   /* Away from the desktop (lock screen or sleep) the alarm dialog would be hidden, so a

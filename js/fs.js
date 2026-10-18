@@ -88,10 +88,9 @@ class VFS extends Emitter {
 
   static now() { return typeof Sys !== 'undefined' && Sys.now ? Sys.now().getTime() : Date.now(); }
 
-  static longNames() { return typeof Sys !== 'undefined' && Sys.isNeo && Sys.isNeo(); }
   /* Windows 10 long file names (case kept for display in node.n) */
   static validLong(name) { return /^[^\\/:*?"<>|]{1,255}$/.test(name) && !/[. ]$/.test(name); }
-  static validName(name) { return VFS.longNames() ? VFS.validLong(name) : VFS.valid83(name); }
+  static validName(name) { return VFS.validLong(name); }
   /* name shown to the user: original case if known, else lower-case files / Title-case folders */
   displayName(key, node) {
     if (node && node.n) return node.n;
@@ -112,7 +111,7 @@ class VFS extends Emitter {
     if (old && old.t === 'd') throw new Error('Access denied');
     const node = { t: 'f', x: content, d: VFS.now(), ...extra };
     if (old && old.n && !extra.n) node.n = old.n;
-    else if (VFS.longNames() && orig !== orig.toUpperCase() && orig.toUpperCase() === name) node.n = orig;
+    else if (orig !== orig.toUpperCase() && orig.toUpperCase() === name) node.n = orig;
     p.c[name] = node;
     this.save();
     return node;
@@ -125,7 +124,7 @@ class VFS extends Emitter {
     const orig = this.origName(path);
     if (p.c[name]) throw new Error('Unable to create directory');
     p.c[name] = { t: 'd', c: {}, d: VFS.now() };
-    if (VFS.longNames() && orig !== orig.toUpperCase()) p.c[name].n = orig;
+    if (orig !== orig.toUpperCase()) p.c[name].n = orig;
     this.save();
   }
 
@@ -155,7 +154,7 @@ class VFS extends Emitter {
     if (newName === name) { const n = p.c[name]; if (n) { if (shown !== shown.toUpperCase()) n.n = shown; else delete n.n; this.save(); } return; }
     if (p.c[newName]) throw new Error('Duplicate file name or file not found');
     p.c[newName] = p.c[name];
-    if (VFS.longNames() && shown !== shown.toUpperCase()) p.c[newName].n = shown; else delete p.c[newName].n;
+    if (shown !== shown.toUpperCase()) p.c[newName].n = shown; else delete p.c[newName].n;
     delete p.c[name];
     this.save();
   }

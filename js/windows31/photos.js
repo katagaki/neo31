@@ -111,7 +111,7 @@
         Store.set('wallpaper', inWindows(p) ? FS.basename(p) : p);
         Store.set('pattern', '(None)');
         Settings.changed();
-        if (typeof Shell10 !== 'undefined' && Shell10.notify) Shell10.notify({ app: 'Photos', icon: 'photos', title: 'Desktop background changed', text: `${shown(p)} is now your desktop background. Click here to choose a fit.`, onClick: () => Sys.run('settings10', { args: 'personalization/background' }) });
+        if (typeof Shell31 !== 'undefined' && Shell31.notify) Shell31.notify({ app: 'Photos', icon: 'photos', title: 'Desktop background changed', text: `${shown(p)} is now your desktop background. Click here to choose a fit.`, onClick: () => Sys.run('settings', { args: 'personalization/background' }) });
       };
       const del = async (p, permanent) => {
         if (!FS.exists(p)) return;
@@ -149,7 +149,7 @@
           index: filter === '*' ? 0 : groups.findIndex(g => g.dir === filter) + 1,
           onChange: (_, i) => { filter = i ? groups[i - 1].dir : '*'; Store.set('photos.folder', filter); cursor = -1; renderCollection(); } });
         combo.el.style.position = 'relative'; combo.el.style.width = '230px';
-        const count = h('div', { class: 'neo-kind', text: flat.length === 1 ? '1 picture' : `${flat.length} pictures` });
+        const count = h('div', { class: 'w31-kind', text: flat.length === 1 ? '1 picture' : `${flat.length} pictures` });
         const slideBtn = btn('Slideshow', 'Slideshow (F5)', () => startSlide(flat, Math.max(0, cursor)));
         if (!flat.length) slideBtn.classList.add('dis');
         w.body.appendChild(h('div', { class: 'ph-bar' },
@@ -158,24 +158,24 @@
           btn('Pictures folder', 'Open the Pictures folder in File Explorer', () => Sys.run('explorer', { args: KNOWN.pictures }))));
 
         if (!groups.length) {
-          const big = iconImg('photos', 64); big.classList.add('neo-pix');
+          const big = iconImg('photos', 64); big.classList.add('w31-pix');
           w.body.appendChild(h('div', { class: 'ph-empty' }, big,
             h('div', { class: 'ph-emptyh', text: 'No pictures here yet' }),
-            h('div', { class: 'neo-p', text: 'Pictures you save in Paint, or import into your Pictures folder, show up here.' }),
-            h('div', { class: 'neo-btnrow' }, SP_btn('Import pictures', importPics), SP_btn('Open Paint', () => Sys.launch('PBRUSH.EXE', { caller: 'Photos' })))));
+            h('div', { class: 'w31-p', text: 'Pictures you save in Paint, or import into your Pictures folder, show up here.' }),
+            h('div', { class: 'w31-btnrow' }, SP_btn('Import pictures', importPics), SP_btn('Open Paint', () => Sys.launch('PBRUSH.EXE', { caller: 'Photos' })))));
           scroller = null;
           return;
         }
         scroller = h('div', { class: 'ph-scroll', tabindex: '-1' });
         if (filter === '*' && !groups.some(g => g.dir !== WIN_DIR)) {
           scroller.appendChild(h('div', { class: 'ph-hint' }, iconImg('fpics'),
-            h('div', { style: { flex: 1 } }, h('div', { class: 'neo-ttitle', text: 'Your Pictures folder is empty' }),
-              h('div', { class: 'neo-kind', text: 'Save a picture in Paint, or import pictures from your computer, and it will appear here.' })),
+            h('div', { style: { flex: 1 } }, h('div', { class: 'w31-ttitle', text: 'Your Pictures folder is empty' }),
+              h('div', { class: 'w31-kind', text: 'Save a picture in Paint, or import pictures from your computer, and it will appear here.' })),
             SP_btn('Import pictures', importPics)));
         }
         let i = 0;
         for (const g of visible) {
-          scroller.appendChild(h('div', { class: 'ph-group' }, h('span', { text: g.label }), h('span', { class: 'neo-kind', text: String(g.items.length) })));
+          scroller.appendChild(h('div', { class: 'ph-group' }, h('span', { text: g.label }), h('span', { class: 'w31-kind', text: String(g.items.length) })));
           const grid = h('div', { class: 'ph-grid' });
           for (const p of g.items) grid.appendChild(thumb(p, i++, g.items));
           scroller.appendChild(grid);
@@ -351,7 +351,7 @@
         const n = FS.get(path);
         if (!n) return;
         const d = cur && cur.path === path ? { w: rot % 2 ? cur.h : cur.w, h: rot % 2 ? cur.w : cur.h } : dimsOf(path);
-        const row = (k, v) => [h('div', { class: 'neo-h2', text: k }), h('div', { class: 'ph-ival', text: v })];
+        const row = (k, v) => [h('div', { class: 'w31-h2', text: k }), h('div', { class: 'ph-ival', text: v })];
         const where = btn('Open file location', 'Open file location', () => openLocation(path));
         infoPane.replaceChildren(h('div', { class: 'ph-ihead', text: 'File info' }),
           ...row('File name', shown(path)),

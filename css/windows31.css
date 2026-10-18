@@ -1,0 +1,378 @@
+/* ===== Windows 31: the desktop's layout, in Windows 3.1 pixels =====
+   Bitmap fonts are only ever used at whole multiples of their cell size. */
+#desktop.w31 { --tbh: 41px; --w31-text: 16px/16px "W31 MS Sans Serif 10", sans-serif; --w31-small: 13px/13px "W31 MS Sans Serif", sans-serif; }
+#desktop.w31 > .wmc { bottom: var(--tbh); }
+.w31-pix { image-rendering: pixelated; }
+
+/* full-screen layers: boot, lock, sign-in, shutdown */
+.w31-full { position: absolute; inset: 0; z-index: 300000; overflow: hidden; color: #fff; }
+.w31-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.w31-bigtext { font: 32px/36px "W31 Sans 32"; color: #fff; }
+.w31-lockbg { position: absolute; inset: 0; image-rendering: pixelated; }
+.w31-lockface { position: absolute; inset: 0; }
+.w31-lockclock { position: absolute; left: 48px; bottom: 56px; text-shadow: 2px 2px 0 #000; }
+.w31-locktime { font: 96px/108px "W31 Sans 96"; }
+.w31-lockdate { font: 48px/55px "W31 Sans 48"; }
+.w31-signin { gap: 16px; background: transparent; }
+.w31-signin img { image-rendering: pixelated; border: 2px solid #fff; }
+.w31-signname { font: 32px/36px "W31 Sans 32"; text-shadow: 2px 2px 0 #000; }
+.w31-pwrow { display: flex; gap: 0; }
+.w31-pw { width: 220px; height: 30px !important; font: 16px/16px "W31 System"; }
+.w31-pwrow .btn { min-width: 34px; height: 30px; }
+.w31-signmsg { font: 16px/16px "W31 System"; min-height: 16px; text-shadow: 1px 1px 0 #000; }
+.w31-welcome { display: flex; align-items: center; gap: 16px; font: 32px/36px "W31 Sans 32"; }
+.w31-signpower { position: absolute; right: 16px; bottom: 16px; }
+.w31-signpower .w31-tbtn { background: var(--btn-face); }
+
+/* ---------------- taskbar ---------------- */
+.w31-taskbar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 41px; z-index: 90000; display: flex; align-items: center; gap: 2px;
+  padding: 2px 0 1px 2px; background: var(--btn-face); color: var(--btn-text); border-top: 1px solid #000; font: var(--w31-small);
+  transition: none;
+}
+.w31-taskbar.accent { background: var(--active-title); color: var(--active-title-text); }
+.w31-taskbar.autohide:not(.peek) { transform: translateY(39px); }
+.w31-tbtn { height: 36px; min-width: 30px; padding: 0 5px; display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; }
+.w31-tbtn:active, .w31-tbtn.pressed { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset -1px -1px 0 var(--btn-highlight); }
+.w31-start { width: 48px; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); border: 1px solid #000; height: 36px; background: var(--btn-face); }
+.w31-start span { display: none; }
+.w31-start.pressed { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.w31-search { display: flex; align-items: center; gap: 4px; width: 230px; height: 30px; padding: 0 4px; border: 1px solid #000; background: var(--window); flex: none; }
+.w31-search input { flex: 1; border: 0 !important; height: 26px !important; padding: 0 2px; background: transparent; color: var(--window-text); font: 16px/16px "W31 System"; }
+.w31-search input::placeholder { color: var(--disabled-text); }
+.w31-search.inpanel { width: auto; margin: 6px; }
+.w31-tbapps { flex: 1; display: flex; gap: 2px; overflow: hidden; height: 38px; align-items: center; }
+.w31-tbapp {
+  position: relative; width: 44px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; padding: 0 4px;
+}
+.w31-tbapp.running { background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-tbapp.running::after { content: ''; position: absolute; left: 6px; right: 6px; bottom: 2px; height: 2px; background: var(--highlight); }
+.w31-tbapp.multi::before { content: ''; position: absolute; right: -3px; top: 3px; bottom: 3px; width: 2px; border: 1px solid #000; border-left: 0; background: var(--btn-face); }
+.w31-tbapp.active { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset 2px 2px 0 var(--btn-shadow); background-image: repeating-conic-gradient(var(--btn-highlight) 0 25%, transparent 0 50%); background-size: 2px 2px; }
+.w31-tbapp.labels { width: 168px; justify-content: flex-start; }
+.w31-tbapp.labels span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 16px/16px "W31 System"; }
+.w31-tbapp.flash { background: var(--active-title); }
+.w31-tray { display: flex; align-items: center; height: 38px; gap: 0; flex: none; }
+.w31-clock { flex-direction: column; gap: 2px; min-width: 72px; padding: 0 6px; font: var(--w31-small); }
+.w31-showdesk { width: 7px; height: 38px; border-left: 1px solid var(--btn-shadow); margin-left: 4px; flex: none; }
+
+/* ---------------- panels (start, search, action centre, flyouts) ---------------- */
+.w31-panel { position: absolute; bottom: var(--tbh); z-index: 95000; color: var(--btn-text); font: var(--w31-text); }
+.raised { border: 1px solid #000; }
+.w31-start-menu { left: 0; height: min(520px, calc(100% - var(--tbh) - 8px)); display: flex; background: var(--btn-face); }
+.w31-rail { width: 48px; display: flex; flex-direction: column; border-right: 1px solid var(--btn-shadow); padding: 4px 0; flex: none; }
+.w31-railbtn { height: 40px; display: flex; align-items: center; justify-content: center; }
+.w31-railbtn span { display: none; }
+.w31-railbtn:hover, .w31-appitem:hover, .w31-appitem.hot, .w31-cat:hover { background: var(--highlight); color: var(--highlight-text); }
+.w31-applist { width: 240px; overflow-y: auto; padding: 4px 0; flex: none; background: var(--window); color: var(--window-text); border-right: 1px solid #000; }
+.w31-applabel { font: bold 13px/13px "W31 MS Sans Serif"; padding: 10px 10px 6px; color: inherit; }
+.w31-appitem { display: flex; align-items: center; gap: 8px; padding: 4px 10px; min-height: 26px; cursor: inherit; }
+.w31-appitem.indent { padding-left: 30px; }
+.w31-appitem.cur { background: var(--btn-face); box-shadow: inset 3px 0 0 var(--highlight); }
+.w31-chev { margin-left: auto; font: var(--w31-small); }
+.w31-tiles { width: 320px; padding: 4px 10px; overflow-y: auto; flex: none; }
+.w31-tilehead { font: bold 13px/13px "W31 MS Sans Serif"; padding: 6px 0 8px; }
+.w31-tilegrid { display: grid; grid-template-columns: repeat(3, 96px); grid-auto-rows: 96px; gap: 6px; grid-auto-flow: dense; }
+.w31-tile { position: relative; border: 1px solid #000; color: #fff; overflow: hidden; box-shadow: inset 1px 1px 0 rgba(255,255,255,.6), inset -1px -1px 0 rgba(0,0,0,.6); background-repeat: repeat; image-rendering: pixelated; }
+.w31-tile.wide { grid-column: span 2; }
+.w31-tile:active { box-shadow: inset 1px 1px 0 rgba(0,0,0,.6); }
+.w31-tilebody { position: absolute; inset: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font: var(--w31-small); text-shadow: 1px 1px 0 #000; }
+.w31-tilebig { font: 32px/36px "W31 Sans 32"; }
+.w31-tilerow { display: flex; align-items: center; gap: 8px; }
+.w31-tilename { position: absolute; left: 5px; bottom: 4px; font: var(--w31-small); text-shadow: 1px 1px 0 #000; white-space: nowrap; }
+
+.w31-search-panel { left: 52px; width: 600px; height: min(440px, calc(100% - var(--tbh) - 8px)); display: flex; flex-wrap: wrap; background: var(--btn-face); align-content: stretch; }
+.w31-search-panel .w31-search.inpanel { width: calc(100% - 12px); flex: none; }
+.w31-results { width: 300px; height: 100%; overflow-y: auto; background: var(--window); color: var(--window-text); border-right: 1px solid #000; }
+.w31-search-panel .w31-search.inpanel ~ .w31-results, .w31-search-panel .w31-search.inpanel ~ .w31-resdetail { height: calc(100% - 44px); }
+.w31-appitem.best { min-height: 48px; }
+.w31-resdetail { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px 12px; gap: 8px; height: 100%; }
+.w31-resdetail img { image-rendering: pixelated; }
+.w31-resdetail .w31-appitem { align-self: stretch; }
+.w31-detname { font: 24px/28px "W31 Sans 24"; text-align: center; }
+.w31-kind { font: var(--w31-small); color: inherit; opacity: 1; }
+.w31-sep { align-self: stretch; border-top: 1px solid var(--btn-shadow); margin: 6px 0; }
+.w31-noresult { padding: 16px; }
+
+.w31-action { right: 0; top: 0; width: 330px; display: flex; flex-direction: column; background: var(--btn-face); }
+.w31-achead { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 12px 8px; font: 16px/16px "W31 System"; }
+.w31-link { color: var(--highlight); text-decoration: underline; font: var(--w31-small); padding: 4px 0; }
+.w31-panel .w31-link, .w31-scontent .w31-link { cursor: inherit; }
+.w31-notes { flex: 1; overflow-y: auto; padding: 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.w31-note { position: relative; display: flex; gap: 10px; padding: 8px 22px 8px 8px; background: var(--window); color: var(--window-text); }
+.w31-ttitle { font: bold 16px/16px "W31 MS Sans Serif 10"; margin: 2px 0; }
+.w31-nonotes { padding: 24px; text-align: center; }
+.w31-x { position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; line-height: 14px; text-align: center; font: bold 16px/14px "W31 System"; border: 1px solid #000; background: var(--btn-face); color: var(--btn-text); }
+.w31-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; border-top: 1px solid var(--btn-shadow); }
+.w31-qa { height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; border: 1px solid #000; background: var(--btn-face); font: var(--w31-small); text-align: center; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-qa.on { background: var(--highlight); color: var(--highlight-text); box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+
+.w31-fly { right: 4px; width: 300px; padding: 12px; background: var(--btn-face); display: flex; flex-direction: column; gap: 6px; }
+.w31-flytime { font: 32px/36px "W31 Sans 32"; }
+.w31-cal { margin-top: 6px; }
+.w31-calhead { display: flex; justify-content: space-between; padding: 4px 0; font: 16px/16px "W31 System"; }
+.w31-calgrid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 1px; background: var(--window); color: var(--window-text); border: 1px solid #000; }
+.w31-caldow { font: bold 13px/22px "W31 MS Sans Serif"; border-bottom: 1px solid #000; }
+.w31-calday { line-height: 26px; }
+.w31-calday.other { color: var(--disabled-text); }
+.w31-calday.today { background: var(--highlight); color: var(--highlight-text); }
+.w31-volrow { display: flex; align-items: center; gap: 8px; }
+.w31-flypct { width: 32px; text-align: right; font: 16px/16px "W31 System"; }
+.w31-netitem { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid #000; background: var(--window); color: var(--window-text); }
+.w31-netitem.on { box-shadow: inset 4px 0 0 var(--highlight); }
+
+.w31-toast { position: absolute; right: 8px; width: 330px; z-index: 96000; }
+.w31-toast .inner { background: var(--btn-face); }
+.w31-toastbody { display: flex; gap: 10px; padding: 10px; font: var(--w31-text); color: var(--btn-text); }
+
+/* ---------------- task view ---------------- */
+.w31-taskview { position: absolute; left: 0; right: 0; top: 0; bottom: var(--tbh); z-index: 94000; background: repeating-conic-gradient(#000 0 25%, transparent 0 50%) 0 0 / 2px 2px; display: flex; flex-direction: column; overflow: auto; }
+.w31-vdstrip { display: flex; gap: 12px; padding: 16px; justify-content: center; flex: none; }
+.w31-vd { position: relative; width: 130px; height: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; background: var(--btn-face); color: var(--btn-text); font: var(--w31-small); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-vd.cur { box-shadow: inset 1px 1px 0 var(--btn-shadow); background: var(--highlight); color: var(--highlight-text); }
+.w31-vdthumb { width: 96px; height: 54px; background: var(--desktop); border: 1px solid #000; }
+.w31-vdnew { justify-content: center; }
+.w31-cards { flex: 1; display: flex; flex-wrap: wrap; gap: 28px; align-content: center; justify-content: center; padding: 24px; }
+.w31-card { position: relative !important; width: 230px; height: 160px; }
+.w31-cardbody { display: flex; align-items: center; justify-content: center; }
+.w31-card .w31-x { top: -9px; right: -9px; }
+
+/* ---------------- desktop icons ---------------- */
+.w31-deskicons { position: absolute; inset: 0; z-index: 0; }
+.w31-deskicons .icon .lbl { background: transparent !important; color: #fff; text-shadow: 1px 1px 0 #000; }
+.w31-deskicons .icon.sel .lbl { text-shadow: none; }
+.w31-deskicons .icon.sel .lbl { background: var(--highlight) !important; color: var(--highlight-text) !important; }
+.w31-deskicons .icon.sel .img { filter: none; }
+.w31-rename { width: 74px; height: 18px !important; padding: 0 2px !important; font: 13px/13px "W31 MS Sans Serif" !important; }
+
+/* ---------------- File Explorer ---------------- */
+.body.w31-explorer { display: flex; flex-direction: column; background: var(--btn-face); }
+.w31-xbar { display: flex; gap: 4px; padding: 4px; align-items: center; border-bottom: 1px solid #000; flex: none; }
+.w31-xbtn { width: 26px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; background: var(--btn-face); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-xbtn:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.w31-xbtn.dis img { opacity: .35; }
+.w31-addr { flex: 1; height: 24px !important; }
+.w31-xsearch { width: 160px; height: 24px !important; }
+.w31-xsplit { flex: 1; display: flex; min-height: 0; background: var(--window); }
+.w31-xnav { width: 168px; border: 0 !important; border-right: 1px solid #000 !important; font: var(--w31-text) !important; flex: none; }
+.w31-xnav .it { min-height: 22px; }
+.w31-xmain { flex: 1; border: 0 !important; position: relative; font: var(--w31-text) !important; overflow: auto; }
+.w31-xhead { position: sticky; top: 0; display: flex; z-index: 2; background: var(--btn-face); }
+.w31-xcol { padding: 1px 6px; font: var(--w31-small); flex: none; overflow: hidden; white-space: nowrap; background: var(--btn-face); color: var(--btn-text); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-xrow { display: flex !important; align-items: center; min-height: 20px; white-space: nowrap; }
+.w31-taskmgr .w31-xrow.sel { background: var(--highlight); color: var(--highlight-text); }
+.w31-xrow > span { flex: none; display: flex; align-items: center; gap: 6px; overflow: hidden; padding: 0 6px; }
+.w31-xname { overflow: hidden; text-overflow: ellipsis; }
+.view-icons .w31-xgrid { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; gap: 4px; }
+.w31-xicon { position: relative !important; width: 84px; padding: 4px 0; }
+.w31-xicon.sel .lbl { background: var(--highlight); color: var(--highlight-text); }
+.w31-xicon .lbl { max-width: 82px; }
+.view-list .w31-xgrid { display: flex; flex-direction: column; flex-wrap: wrap; height: 100%; align-content: flex-start; }
+.w31-xlist { width: 200px; }
+.w31-xmain .w31-xgrid .icon { left: auto; top: auto; }
+/* This PC lays out the same in every view, like Windows 10 */
+.w31-pcgrid { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 6px; gap: 4px; }
+.w31-pcgrid .icon { left: auto; top: auto; }
+.w31-pcdrives { display: flex; flex-wrap: wrap; }
+.w31-drive { display: inline-flex; gap: 10px; padding: 8px; margin: 4px 8px; width: 270px; align-items: center; }
+.w31-drive:hover { background: var(--btn-face); }
+.w31-usage { height: 12px; width: 190px; margin: 4px 0; background: var(--window); position: relative; }
+.w31-usage > div { height: 100%; }
+.w31-xtools { display: flex; gap: 6px; padding: 6px; border-bottom: 1px solid var(--btn-shadow); }
+.w31-xempty { padding: 24px; text-align: center; color: var(--disabled-text); }
+
+/* ---------------- Settings ---------------- */
+.body.w31-settings { display: flex; background: var(--window); color: var(--window-text); font: var(--w31-text); }
+.w31-sside { width: 210px; border-right: 1px solid #000; overflow-y: auto; background: var(--btn-face); color: var(--btn-text); flex: none; padding-top: 6px; }
+.w31-home { border-bottom: 1px solid var(--btn-shadow); margin-bottom: 4px; }
+.w31-scontent { flex: 1; overflow: auto; padding: 16px 28px 32px; position: relative; }
+.w31-h1 { font: 32px/36px "W31 Sans 32"; margin: 2px 0 12px; }
+.w31-h2 { font: bold 16px/16px "W31 MS Sans Serif 10"; margin: 18px 0 8px; }
+.w31-p { font: var(--w31-text); margin: 4px 0; max-width: 520px; white-space: pre-wrap; }
+.w31-sfield { margin: 12px 0; position: relative; }
+.w31-slabel { font: 16px/16px "W31 MS Sans Serif 10"; margin-bottom: 6px; }
+.w31-srow { display: flex; gap: 12px; align-items: center; }
+.w31-btnrow { display: flex; gap: 8px; }
+.w31-togrow { display: flex; align-items: center; gap: 10px; }
+.w31-toggle { position: relative; width: 44px; height: 22px; border: 1px solid #000; background: var(--window); box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.w31-toggle.on { background: var(--highlight); }
+.w31-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--btn-face); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.w31-toggle.on .w31-knob { left: 24px; }
+.w31-toggle:focus { outline: 1px dotted var(--window-text); outline-offset: 2px; }
+.w31-catgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
+.w31-cat { display: flex; gap: 12px; align-items: center; padding: 10px; border: 1px solid transparent; }
+.w31-findwrap { position: relative; width: 340px; margin: 0 auto; }
+.w31-find { width: 340px; height: 28px !important; }
+.w31-findres { position: absolute; left: 0; right: 0; top: 30px; z-index: 5; background: var(--window); border: 1px solid #000; }
+.w31-findres:empty { display: none; }
+.w31-swatches { display: flex; flex-wrap: wrap; gap: 6px; max-width: 420px; margin: 6px 0 10px; }
+.w31-swatch { width: 30px; height: 30px; border: 1px solid #000; }
+.w31-swatch.on { outline: 2px solid var(--window-text); outline-offset: 2px; }
+.w31-picgrid { display: grid; grid-template-columns: repeat(auto-fill, 84px); gap: 8px; max-width: 560px; margin-bottom: 8px; }
+.w31-pic { width: 84px; height: 60px; border: 1px solid #000; background-repeat: repeat; background-color: var(--desktop); image-rendering: pixelated; }
+.w31-pic.on { outline: 3px solid var(--highlight); outline-offset: 1px; }
+.w31-preview { position: relative; width: 240px; height: 150px; border: 1px solid #000; overflow: hidden; margin-bottom: 12px; image-rendering: pixelated; }
+.w31-themes { display: grid; grid-template-columns: repeat(auto-fill, 128px); gap: 8px; }
+.w31-theme { display: flex; flex-direction: column; gap: 4px; padding: 6px; font: var(--w31-small); background: var(--btn-face); color: var(--btn-text); }
+.w31-theme.on { outline: 3px solid var(--highlight); }
+.w31-thprev { height: 60px; padding: 10px 16px; border: 1px solid #000; }
+.w31-thprev > div { height: 36px; }
+.w31-info { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.w31-inforow { display: flex; gap: 12px; }
+.w31-inforow > span:first-child { width: 200px; flex: none; font: bold 16px/16px "W31 MS Sans Serif 10"; }
+.w31-approw { display: flex; gap: 12px; align-items: center; padding: 6px; border-bottom: 1px solid var(--btn-shadow); }
+.w31-approw:hover { background: var(--btn-face); }
+
+/* ---------------- Task Manager ---------------- */
+.body.w31-taskmgr { display: flex; flex-direction: column; background: var(--btn-face); padding: 6px; }
+.w31-tabs { display: flex; gap: 0; flex: none; }
+.w31-tab { padding: 3px 12px; border: 1px solid #000; border-bottom: 0; background: var(--btn-face); margin-right: -1px; position: relative; top: 1px; box-shadow: inset 1px 1px 0 var(--btn-highlight); }
+.w31-tab.on { background: var(--window); z-index: 1; padding-bottom: 4px; top: 0; }
+.w31-tabpane { flex: 1; overflow: auto; background: var(--window); color: var(--window-text); border: 1px solid #000; padding: 4px; font: var(--w31-text); }
+.w31-tmfoot { display: flex; justify-content: flex-end; padding-top: 6px; flex: none; }
+.w31-graph { border: 1px solid #000; image-rendering: pixelated; display: block; margin: 4px 0; }
+
+/* ---------------- Weather ---------------- */
+.body.w31-weather { padding: 12px 16px; background: var(--window); color: var(--window-text); font: var(--w31-text); }
+.w31-wxnow { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+.w31-wxnow img { image-rendering: pixelated; }
+.w31-wxtemp { font: 64px/72px "W31 Sans 64"; }
+.w31-wxdays { display: flex; gap: 8px; margin-bottom: 10px; }
+.w31-wxday { width: 90px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; background: var(--btn-face); color: var(--btn-text); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+
+/* ======================= MICROSOFT EDGE ======================= */
+.body.edge { display: flex; flex-direction: column; background: var(--btn-face); --w31-text: 16px/16px "W31 MS Sans Serif 10", sans-serif; --w31-small: 13px/13px "W31 MS Sans Serif", sans-serif; }
+.edge-tabs { flex: none; display: flex; align-items: flex-end; gap: 2px; height: 30px; padding: 0 4px; background: #808080; border-bottom: 1px solid #000; overflow: hidden; }
+.edge-tab { flex: 0 1 200px; min-width: 44px; height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 2px 0 5px; background: #c0c0c0; color: #000; border: 1px solid #000; border-bottom: none; box-shadow: inset 1px 1px 0 #fff; font: var(--w31-small); overflow: hidden; }
+.edge-tab.on { height: 27px; margin-bottom: -1px; background: var(--btn-face); color: var(--btn-text); font-weight: bold; }
+.edge-tab img { flex: none; }
+.edge-tt { flex: 1; white-space: nowrap; overflow: hidden; }
+.edge-tx { flex: none; display: flex; width: 16px; height: 16px; }
+.edge-tx:hover { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080; }
+.edge-plus { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 22px; margin: 0 0 2px 2px; background: var(--btn-face); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.edge-plus:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.edge-bar .w31-xbtn.hidden { display: none; }
+.edge-addr { flex: 1; display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 3px; min-width: 60px; }
+.edge-siteico, .edge-star { flex: none; display: flex; }
+.edge-addrin { flex: 1; min-width: 0; height: 20px; border: 0; outline: 0; padding: 0; background: transparent; color: #000; font: var(--dlg-font); font-weight: normal; }
+.edge-favbar { flex: none; display: flex; gap: 2px; padding: 2px 4px; border-bottom: 1px solid #000; font: var(--w31-small); overflow: hidden; }
+.edge-fav { display: flex; align-items: center; gap: 4px; padding: 2px 6px 2px 3px; white-space: nowrap; }
+.edge-fav:hover { box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.edge-fav:active { box-shadow: inset 1px 1px 0 var(--btn-shadow), inset -1px -1px 0 var(--btn-highlight); }
+.edge-find { flex: none; display: flex; align-items: center; gap: 4px; padding: 3px 4px; border-bottom: 1px solid #000; font: var(--w31-small); }
+.edge-find input.tx { position: relative; width: 220px; height: 22px; }
+.edge-findn { min-width: 90px; padding: 0 4px; }
+.edge-views { flex: 1; position: relative; min-height: 0; background: #fff; }
+.edge-view { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.edge-frame { flex: 1; width: 100%; border: 0; background: #fff; }
+.edge-info { flex: none; display: flex; align-items: center; gap: 8px; padding: 3px 6px; background: var(--btn-face); border-bottom: 1px solid #000; font: var(--w31-small); }
+.edge-info span { flex: 1; }
+.edge-status { position: absolute; left: 0; bottom: 0; z-index: 3; max-width: 70%; padding: 2px 5px; background: var(--btn-face); color: #000; border: 1px solid #000; border-left: 0; border-bottom: 0; font: var(--w31-small); white-space: nowrap; overflow: hidden; pointer-events: none; }
+.edge-dlbar { flex: none; display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-top: 1px solid #000; font: var(--w31-text); }
+.edge-dlbar .btn { position: relative; height: 24px; padding: 0 10px; }
+.edge-sugg { position: absolute; z-index: 20; background: #fff; color: #000; border: 1px solid #000; font: var(--w31-text); }
+.edge-srow { display: flex; align-items: center; gap: 6px; padding: 3px 6px; white-space: nowrap; overflow: hidden; }
+.edge-srow .nw-date { margin-left: auto; padding-left: 12px; overflow: hidden; }
+.edge-srow.hot, .edge-srow:hover { background: var(--highlight); color: var(--highlight-text); }
+.edge-srow.hot .nw-date, .edge-srow:hover .nw-date { color: inherit; }
+
+/* pages */
+.edge-doc { flex: 1; overflow: auto; background: #fff; color: #000; font: 16px/18px "W31 MS Sans Serif 10", sans-serif; user-select: text; -webkit-user-select: text; image-rendering: pixelated; }
+.edge-doc a { color: #0000ff; text-decoration: underline; }
+.edge-doc a.vis { color: #800080; }
+.edge-doc input.tx { position: relative; height: 24px; }
+.edge-doc .btn { position: relative; height: 24px; padding: 0 12px; }
+.edge-doc mark.edge-hit { background: #ffff00; color: #000; }
+.edge-doc mark.edge-hit.cur { background: #00ffff; }
+.edge-pre { margin: 0; padding: 8px 12px; font: var(--fixed-font); white-space: pre-wrap; }
+.edge-img { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 100%; background: #808080; }
+.edge-img img { image-rendering: pixelated; }
+.edge-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.edge-rowx { display: flex; opacity: .6; }
+.edge-rowx:hover { opacity: 1; }
+.edge-set .w31-sfield { margin-bottom: 14px; }
+.edge-nt { display: flex; flex-direction: column; align-items: center; padding: 36px 16px 24px; }
+.edge-ntsearch { display: flex; align-items: center; gap: 6px; width: min(520px, 90%); height: 34px; padding: 0 8px; }
+.edge-ntsearch input { flex: 1; border: 0; outline: 0; background: transparent; font: 16px/16px "W31 MS Sans Serif 10"; color: #000; }
+.edge-nthead { align-self: stretch; max-width: 640px; margin: 24px auto 8px; width: 100%; font: bold 16px/16px "W31 MS Sans Serif 10"; }
+.edge-sites { display: grid; grid-template-columns: repeat(4, 140px); gap: 8px; }
+.edge-site { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 76px; padding: 4px; color: #000 !important; text-decoration: none !important; font: var(--w31-small); text-align: center; overflow: hidden; }
+.edge-site:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.edge-ntfeed { width: 100%; max-width: 640px; }
+.edge-ntcols { display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: start; }
+.nw-head { display: flex; align-items: center; gap: 24px; padding: 8px 16px; background: #000080; color: #fff; flex-wrap: wrap; }
+.edge-doc .nw-brand { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font: 24px/28px "W31 Sans 24"; }
+.nw-nav { display: flex; gap: 14px; flex-wrap: wrap; }
+.edge-doc .nw-nav a { color: #fff; text-decoration: none; }
+.edge-doc .nw-nav a.on, .edge-doc .nw-nav a:hover { text-decoration: underline; }
+.nw-body { padding: 16px 24px; max-width: 760px; }
+.nw h1 { margin: 0 0 12px; font: 32px/36px "W31 Sans 32"; font-weight: normal; }
+.nw h2 { margin: 18px 0 6px; font: bold 16px/18px "W31 MS Sans Serif 10"; }
+.nw p { margin: 0 0 10px; max-width: 640px; }
+.nw-foot { margin-top: 8px; padding: 10px 24px 16px; border-top: 1px solid #c0c0c0; color: #808080; font: var(--w31-small); }
+.nw-search { display: flex; align-items: center; gap: 6px; margin: 4px 0 16px; }
+.nw-cols { display: grid; grid-template-columns: 1fr 220px; gap: 24px; }
+.nw-box { margin: 0 0 12px; padding: 8px 10px; border: 1px solid #000; background: var(--btn-face); }
+.nw-boxhead { margin-bottom: 6px; font-weight: bold; }
+.nw-item { margin-bottom: 10px; }
+.nw-date { color: #808080; font: var(--w31-small); }
+.nw-res { margin-bottom: 14px; }
+.nw-url { color: #008000; font: var(--w31-small); margin: 2px 0; }
+.nw-card { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #c0c0c0; }
+.nw-thumb { flex: none; width: 64px; height: 48px; border: 1px solid #000; background-repeat: repeat; }
+.nw-wx { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.nw-wxt { font: 24px/28px "W31 Sans 24"; }
+.nw-wx.big .nw-wxt { font: 48px/55px "W31 Sans 48"; }
+.nw-table { border-collapse: collapse; margin-bottom: 12px; }
+.nw-table td, .nw-table th { padding: 3px 14px 3px 0; text-align: left; vertical-align: middle; }
+.nw-table .num { text-align: right; }
+
+/* ===== Photos ===== */
+.body.ph { display: flex; flex-direction: column; background: var(--window); color: var(--window-text); font: var(--w31-text); }
+.ph-bar { flex: none; display: flex; align-items: center; gap: 4px; min-height: 34px; padding: 4px; box-sizing: border-box; background: var(--btn-face); color: var(--btn-text); border-bottom: 1px solid #000; overflow: hidden; }
+.ph-title { font: 24px/28px "W31 Sans 24"; padding: 0 8px 0 4px; white-space: nowrap; }
+.ph-name { flex: 1; min-width: 40px; padding: 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph-sp { flex: 1; }
+.ph-gap { width: 6px; flex: none; }
+.ph-btn { flex: none; display: flex; align-items: center; justify-content: center; gap: 4px; height: 24px; min-width: 26px; padding: 0 6px; box-sizing: border-box; border: 1px solid #000; background: var(--btn-face); color: var(--btn-text); font: var(--w31-small); white-space: nowrap; box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.ph-btn:active:not(.dis), .ph-btn.on { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.ph-btn.on { background-image: repeating-conic-gradient(var(--btn-highlight) 0 25%, transparent 0 50%); background-size: 2px 2px; }
+.ph-btn.dis { color: var(--disabled-text); }
+.ph-btn.dis img { opacity: .35; }
+.ph-zoom { flex: none; min-width: 44px; text-align: center; font: var(--w31-small); }
+.ph-scroll { flex: 1; overflow: auto; padding: 0 12px 16px; outline: none; }
+.ph-group { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 8px; font: bold 16px/16px "W31 MS Sans Serif 10"; }
+.ph-group .w31-kind { font-weight: normal; }
+.ph-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.ph-thumb { width: 120px; padding: 3px; box-sizing: border-box; }
+.ph-thimg { width: 112px; height: 84px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--btn-face); border: 1px solid #000; }
+.ph-thimg img, .ph-pic img, .ph-pic canvas, .ph-slide img, .ph-slide canvas { display: block; image-rendering: pixelated; }
+.ph-thname { margin-top: 3px; padding: 0 2px; font: var(--w31-small); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph-thumb.cur .ph-thimg { outline: 3px solid var(--highlight); outline-offset: 1px; }
+.ph-thumb.cur .ph-thname { background: var(--highlight); color: var(--highlight-text); }
+.ph-main { flex: 1; display: flex; min-height: 0; }
+.ph-view { flex: 1; position: relative; min-width: 0; background: #000; }
+.ph-stage { position: absolute; inset: 0; overflow: auto; outline: none; }
+.ph-pic { display: flex; width: max-content; height: max-content; min-width: 100%; min-height: 100%; padding: 8px; box-sizing: border-box; }
+.ph-pic > * { flex: none; margin: auto; }
+.ph-msg { color: #fff; font: var(--w31-text); }
+.ph-nav { position: absolute; top: 50%; z-index: 2; width: 28px; height: 48px; margin-top: -24px; display: flex; align-items: center; justify-content: center; border: 1px solid #000; background: var(--btn-face); box-shadow: inset 1px 1px 0 var(--btn-highlight), inset -1px -1px 0 var(--btn-shadow); }
+.ph-nav:active { box-shadow: inset 1px 1px 0 var(--btn-shadow); }
+.ph-nav.prev { left: 6px; }
+.ph-nav.next { right: 6px; }
+.ph-nav.hidden { display: none; }
+.ph-info { width: 210px; flex: none; overflow-y: auto; padding: 8px 12px 12px; background: var(--btn-face); color: var(--btn-text); border-left: 1px solid #000; }
+.ph-ihead { font: 24px/28px "W31 Sans 24"; margin-bottom: 4px; }
+.ph-info .w31-h2 { margin: 12px 0 4px; }
+.ph-ival { font: var(--w31-small); overflow-wrap: anywhere; }
+.ph-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center; }
+.ph-emptyh { font: 24px/28px "W31 Sans 24"; }
+.ph-hint { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px; border: 1px solid #000; background: var(--btn-face); color: var(--btn-text); }
+.ph-slide { position: absolute; inset: 0; z-index: 300000; display: flex; align-items: center; justify-content: center; background: #000; }
+/* ===== end Photos ===== */
+
+/* ===== Alarms & Clock: alarms ringing over the lock screen ===== */
+.clock-lockcard { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%); z-index: 320000; width: 360px; padding: 12px; background: var(--btn-face); color: var(--btn-text); border: 1px solid #000; display: flex; flex-direction: column; gap: 12px; font: 16px/18px "W31 MS Sans Serif 10", sans-serif; }
+.clock-lockhead { display: flex; gap: 12px; align-items: center; }
+.clock-lockbtns { display: flex; gap: 8px; justify-content: flex-end; }
+.clock-lockbtns .btn { min-width: 110px; }

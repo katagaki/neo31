@@ -409,7 +409,7 @@ Sys.registerApp('progman', {
 
     pm = new Win({
       title: 'Program Manager', icon: 'progman', x: rect.x, y: rect.y, w: rect.w, h: rect.h, menu: menus(),
-      onClose: () => { if (Sys.isNeo()) return true; exitOrSave(); return false; },
+      onClose: () => true,
       onMdiChange: () => {}
     });
     pm.body.style.background = 'var(--app-workspace)';
@@ -430,17 +430,6 @@ Sys.registerApp('progman', {
     const offSet = Sys.on('settings', () => { groups.forEach(g => g.win && !g.win.closed && layoutGroup(g)); pm.mdiClient.arrangeIcons(); });
     pm.on('closed', () => { offExit(); offSet(); });
 
-    // StartUp group
-    if (!PM.ranStartup && !Sys.isNeo()) {
-      PM.ranStartup = true;
-      const su = groups.find(g => g.name.toLowerCase() === 'startup');
-      if (su) su.items.forEach((it, i) => setTimeout(() => Sys.launch(it.cmd, { show: it.runMin ? 'min' : undefined, quiet: true }), 600 + i * 300));
-    }
-    // first-run tip
-    if (!Store.get('welcomed') && !Sys.isNeo()) {
-      Store.set('welcomed', true);
-      setTimeout(() => msgBox('Welcome to Windows 31, a re-creation of Windows 3.1.\n\nDouble-click an icon to start a program. Program groups shown as icons at the bottom of Program Manager can be opened by double-clicking them.\n\nOpen Read Me in the Main group for tips.', 'Welcome', { icon: 'info', owner: pm }), 900);
-    }
     return pm;
   }
 });

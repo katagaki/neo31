@@ -1,6 +1,6 @@
 'use strict';
 /* A compact, editable Office suite for Windows 31. Files use documented simulator
-   formats and never masquerade as native Microsoft Office binaries. */
+   formats (marked office31; files saved before that say neoOffice and still open) and never masquerade as native Microsoft Office binaries. */
 (() => {
   const wordHTML = html => safeDocumentHTML(html || '<p><br></p>');
   const officeSave = async (owner, ext, path, data, title) => {
@@ -30,7 +30,7 @@
         if (r === 'no') return true;
         return !!(await save());
       };
-      const payload = () => ({ neoOffice: 'word-1', html: wordHTML(editor.innerHTML), font, size });
+      const payload = () => ({ office31: 'word-1', html: wordHTML(editor.innerHTML), font, size });
       const save = async (as = false) => {
         const p = await officeSave(w, 'DOC', as ? null : path, payload(), 'Word document');
         if (!p) return false; path = p; dirty = false; title(); return true;
@@ -187,7 +187,7 @@
             const csv = Array.from({ length: maxR + 1 }, (_, r) => Array.from({ length: maxC + 1 }, (_, c) => {
               const raw = getRaw(r, c); return /[",\n]/.test(raw) ? '"' + raw.replace(/"/g, '""') + '"' : raw;
             }).join(',')).join('\r\n'); FS.write(target, csv);
-          } else FS.write(target, JSON.stringify({ neoOffice: 'excel-1', cells }));
+          } else FS.write(target, JSON.stringify({ office31: 'excel-1', cells }));
           path = FS.full(target); dirty = false; title(); status.textContent = 'Saved'; return true;
         } catch (e) { await msgBox(e.message, 'Microsoft Excel', { icon: 'stop', owner: w }); return false; }
       };
@@ -202,7 +202,7 @@
           const raw = FS.read(p); let d;
           if (FS.ext(p) === 'CSV') {
             cells = {}; parseCSV(raw).forEach((row, r) => row.forEach((v, c) => { if (v !== '') cells[key(r, c)] = v; }));
-          } else { d = JSON.parse(raw); if (d.neoOffice !== 'excel-1' || !d.cells || typeof d.cells !== 'object') throw 0; cells = d.cells; }
+          } else { d = JSON.parse(raw); if ((d.office31 || d.neoOffice) !== 'excel-1' || !d.cells || typeof d.cells !== 'object') throw 0; cells = d.cells; }
           path = FS.full(p); dirty = false; active = { r: 0, c: 0 }; title(); render();
         } catch { msgBox('This is not a valid Windows 31 workbook or CSV file.', 'Microsoft Excel', { icon: 'stop', owner: w }); }
       };
@@ -247,8 +247,8 @@
       const sync = () => { head.textContent = slides[index]?.title || ''; body.textContent = slides[index]?.body || ''; stage.style.background = theme === 'Dark Blue' ? '#e8edf7' : theme === 'Green' ? '#edf5ec' : '#fff'; renderList(); status.textContent = `Slide ${index + 1} of ${slides.length}${dirty ? '  ·  Modified' : ''}`; };
       const renderList = () => { list.innerHTML = ''; slides.forEach((s, i) => { const b = h('div', { class: 'it' + (i === index ? ' sel' : ''), style: { whiteSpace: 'normal', minHeight: '50px', margin: '3px 0', border: '1px solid #666', background: '#fff', padding: '5px' } }, h('strong', { text: String(i + 1) + '. ' }), s.title || '(Untitled)'); b.addEventListener('pointerdown', () => { capture(); index = i; sync(); }); list.appendChild(b); }); };
       const capture = () => { if (!slides[index]) return; slides[index].title = head.textContent; slides[index].body = body.textContent; };
-      const save = async as => { capture(); const p = await officeSave(w, 'PPT', as ? null : path, { neoOffice: 'powerpoint-1', theme, slides }, 'PowerPoint presentation'); if (!p) return false; path = p; dirty = false; title(); sync(); return true; };
-      const load = p => { try { const d = JSON.parse(FS.read(p)); if (d.neoOffice !== 'powerpoint-1' || !Array.isArray(d.slides)) throw 0; slides = d.slides.map(s => ({ title: String(s.title || ''), body: String(s.body || '') })); if (!slides.length) slides = [{ title: '', body: '' }]; theme = d.theme || 'Office'; index = 0; path = FS.full(p); dirty = false; title(); sync(); } catch { msgBox('This is not a valid Windows 31 presentation.', 'Microsoft PowerPoint', { icon: 'stop', owner: w }); } };
+      const save = async as => { capture(); const p = await officeSave(w, 'PPT', as ? null : path, { office31: 'powerpoint-1', theme, slides }, 'PowerPoint presentation'); if (!p) return false; path = p; dirty = false; title(); sync(); return true; };
+      const load = p => { try { const d = JSON.parse(FS.read(p)); if ((d.office31 || d.neoOffice) !== 'powerpoint-1' || !Array.isArray(d.slides)) throw 0; slides = d.slides.map(s => ({ title: String(s.title || ''), body: String(s.body || '') })); if (!slides.length) slides = [{ title: '', body: '' }]; theme = d.theme || 'Office'; index = 0; path = FS.full(p); dirty = false; title(); sync(); } catch { msgBox('This is not a valid Windows 31 presentation.', 'Microsoft PowerPoint', { icon: 'stop', owner: w }); } };
       const confirm = async () => { if (!dirty) return true; const r = await msgBox(`Save changes to ${name()}?`, 'Microsoft PowerPoint', { buttons: 'yesnocancel', icon: 'question', owner: w }); return r === 'no' || (r === 'yes' && await save(false)); };
       const slideshow = () => {
         capture(); let i = index;

@@ -12,8 +12,6 @@ const Sys = Object.assign(new Emitter(), {
   clipboard: null,
   tracking: false,
   vd: 0,
-  /* The modern shell is the only shell; classic programs keep their 3.1 behaviour where this is false */
-  isNeo() { return true; },
 
   init() {
     installCursors();
@@ -158,12 +156,10 @@ const Sys = Object.assign(new Emitter(), {
     if (!tok) return null;
     // web addresses open in Microsoft Edge
     if (this.apps.edge && /^(https?:\/\/|www\.|edge:\/\/|file:\/\/)/i.test(String(cmd).trim())) return this.run('edge', { ...opts, args: String(cmd).trim() });
-    const pseudo = { CMD: 'dos', 'CMD.EXE': 'dos', EXPLORER: 'explorer', 'EXPLORER.EXE': 'explorer', SETTINGS: 'settings10', 'MS-SETTINGS:': 'settings10', TASKMGR: 'taskmgr', 'TASKMGR.EXE': 'taskmgr', WEATHER: 'weather', RUN: 'run10', EDGE: 'edge', 'MICROSOFT-EDGE:': 'edge' }[tok.toUpperCase()];
-    if (pseudo && (this.isNeo() || pseudo === 'dos' || pseudo === 'edge')) return this.run(pseudo, { ...opts, args: args || opts.args });
-    if (this.isNeo()) {
-      const full = FS.full(tok, opts.cwd || 'C:\\WINDOWS');
-      if (FS.isDir(full) && !args) return this.run('explorer', { ...opts, args: full });
-    }
+    const pseudo = { CMD: 'dos', 'CMD.EXE': 'dos', EXPLORER: 'explorer', 'EXPLORER.EXE': 'explorer', SETTINGS: 'settings', 'MS-SETTINGS:': 'settings', TASKMGR: 'taskmgr', 'TASKMGR.EXE': 'taskmgr', WEATHER: 'weather', RUN: 'run10', EDGE: 'edge', 'MICROSOFT-EDGE:': 'edge' }[tok.toUpperCase()];
+    if (pseudo) return this.run(pseudo, { ...opts, args: args || opts.args });
+    const full = FS.full(tok, opts.cwd || 'C:\\WINDOWS');
+    if (FS.isDir(full) && !args) return this.run('explorer', { ...opts, args: full });
     const cwd = opts.cwd || 'C:\\WINDOWS';
     let file = FS.which(tok, cwd);
     if (!file && FS.get(tok, cwd)?.t === 'f') file = FS.full(tok, cwd);
@@ -208,7 +204,7 @@ const Sys = Object.assign(new Emitter(), {
     if (Menu.key(e)) { e.preventDefault(); this.altAlone = false; return; }
     if (e.key === 'Alt') { this.altAlone = true; e.preventDefault(); return; }
     this.altAlone = false;
-    if (this.isNeo() && Shell10.key(e)) return;
+    if (Shell31.key(e)) return;
     if (name === 'Ctrl+Esc') { e.preventDefault(); this.taskList(); return; }
     if (name === 'Alt+Tab' || name === 'Alt+Shift+Tab') { e.preventDefault(); Menu.closeAll(true); FastSwitch.start(e.shiftKey); return; }
     if (name === 'Alt+Esc' || name === 'Alt+Shift+Esc') { e.preventDefault(); this.cycle(e.shiftKey); return; }
@@ -227,7 +223,7 @@ const Sys = Object.assign(new Emitter(), {
   onKeyUp(e) {
     if (this.textKey || this.mode !== 'windows') return;
     if (e.key === 'Alt' && FastSwitch.list) { e.preventDefault(); this.altAlone = false; FastSwitch.commit(); return; }
-    if (this.isNeo() && Shell10.keyUp(e)) { e.preventDefault(); return; }
+    if (Shell31.keyUp(e)) { e.preventDefault(); return; }
     if (e.key === 'Alt' && this.altAlone) {
       this.altAlone = false;
       e.preventDefault();
@@ -311,7 +307,7 @@ const Sys = Object.assign(new Emitter(), {
       'Tweed': S({ desktop: '#808040', 'app-workspace': '#c0c0a0', 'active-title': '#404000', 'inactive-title': '#c0c0a0', 'active-border': '#808060', 'inactive-border': '#c0c0a0', menu: '#e0e0c0', highlight: '#404000' }),
       'Valentine': S({ desktop: '#ff80c0', 'app-workspace': '#ffe0f0', 'active-title': '#ff0080', 'inactive-title': '#ffc0e0', 'active-border': '#ff80c0', 'inactive-border': '#ffe0f0', menu: '#ffe0f0', highlight: '#ff0080' }),
       'Wingtips': S({ desktop: '#808080', 'app-workspace': '#c0c0c0', 'active-title': '#800000', 'inactive-title': '#808080', 'inactive-title-text': '#c0c0c0', 'active-border': '#c0c0c0', menu: '#c0c0c0', highlight: '#800000' }),
-      'Neo10 Dark': S({ desktop: '#000000', 'app-workspace': '#808080', window: '#000000', 'window-text': '#ffffff', menu: '#808080', 'menu-text': '#ffffff', 'active-title': '#000080', 'inactive-title': '#808080', 'inactive-title-text': '#c0c0c0', 'active-border': '#808080', 'inactive-border': '#808080', scrollbar: '#808080', 'btn-face': '#c0c0c0', highlight: '#000080' }),
+      'Windows 31 Dark': S({ desktop: '#000000', 'app-workspace': '#808080', window: '#000000', 'window-text': '#ffffff', menu: '#808080', 'menu-text': '#ffffff', 'active-title': '#000080', 'inactive-title': '#808080', 'inactive-title-text': '#c0c0c0', 'active-border': '#808080', 'inactive-border': '#808080', scrollbar: '#808080', 'btn-face': '#c0c0c0', highlight: '#000080' }),
       'High Contrast Black': S({ desktop: '#000000', 'app-workspace': '#000000', window: '#000000', 'window-text': '#ffffff', menu: '#000000', 'menu-text': '#ffffff', 'active-title': '#800080', 'active-title-text': '#ffffff', 'inactive-title': '#008000', 'inactive-title-text': '#ffffff', 'active-border': '#ffff00', 'inactive-border': '#008000', 'window-frame': '#ffffff', scrollbar: '#000000', 'btn-face': '#000000', 'btn-text': '#ffffff', 'btn-shadow': '#808080', 'btn-highlight': '#ffffff', 'disabled-text': '#00ff00', highlight: '#800080', 'highlight-text': '#ffffff' }),
     };
   })(),
@@ -384,10 +380,10 @@ const Sys = Object.assign(new Emitter(), {
   async startWindows() {
     this.mode = 'windows';
     this.textKey = null;
-    return Shell10.start();
+    return Shell31.start();
   },
 
-  exitWindows(opts = {}) { return Shell10.shutdown(false, opts); }
+  exitWindows(opts = {}) { return Shell31.shutdown(false, opts); }
 });
 
 /* ======================= WALLPAPERS ======================= */
@@ -399,7 +395,7 @@ const Wallpapers = {
   /* CSS for a picture tiled at 1:1. Most repeat both ways; a landscape repeats sideways along the bottom with a tile of its sky above. */
   tileStyle(path) {
     const n = FS.get(path), url = this.urlFor(path);
-    const sky = { LOCK10: 'STARS' }[n && n.g];
+    const sky = { LOCK31: 'STARS', LOCK10: 'STARS' }[n && n.g];
     if (!sky) return { backgroundImage: `url(${url})`, backgroundRepeat: 'repeat', backgroundPosition: 'left top', backgroundColor: '' };
     return { backgroundImage: `url(${url}), url(${this.gen(sky).toDataURL()})`, backgroundRepeat: 'repeat-x, repeat', backgroundPosition: 'left bottom, left top', backgroundColor: '#000080' };
   },
@@ -411,6 +407,7 @@ const Wallpapers = {
     return null;
   },
   gen(name) {
+    name = { NEO10: 'WIN31', LOCK10: 'LOCK31' }[name] || name;   // pictures copied before the Windows 31 name
     if (this.cache[name]) return this.cache[name];
     const f = this.makers[name];
     if (!f) return null;
@@ -562,9 +559,9 @@ const Saver = {
     const name = Store.get('saver', '(None)');
     const left = ms => Math.max(1000, ms - (Date.now() - this.last));
     if (name !== '(None)') this._t = setTimeout(() => this.start(name), left(Store.get('saverDelay', 2) * 60000));
-    // Neo10 Power & sleep: blank the screen after N minutes
+    // Power & sleep: blank the screen after N minutes
     const off = Store.get('screenOff', 0);
-    if (Sys.isNeo() && off) this._off = setTimeout(() => { if (this.active) { this.stop(); } this.start('Blank Screen'); }, left(off * 60000));
+    if (off) this._off = setTimeout(() => { if (this.active) { this.stop(); } this.start('Blank Screen'); }, left(off * 60000));
   },
   activity(e) {
     if (this.active) {

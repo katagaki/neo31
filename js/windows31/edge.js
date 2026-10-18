@@ -6,7 +6,7 @@
 const EDGE_NEWTAB = 'edge://newtab';
 
 /* ======================= WINDOWS 31 NETWORK — the offline web ======================= */
-const NeoWeb = {
+const OfflineWeb = {
   NEWS: [
     { slug: 'browser', title: 'Windows 31 gets a web browser', tags: 'edge browser internet web tabs favorites history',
       body: ['Microsoft Edge has arrived on Windows 31. It opens pages in tabs, remembers your favourites and history, finds text with Ctrl+F and zooms in whole steps so every pixel stays square.',
@@ -35,7 +35,7 @@ const NeoWeb = {
   ],
   FILES: [
     { name: 'STARS.BMP', title: 'Starfield wallpaper', size: 51318, g: 'STARS', text: 'A night sky that tiles across any screen.' },
-    { name: 'SUNSET.BMP', title: 'Sunset over the lake', size: 128118, g: 'LOCK10', text: 'The lock-screen picture, for your desktop.' },
+    { name: 'SUNSET.BMP', title: 'Sunset over the lake', size: 128118, g: 'LOCK31', text: 'The lock-screen picture, for your desktop.' },
     { name: 'HONEY.BMP', title: 'Honeycomb tile', size: 854, g: 'HONEY', text: 'A classic from Windows 3.1.' },
     { name: 'SHORTCUTS.TXT', title: 'Edge keyboard shortcuts', text: 'A text file you can open in Notepad.' }
   ],
@@ -52,7 +52,7 @@ const NeoWeb = {
   site(active, ...content) {
     return h('div', { class: 'nw' },
       h('div', { class: 'nw-head' },
-        h('a', { href: 'https://windows31.net/', class: 'nw-brand' }, iconImg('neologo'), h('span', { text: 'Windows 31 Network' })),
+        h('a', { href: 'https://windows31.net/', class: 'nw-brand' }, iconImg('winlogo'), h('span', { text: 'Windows 31 Network' })),
         h('div', { class: 'nw-nav' }, ...this.NAV.map(([k, label, url]) => h('a', { href: url, class: k === active ? 'on' : null, text: label })))),
       h('div', { class: 'nw-body' }, ...content),
       h('div', { class: 'nw-foot', text: '© 1992–2026 Windows 31 Network. Every page here lives inside your computer.' }));
@@ -80,7 +80,7 @@ const NeoWeb = {
     return f.g ? { name: f.name, extra: { g: f.g, s: f.size } } : { name: f.name, text: this.shortcuts.map(([k, v]) => k.padEnd(28) + v).join('\r\n') + '\r\n' };
   },
 
-  /* every offline page with its text, for Neo Search */
+  /* every offline page with its text, for Windows 31 Search */
   index() {
     const pages = [
       { url: 'https://windows31.net/', title: 'Windows 31 Network — Home', text: 'News, weather, games and downloads for Windows 31. Search the Windows 31 Network.' },
@@ -167,7 +167,7 @@ const NeoWeb = {
         h('h2', { text: 'Keyboard shortcuts' }), h('table', { class: 'nw-table' }, ...this.shortcuts.map(([k, v]) => h('tr', {}, h('td', {}, h('b', { text: k })), h('td', { text: v }))))) };
     if (host === 'search.windows31.net') {
       const q = (u.searchParams.get('q') || '').trim(), res = this.search(q), enc = encodeURIComponent(q);
-      return { title: q ? `${q} - Neo Search` : 'Neo Search', node: this.site(null, h('h1', { text: 'Neo Search' }), this.searchForm(q),
+      return { title: q ? `${q} - Windows 31 Search` : 'Windows 31 Search', node: this.site(null, h('h1', { text: 'Windows 31 Search' }), this.searchForm(q),
         q ? h('div', { class: 'nw-date', text: res.length ? `${res.length} result${res.length === 1 ? '' : 's'} on the Windows 31 Network` : `No pages on the Windows 31 Network match "${q}".` }) : null,
         ...res.map(r => h('div', { class: 'nw-res' }, h('a', { href: r.url, text: r.title }), h('div', { class: 'nw-url', text: r.url.replace(/^https:\/\//, '') }), h('div', { text: this.snippet(r.text, q) }))),
         q ? h('div', { class: 'nw-box' }, h('div', { class: 'nw-boxhead', text: 'Search the live web' }),
@@ -192,7 +192,7 @@ const Edge = {
   homeURL() { return this.opt('home', 'newtab') === 'newtab' ? EDGE_NEWTAB : this.opt('homeURL', 'https://windows31.net/'); },
   searchURL(q) {
     const e = encodeURIComponent(q);
-    return { wikipedia: `https://en.wikipedia.org/w/index.php?search=${e}`, google: `https://www.google.com/search?igu=1&q=${e}` }[this.opt('engine', 'neo')] || `https://search.windows31.net/?q=${e}`;
+    return { wikipedia: `https://en.wikipedia.org/w/index.php?search=${e}`, google: `https://www.google.com/search?igu=1&q=${e}` }[this.opt('engine', 'offline')] || `https://search.windows31.net/?q=${e}`;
   },
   /* what the user typed -> an address */
   toURL(input) {
@@ -223,7 +223,7 @@ const Edge = {
     try { FS.write(path, d.text || '', d.extra || {}); }
     catch (e) { msgBox(`Couldn't download ${d.name}.\n${e.message}`, 'Microsoft Edge', { icon: 'stop', owner }); return null; }
     Store.set('edge.dl', [{ name, path, t: Sys.now().getTime() }, ...this.downloads()].slice(0, 100));
-    if (Sys.isNeo()) Shell10.notify({ app: 'Microsoft Edge', icon: 'edge', title: 'Download complete', text: `${FileOps.shownName(name, FS.get(path))} finished downloading.`, onClick: () => FileOps.open(path) });
+    Shell31.notify({ app: 'Microsoft Edge', icon: 'edge', title: 'Download complete', text: `${FileOps.shownName(name, FS.get(path))} finished downloading.`, onClick: () => FileOps.open(path) });
     return path;
   },
   clearData() { Store.set('edge.hist', []); Store.set('edge.dl', []); Store.set('edge.session', null); this.browsers.forEach(b => b.chrome()); }
@@ -238,16 +238,16 @@ const EdgePages = {
     for (const x of Edge.history()) seen[x.url] = seen[x.url] || x;
     const top = [...Edge.favs(), ...Object.values(seen)].filter((x, i, a) => a.findIndex(y => y.url === x.url) === i).slice(0, 8);
     const sites = h('div', { class: 'edge-sites' }, ...top.map(s => {
-      let host = s.url; try { host = NeoWeb.host(new URL(s.url)) || s.url; } catch { }
+      let host = s.url; try { host = OfflineWeb.host(new URL(s.url)) || s.url; } catch { }
       const ic = EdgeIcon(s.url);
-      return h('a', { href: s.url, class: 'edge-site raised' }, iconImg({ s_neologo: 'neologo', s_globe: 'globe', s_docs: 'fdocs' }[ic] || ic), h('div', { text: s.title || host }));
+      return h('a', { href: s.url, class: 'edge-site raised' }, iconImg({ s_winlogo: 'winlogo', s_globe: 'globe', s_docs: 'fdocs' }[ic] || ic), h('div', { text: s.title || host }));
     }));
     setTimeout(() => inp.focus(), 0);
     return { title: 'New tab', node: h('div', { class: 'edge-nt' },
       h('div', { class: 'edge-ntsearch sunken' }, iconImg('s_search'), inp),
       h('div', { class: 'edge-nthead', text: 'Top sites' }), sites,
       h('div', { class: 'edge-ntfeed' }, h('div', { class: 'edge-nthead', text: 'My news feed' }),
-        h('div', { class: 'edge-ntcols' }, h('div', {}, ...NeoWeb.NEWS.slice(0, 4).map((n, i) => h('div', { class: 'nw-item' }, h('a', { href: 'https://windows31.net/news/' + n.slug, text: n.title }), h('div', { class: 'nw-date', text: NeoWeb.newsDate(i) })))), NeoWeb.wxBox()))) };
+        h('div', { class: 'edge-ntcols' }, h('div', {}, ...OfflineWeb.NEWS.slice(0, 4).map((n, i) => h('div', { class: 'nw-item' }, h('a', { href: 'https://windows31.net/news/' + n.slug, text: n.title }), h('div', { class: 'nw-date', text: OfflineWeb.newsDate(i) })))), OfflineWeb.wxBox()))) };
   },
   history(b) {
     const filter = h('input', { class: 'tx', placeholder: 'Search history', spellcheck: false, style: { width: '260px' } });
@@ -314,15 +314,15 @@ const EdgePages = {
     startURL.addEventListener('change', () => Edge.set('startURL', Edge.toURL(startURL.value)));
     el.append(h('h1', { text: 'Settings' }),
       SP.combo('Open Microsoft Edge with', [['newtab', 'A new tab page'], ['continue', 'Previous pages'], ['page', 'A specific page']], () => Edge.opt('startup', 'newtab'), v => Edge.set('startup', v)),
-      h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: 'Specific page' }), startURL),
+      h('div', { class: 'w31-sfield' }, h('div', { class: 'w31-slabel', text: 'Specific page' }), startURL),
       SP.toggle('Show the home button', () => Edge.opt('homeBtn', false), v => Edge.set('homeBtn', v)),
       SP.combo('Home button opens', [['newtab', 'New tab page'], ['url', 'A specific page']], () => Edge.opt('home', 'newtab'), v => Edge.set('home', v)),
-      h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: 'Home page' }), homeURL),
+      h('div', { class: 'w31-sfield' }, h('div', { class: 'w31-slabel', text: 'Home page' }), homeURL),
       SP.combo('Show the favourites bar', [['newtab', 'Only on new tabs'], ['always', 'Always'], ['never', 'Never']], () => Edge.opt('favbar', 'newtab'), v => Edge.set('favbar', v)),
-      SP.combo('Search in the address bar with', [['neo', 'Neo Search (offline)'], ['wikipedia', 'Wikipedia (live)'], ['google', 'Google (live)']], () => Edge.opt('engine', 'neo'), v => Edge.set('engine', v)),
+      SP.combo('Search in the address bar with', [['offline', 'Windows 31 Search (offline)'], ['wikipedia', 'Wikipedia (live)'], ['google', 'Google (live)']], () => Edge.opt('engine', 'offline'), v => Edge.set('engine', v)),
       SP.combo('Default zoom', [['1', '100%'], ['2', '200%'], ['3', '300%']], () => String(Edge.opt('zoom', 1)), v => Edge.set('zoom', +v)),
       SP.toggle('Save browsing history', () => Edge.opt('keepHistory', true), v => Edge.set('keepHistory', v)),
-      h('div', { class: 'neo-sfield' }, h('div', { class: 'neo-slabel', text: 'Clear browsing data' }), SP.p('Deletes your history, the downloads list and saved tabs. Downloaded files stay in your Downloads folder.'),
+      h('div', { class: 'w31-sfield' }, h('div', { class: 'w31-slabel', text: 'Clear browsing data' }), SP.p('Deletes your history, the downloads list and saved tabs. Downloaded files stay in your Downloads folder.'),
         SP.button('Clear now', async () => { if (await msgBox('Clear your history, downloads list and saved tabs?', 'Microsoft Edge', { buttons: 'yesno', icon: 'question', owner: b.w }) === 'yes') Edge.clearData(); })),
       h('h2', { text: 'About Microsoft Edge' }), h('p', { text: 'Microsoft Edge 1.0.31 (16-bit) for Windows 31.' }),
       h('p', {}, 'Pages on ', h('a', { href: 'https://windows31.net/', text: 'windows31.net' }), ' work offline. Other sites load live from the internet; some don\'t allow themselves to be shown inside another page.'));
@@ -339,7 +339,7 @@ EdgePages.help = EdgePages.settings;
 function EdgeIcon(url) {
   if (/^edge:/.test(url)) return { 'edge://history': 's_restart', 'edge://favorites': 's_star', 'edge://downloads': 's_down', 'edge://settings': 's_gear' }[url.replace(/\/$/, '')] || 'edge';
   if (/^file:/.test(url)) return 's_docs';
-  try { if (NeoWeb.isOurs(NeoWeb.host(new URL(url)))) return 's_neologo'; } catch { }
+  try { if (OfflineWeb.isOurs(OfflineWeb.host(new URL(url)))) return 's_winlogo'; } catch { }
   return 's_globe';
 }
 
@@ -389,7 +389,7 @@ Sys.registerApp('edge', {
   run(opts) {
     const tabs = [], closed = [];
     let cur = null, findHits = [], findIdx = 0;
-    const btn = (icon, title, fn) => { const b = h('div', { class: 'neo-xbtn', title }, iconImg(icon)); b.addEventListener('click', e => { if (!b.classList.contains('dis')) fn(e); }); return b; };
+    const btn = (icon, title, fn) => { const b = h('div', { class: 'w31-xbtn', title }, iconImg(icon)); b.addEventListener('click', e => { if (!b.classList.contains('dis')) fn(e); }); return b; };
 
     /* ---------- chrome ---------- */
     const strip = h('div', { class: 'edge-tabs' });
@@ -405,7 +405,7 @@ Sys.registerApp('edge', {
     const addrBox = h('div', { class: 'edge-addr sunken' }, siteIco, addr, star);
     const hub = btn('s_hub', 'Favourites, history and downloads', e => hubMenu());
     const more = btn('s_more', 'Settings and more', e => moreMenu());
-    const bar = h('div', { class: 'neo-xbar edge-bar' }, back, fwd, reload, home, addrBox, hub, more);
+    const bar = h('div', { class: 'w31-xbar edge-bar' }, back, fwd, reload, home, addrBox, hub, more);
     const favbar = h('div', { class: 'edge-favbar' });
     const findIn = h('input', { class: 'tx', spellcheck: false, placeholder: 'Find on page' });
     const findCount = h('span', { class: 'edge-findn' });
@@ -424,7 +424,7 @@ Sys.registerApp('edge', {
 
     /* ---------- tabs ---------- */
     const newTab = (url, activate = true, after = cur) => {
-      if (cur && (/^windows31-run:/i.test(url) || NeoWeb.download(url))) { navigate(cur, url); return cur; }
+      if (cur && (/^windows31-run:/i.test(url) || OfflineWeb.download(url))) { navigate(cur, url); return cur; }
       const t = { url: null, title: 'New tab', icon: 'edge', back: [], fwd: [], zoom: Edge.opt('zoom', 1), view: h('div', { class: 'edge-view hidden' }), loading: false };
       tabs.splice(after ? tabs.indexOf(after) + 1 : tabs.length, 0, t);
       views.insertBefore(t.view, status);
@@ -479,7 +479,7 @@ Sys.registerApp('edge', {
     };
     const navigate = (t, url, push = true) => {
       if (/^windows31-run:/i.test(url)) { Sys.launch(decodeURIComponent(url.replace(/^windows31-run:/i, '')), { caller: 'Microsoft Edge' }); return; }
-      const dl = NeoWeb.download(url);
+      const dl = OfflineWeb.download(url);
       if (dl) { const p = Edge.download(dl, w); if (p) showDl(p); return; }
       if (push && t.url) { t.back.push(t.url); t.fwd = []; }
       t.url = url;
@@ -498,7 +498,7 @@ Sys.registerApp('edge', {
       if (url === 'about:blank') page = { title: 'Blank page', node: h('div') };
       else if (/^edge:/i.test(url)) { const name = url.replace(/^edge:\/*/i, '').replace(/\/.*$/, ''); page = (EdgePages[name] || EdgePages.newtab)(B); }
       else if (/^file:/i.test(url)) page = edgeLocal(url);
-      else if (u && /^https?:$/.test(u.protocol) && NeoWeb.isOurs(NeoWeb.host(u))) page = NeoWeb.page(u);
+      else if (u && /^https?:$/.test(u.protocol) && OfflineWeb.isOurs(OfflineWeb.host(u))) page = OfflineWeb.page(u);
       else if (u && /^https?:$/.test(u.protocol)) page = null;
       else page = EdgePages.error(B, url);
 
@@ -579,7 +579,7 @@ Sys.registerApp('edge', {
       reload.replaceChildren(iconImg(cur.loading ? 's_x' : 's_restart')); reload.title = cur.loading ? 'Stop (Esc)' : 'Refresh (F5)';
       home.classList.toggle('hidden', !Edge.opt('homeBtn', false));
       if (document.activeElement !== addr) addr.value = cur.url === EDGE_NEWTAB ? '' : cur.url;
-      siteIco.replaceChildren(iconImg(/^https:/.test(cur.url) && !NeoWeb.isOurs(safeHost(cur.url)) ? 's_lock' : EdgeIcon(cur.url), 16));
+      siteIco.replaceChildren(iconImg(/^https:/.test(cur.url) && !OfflineWeb.isOurs(safeHost(cur.url)) ? 's_lock' : EdgeIcon(cur.url), 16));
       const canFav = !/^edge:|^about:/.test(cur.url);
       star.replaceChildren(iconImg(isFav() ? 's_star' : 's_staroff', 16));
       star.classList.toggle('hidden', !canFav);
@@ -594,7 +594,7 @@ Sys.registerApp('edge', {
       }
       w.setTitle(`${cur.title} - Microsoft Edge`);
     };
-    const safeHost = url => { try { return NeoWeb.host(new URL(url)); } catch { return ''; } };
+    const safeHost = url => { try { return OfflineWeb.host(new URL(url)); } catch { return ''; } };
     const toggleFav = () => {
       if (/^edge:|^about:/.test(cur.url)) return;
       Edge.setFavs(isFav() ? Edge.favs().filter(f => f.url !== cur.url) : [...Edge.favs(), { title: cur.title, url: cur.url }]);
@@ -666,7 +666,7 @@ Sys.registerApp('edge', {
       { label: '&History', key: 'Ctrl+H', action: () => go('edge://history') },
       { label: '&Downloads', key: 'Ctrl+J', action: () => go('edge://downloads') },
       '-',
-      { label: 'Open in a &real browser', disabled: !/^https?:/.test(cur.url) || NeoWeb.isOurs(safeHost(cur.url)), action: () => window.open(cur.url, '_blank', 'noopener') },
+      { label: 'Open in a &real browser', disabled: !/^https?:/.test(cur.url) || OfflineWeb.isOurs(safeHost(cur.url)), action: () => window.open(cur.url, '_blank', 'noopener') },
       { label: '&Settings', action: () => go('edge://settings') },
       { label: '&Help', action: () => go('https://help.windows31.net/') },
       '-',

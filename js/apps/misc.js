@@ -244,7 +244,7 @@ Sys.registerApp('setup', {
             }
           }).promise.then(res));
           Store.set('display', nd);
-          if (r === 'r') Shell10.shutdown(true);
+          if (r === 'r') Shell31.shutdown(true);
           else { Sys.layoutScreen(); render(); }
         } }), 120, 122, 80, 25);
         d.add(UI.button('Cancel', { cancel: true, onClick: () => d.close() }), 210, 122, 80, 25);

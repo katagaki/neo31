@@ -1,10 +1,10 @@
 'use strict';
-/* Neo10 extras: Task Manager, Weather, Run */
+/* Desktop extras: Task Manager, Weather, Run */
 
 /* ======================= TASK MANAGER ======================= */
 (() => {
   const hash = s => { let x = 0; for (const c of String(s)) x = (x * 31 + c.charCodeAt(0)) | 0; return Math.abs(x); };
-  const BG = [['Windows Explorer', 'neologo', 2.4], ['Desktop Window Manager', 'app', 1.6], ['Windows Audio', 'cpSound', .3], ['Print Spooler', 'printman', .2],
+  const BG = [['Windows Explorer', 'winlogo', 2.4], ['Desktop Window Manager', 'app', 1.6], ['Windows Audio', 'cpSound', .3], ['Print Spooler', 'printman', .2],
     ['Service Host: Local System', 'cp386', .5], ['Program Manager Compatibility Host', 'progman', .2], ['COMMAND.COM', 'dos', .1], ['Typematic Service', 'cpKeyboard', .1]];
 
   Sys.registerApp('taskmgr', {
@@ -13,9 +13,9 @@
       const tabs = ['Processes', 'Performance', 'Startup'];
       let tab = 0, sel = null, lastDown = 0;
       const hist = { cpu: Array(60).fill(0), mem: Array(60).fill(0) };
-      const tabbar = h('div', { class: 'neo-tabs' });
-      const pane = h('div', { class: 'neo-tabpane sunken' });
-      const foot = h('div', { class: 'neo-tmfoot' });
+      const tabbar = h('div', { class: 'w31-tabs' });
+      const pane = h('div', { class: 'w31-tabpane sunken' });
+      const foot = h('div', { class: 'w31-tmfoot' });
       const endBtn = UI.button('&End task', { onClick: async () => { const t = sel && sel.win; if (t && !t.closed && await t.close()) { sel = null; sample(); } } });
       const same = (a, b) => !!a && !!b && (a.win ? a.win === b.win : a.name === b.name);
       foot.appendChild(endBtn);
@@ -25,11 +25,11 @@
           { label: '&Options', items: [{ label: '&Always on top', checked: () => !!w.o.topmost, action: () => { w.o.topmost = !w.o.topmost; w.activate(); } }] },
           { label: '&View', items: [{ label: '&Refresh now', key: 'F5', action: () => sample() }, ...tabs.map((t, i) => ({ label: '&' + t, checked: () => tab === i, action: () => { tab = i; draw(); } }))] }
         ] });
-      w.body.classList.add('neo-taskmgr');
+      w.body.classList.add('w31-taskmgr');
       w.body.append(tabbar, pane, foot);
       const renderTabs = () => {
         tabbar.innerHTML = '';
-        tabs.forEach((t, i) => { const b = h('div', { class: 'neo-tab' + (i === tab ? ' on' : ''), text: t }); b.addEventListener('pointerdown', () => { tab = i; draw(); }); tabbar.appendChild(b); });
+        tabs.forEach((t, i) => { const b = h('div', { class: 'w31-tab' + (i === tab ? ' on' : ''), text: t }); b.addEventListener('pointerdown', () => { tab = i; draw(); }); tabbar.appendChild(b); });
       };
       let procs = [];
       const sample = () => {
@@ -45,7 +45,7 @@
         if (Date.now() - lastDown > 700) draw();
       };
       const graph = (data, color) => {
-        const c = h('canvas', { width: 300, height: 120, class: 'neo-graph' });
+        const c = h('canvas', { width: 300, height: 120, class: 'w31-graph' });
         const x = c.getContext('2d');
         x.fillStyle = '#000'; x.fillRect(0, 0, 300, 120);
         x.fillStyle = '#008000';
@@ -62,17 +62,17 @@
         pane.innerHTML = '';
         foot.style.display = tab === 0 ? '' : 'none';
         if (tab === 0) {
-          const head = h('div', { class: 'neo-xhead' }, ...[['Name', 250], [`${Math.round(hist.cpuNow || 0)}%\nCPU`, 70], [`${Math.round((hist.memNow || 0) / 8 * 100)}%\nMemory`, 80], ['0%\nDisk', 60]].map(([t, wd]) => h('div', { class: 'neo-xcol raised', style: { width: wd + 'px', whiteSpace: 'pre', lineHeight: '14px' }, text: t })));
+          const head = h('div', { class: 'w31-xhead' }, ...[['Name', 250], [`${Math.round(hist.cpuNow || 0)}%\nCPU`, 70], [`${Math.round((hist.memNow || 0) / 8 * 100)}%\nMemory`, 80], ['0%\nDisk', 60]].map(([t, wd]) => h('div', { class: 'w31-xcol raised', style: { width: wd + 'px', whiteSpace: 'pre', lineHeight: '14px' }, text: t })));
           pane.appendChild(head);
           const section = (label, list) => {
-            pane.appendChild(h('div', { class: 'neo-applabel', text: `${label} (${list.length})` }));
+            pane.appendChild(h('div', { class: 'w31-applabel', text: `${label} (${list.length})` }));
             for (const p of list) {
               if (same(sel, p)) sel = p;
-              const r = h('div', { class: 'it neo-xrow' + (same(sel, p) ? ' sel' : ''), role: 'row', 'aria-selected': String(same(sel, p)) },
-                h('span', { style: { width: '250px' } }, iconImg(p.icon, 16), h('span', { class: 'neo-xname', text: p.name })),
+              const r = h('div', { class: 'it w31-xrow' + (same(sel, p) ? ' sel' : ''), role: 'row', 'aria-selected': String(same(sel, p)) },
+                h('span', { style: { width: '250px' } }, iconImg(p.icon, 16), h('span', { class: 'w31-xname', text: p.name })),
                 h('span', { style: { width: '70px', textAlign: 'right' }, text: p.cpu.toFixed(1) + '%' }), h('span', { style: { width: '80px', textAlign: 'right' }, text: (p.mem * 1024).toFixed(0) + ' KB' }), h('span', { style: { width: '60px', textAlign: 'right' }, text: '0 MB/s' }));
               // select in place: rebuilding the rows mid-click would swallow the double-click
-              r.addEventListener('pointerdown', () => { sel = p; lastDown = Date.now(); pane.querySelectorAll('.neo-xrow.sel').forEach(x => { x.classList.remove('sel'); x.setAttribute('aria-selected', 'false'); }); r.classList.add('sel'); r.setAttribute('aria-selected', 'true'); endBtn.disabled = !p.win; });
+              r.addEventListener('pointerdown', () => { sel = p; lastDown = Date.now(); pane.querySelectorAll('.w31-xrow.sel').forEach(x => { x.classList.remove('sel'); x.setAttribute('aria-selected', 'false'); }); r.classList.add('sel'); r.setAttribute('aria-selected', 'true'); endBtn.disabled = !p.win; });
               r.addEventListener('dblclick', () => { if (p.win) { p.win.isMin ? p.win.restore() : p.win.activate(); } });
               pane.appendChild(r);
             }
@@ -81,18 +81,18 @@
           section('Background processes', procs.filter(p => !p.app));
           endBtn.disabled = !(sel && sel.win && !sel.win.closed);
         } else if (tab === 1) {
-          pane.append(h('div', { class: 'neo-h2', text: 'CPU' }), h('div', { class: 'neo-kind', text: 'Intel 80486DX2 @ 66 MHz' }), graph(hist.cpu, '#00ff00'),
+          pane.append(h('div', { class: 'w31-h2', text: 'CPU' }), h('div', { class: 'w31-kind', text: 'Intel 80486DX2 @ 66 MHz' }), graph(hist.cpu, '#00ff00'),
             SP.info([['Utilization', Math.round(hist.cpuNow || 0) + '%'], ['Speed', '0.07 GHz'], ['Processes', String(procs.length)], ['Up time', (() => { const s = Math.floor(performance.now() / 1000); return `0:${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; })()]]),
-            h('div', { class: 'neo-h2', text: 'Memory' }), h('div', { class: 'neo-kind', text: '8.0 MB' }), graph(hist.mem, '#ffff00'),
+            h('div', { class: 'w31-h2', text: 'Memory' }), h('div', { class: 'w31-kind', text: '8.0 MB' }), graph(hist.mem, '#ffff00'),
             SP.info([['In use', (hist.memNow || 0).toFixed(1) + ' MB'], ['Available', (8 - (hist.memNow || 0)).toFixed(1) + ' MB'], ['System resources', sysResources() + '% free']]));
         } else {
           const groups = Store.get('pm.groups') || PM.defaults();
           const su = (groups.find(g => g.name.toLowerCase() === 'startup') || { items: [] }).items;
           const off = Store.get('startup.off', []);
-          if (!su.length) pane.appendChild(h('div', { class: 'neo-xempty', text: 'There are no startup items to display. Add some in Settings > Apps > Startup.' }));
+          if (!su.length) pane.appendChild(h('div', { class: 'w31-xempty', text: 'There are no startup items to display. Add some in Settings > Apps > Startup.' }));
           for (const it of su) {
             const dis = off.includes(it.name);
-            const r = h('div', { class: 'it neo-xrow' }, h('span', { style: { width: '250px' }, text: it.name }), h('span', { style: { width: '100px' }, text: dis ? 'Disabled' : 'Enabled' }), h('span', { text: 'Low' }));
+            const r = h('div', { class: 'it w31-xrow' }, h('span', { style: { width: '250px' }, text: it.name }), h('span', { style: { width: '100px' }, text: dis ? 'Disabled' : 'Enabled' }), h('span', { text: 'Low' }));
             r.addEventListener('dblclick', () => { Store.set('startup.off', dis ? off.filter(x => x !== it.name) : [...off, it.name]); draw(); });
             pane.appendChild(r);
           }
@@ -130,22 +130,22 @@ Sys.registerApp('weather', {
   name: 'Weather', icon: 'weather', single: true,
   run() {
     const w = new Win({ title: 'Weather', icon: 'weather', w: 520, h: 330, persist: 'weather' });
-    w.body.classList.add('neo-weather');
+    w.body.classList.add('w31-weather');
     const draw = () => {
       w.body.innerHTML = '';
       const now = Weather.today(), unit = Intl31.get().iMeasure === 0 ? 'C' : 'F';
       const big = iconImg('weather'); big.style.width = big.style.height = '96px';
       w.body.append(
-        h('div', { class: 'neo-h2', text: Weather.city }),
-        h('div', { class: 'neo-wxnow' }, big, h('div', {}, h('div', { class: 'neo-wxtemp', text: `${now.temp}°${unit}` }), h('div', { class: 'neo-slabel', text: now.cond }), h('div', { class: 'neo-kind', text: `Updated ${Intl31.time(Sys.now())}` }))));
-      const days = h('div', { class: 'neo-wxdays' });
+        h('div', { class: 'w31-h2', text: Weather.city }),
+        h('div', { class: 'w31-wxnow' }, big, h('div', {}, h('div', { class: 'w31-wxtemp', text: `${now.temp}°${unit}` }), h('div', { class: 'w31-slabel', text: now.cond }), h('div', { class: 'w31-kind', text: `Updated ${Intl31.time(Sys.now())}` }))));
+      const days = h('div', { class: 'w31-wxdays' });
       for (let i = 0; i < 5; i++) {
         const d = new Date(Sys.now()); d.setDate(d.getDate() + i);
         const f = Weather.day(d);
-        days.appendChild(h('div', { class: 'neo-wxday raised' }, h('div', { class: 'neo-slabel', text: i ? Intl31.DAYS[d.getDay()].slice(0, 3) + ' ' + d.getDate() : 'Today' }), iconImg(f.icon), h('div', { text: `${Weather.unit(f.hi)}° / ${Weather.unit(f.lo)}°` }), h('div', { class: 'neo-kind', text: f.cond })));
+        days.appendChild(h('div', { class: 'w31-wxday raised' }, h('div', { class: 'w31-slabel', text: i ? Intl31.DAYS[d.getDay()].slice(0, 3) + ' ' + d.getDate() : 'Today' }), iconImg(f.icon), h('div', { text: `${Weather.unit(f.hi)}° / ${Weather.unit(f.lo)}°` }), h('div', { class: 'w31-kind', text: f.cond })));
       }
       w.body.appendChild(days);
-      w.body.appendChild(h('div', { class: 'neo-kind', text: `Temperatures in °${unit} follow Settings > Time & Language > Region.` }));
+      w.body.appendChild(h('div', { class: 'w31-kind', text: `Temperatures in °${unit} follow Settings > Time & Language > Region.` }));
     };
     draw();
     const off = Sys.on('settings', draw), iv = setInterval(draw, 60000);

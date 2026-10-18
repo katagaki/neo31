@@ -1,5 +1,5 @@
 'use strict';
-/* Neo10 — the Windows 10 experience drawn with Windows 3.1's pixels:
+/* Windows 31 — the desktop, drawn with Windows 3.1's pixels:
    boot/lock/sign-in, taskbar, Start menu with live tiles, search, Action
    Center & toasts, flyouts, Task View with virtual desktops, desktop icons,
    Windows-key shortcuts, and shut down / restart / sign out. */
@@ -11,7 +11,7 @@ const KNOWN = {
 };
 
 /* Start-menu catalogue: Windows 10 names for the programs */
-const NEO_APPS = [
+const START_APPS = [
   { name: 'Alarms & Clock', cmd: 'CLOCK.EXE', icon: 'clock' },
   { name: 'Calculator', cmd: 'CALC.EXE', icon: 'calc' },
   { name: 'Calendar', cmd: 'CALENDAR.EXE', icon: 'calendar' },
@@ -36,7 +36,7 @@ const NEO_APPS = [
   { name: 'Microsoft Edge', cmd: 'MSEDGE.EXE', icon: 'edge' },
   { name: 'Photos', cmd: 'PHOTOS.EXE', icon: 'photos' },
   { name: 'Minesweeper', cmd: 'WINMINE.EXE', icon: 'winmine' },
-  { name: 'Settings', cmd: 'SETTINGS', icon: 'settings10' },
+  { name: 'Settings', cmd: 'SETTINGS', icon: 'settings' },
   { name: 'Weather', cmd: 'WEATHER', icon: 'weather' },
   { name: 'Cardfile', cmd: 'CARDFILE.EXE', icon: 'cardfile', folder: 'Windows Accessories' },
   { name: 'Program Manager', cmd: 'PROGMAN.EXE', icon: 'progman', folder: 'Windows System' },
@@ -46,17 +46,17 @@ const NEO_APPS = [
   { name: 'Read Me', cmd: 'WRITE.EXE C:\\WINDOWS\\README.WRI', icon: 'wri', folder: 'Windows Accessories' },
   { name: 'Help', cmd: 'WINHELP.EXE progman', icon: 'help', folder: 'Windows Accessories' }
 ];
-const appByCmd = cmd => NEO_APPS.find(a => a.cmd.toUpperCase() === String(cmd).toUpperCase());
+const appByCmd = cmd => START_APPS.find(a => a.cmd.toUpperCase() === String(cmd).toUpperCase());
 /* which app (by registry id) a catalogue entry starts — used to group taskbar buttons */
 const appIdOf = a => {
-  const map = { CMD: 'dos', EXPLORER: 'explorer', 'EXPLORER THISPC': 'explorer', SETTINGS: 'settings10', TASKMGR: 'taskmgr', WEATHER: 'weather', RUN: null };
+  const map = { CMD: 'dos', EXPLORER: 'explorer', 'EXPLORER THISPC': 'explorer', SETTINGS: 'settings', TASKMGR: 'taskmgr', WEATHER: 'weather', RUN: null };
   if (a.cmd.toUpperCase() in map) return map[a.cmd.toUpperCase()];
   const f = FS.which(Sys.splitCmd(a.cmd)[0]);
   const n = f && FS.get(f);
   return n && n.a;
 };
 
-const Shell10 = {
+const Shell31 = {
   TB: 41,
   notes: [],
   vds: ['Desktop 1'],
@@ -66,7 +66,7 @@ const Shell10 = {
   async start() {
     Sys.mode = 'windows';
     this.ensureProfile();
-    Sys.deskEl.classList.add('hidden', 'neo');
+    Sys.deskEl.classList.add('hidden', 'w31');
     const boot = this.bootScreen();
     await sleep(Store.get('fastBoot') ? 600 : 2600);
     // Setup, pending updates, resets and the recovery environment all run before the desktop
@@ -74,9 +74,9 @@ const Shell10 = {
     if (setup === 'off') { boot.remove(); Sys.screen.classList.remove('busy'); await DOS.offScreen(); return DOS.boot(); }
     Sys.mode = 'windows';
     IniSync.read();
-    if (!Store.get('neo.inited')) {
-      Store.set('neo.inited', true);
-      if (Store.get('wallpaper', '(None)') === '(None)') { Store.set('wallpaper', 'NEO10.BMP'); Store.set('wallFit', 'tile'); Store.set('wallTile', true); }
+    if (!Store.get('shell.inited')) {
+      Store.set('shell.inited', true);
+      if (Store.get('wallpaper', '(None)') === '(None)') { Store.set('wallpaper', 'WIN31.BMP'); Store.set('wallFit', 'tile'); Store.set('wallTile', true); }
     }
     Sys.applyScheme();
     Sys.applyDesktop();
@@ -100,8 +100,12 @@ const Shell10 = {
     const uh = FS.get(USER_HOME); if (uh) uh.n = 'User';
     mk(KNOWN.recycle); const r = FS.get(KNOWN.recycle); if (r) { r.h = true; r.n = '$Recycle.Bin'; }
     const W = 'C:\\WINDOWS\\';
-    if (!FS.exists(W + 'NEO10.BMP')) FS.write(W + 'NEO10.BMP', '', { s: 64118, g: 'NEO10' });
-    if (!FS.exists(W + 'LOCK10.BMP')) FS.write(W + 'LOCK10.BMP', '', { s: 64118, g: 'LOCK10' });
+    // the desktop pictures and INI entries from before the Windows 31 name
+    for (const old of ['NEO10.BMP', 'LOCK10.BMP']) if (FS.exists(W + old)) { try { FS.remove(W + old); } catch {} }
+    if (/^neo10\.bmp$/i.test(readIni('C:\\WINDOWS\\WIN.INI', 'Desktop').wallpaper || '')) writeIni('C:\\WINDOWS\\WIN.INI', 'Desktop', 'Wallpaper', 'win31.bmp');
+    if (/^neo10 dark$/i.test(readIni('C:\\WINDOWS\\CONTROL.INI', 'current')['color schemes'] || '')) writeIni('C:\\WINDOWS\\CONTROL.INI', 'current', 'color schemes', 'Windows 31 Dark');
+    if (!FS.exists(W + 'WIN31.BMP')) FS.write(W + 'WIN31.BMP', '', { s: 64118, g: 'WIN31' });
+    if (!FS.exists(W + 'LOCK31.BMP')) FS.write(W + 'LOCK31.BMP', '', { s: 64118, g: 'LOCK31' });
     if (!FS.exists(W + 'MSEDGE.EXE')) FS.write(W + 'MSEDGE.EXE', '', { s: 31744, a: 'edge' });
     const ext = readIni('C:\\WINDOWS\\WIN.INI', 'Extensions');
     if (!ext.htm) writeIni('C:\\WINDOWS\\WIN.INI', 'Extensions', 'htm', 'msedge.exe ^.htm');
@@ -114,11 +118,11 @@ const Shell10 = {
   },
 
   bootScreen() {
-    const el = h('div', { class: 'neo-full', style: { background: '#000' } });
-    const logo = neoLogoGrid(64).canvas();
-    logo.className = 'neo-pix'; logo.style.width = '128px'; logo.style.height = '128px';
+    const el = h('div', { class: 'w31-full', style: { background: '#000' } });
+    const logo = winLogoGrid(64).canvas();
+    logo.className = 'w31-pix'; logo.style.width = '128px'; logo.style.height = '128px';
     const spin = this.spinner('#ffffff');
-    el.append(h('div', { class: 'neo-center', style: { gap: '64px' } }, logo, spin.el));
+    el.append(h('div', { class: 'w31-center', style: { gap: '64px' } }, logo, spin.el));
     Sys.screen.appendChild(el);
     el._stop = spin.stop;
     const rm = el.remove.bind(el);
@@ -127,7 +131,7 @@ const Shell10 = {
   },
   /* Windows 10 "five dots" spinner, rasterised as 4x4 pixel squares */
   spinner(color) {
-    const c = h('canvas', { width: 48, height: 48, class: 'neo-pix', style: { width: '48px', height: '48px' } });
+    const c = h('canvas', { width: 48, height: 48, class: 'w31-pix', style: { width: '48px', height: '48px' } });
     const x = c.getContext('2d');
     let t = 0, raf;
     const step = () => {
@@ -151,14 +155,14 @@ const Shell10 = {
     return new Promise(resolve => {
       Saver.stop && Saver.active && Saver.stop();
       this.closePanels();
-      const ov = h('div', { class: 'neo-full neo-lock' });
-      const lockPath = FS.exists('C:\\WINDOWS\\' + Store.get('lockImage', 'LOCK10.BMP')) ? 'C:\\WINDOWS\\' + Store.get('lockImage', 'LOCK10.BMP') : 'C:\\WINDOWS\\LOCK10.BMP';
-      const bg = h('div', { class: 'neo-lockbg' }); this.tileBg(bg, lockPath);
-      const time = h('div', { class: 'neo-locktime' }), date = h('div', { class: 'neo-lockdate' });
+      const ov = h('div', { class: 'w31-full w31-lock' });
+      const lockPath = FS.exists('C:\\WINDOWS\\' + Store.get('lockImage', 'LOCK31.BMP')) ? 'C:\\WINDOWS\\' + Store.get('lockImage', 'LOCK31.BMP') : 'C:\\WINDOWS\\LOCK10.BMP';
+      const bg = h('div', { class: 'w31-lockbg' }); this.tileBg(bg, lockPath);
+      const time = h('div', { class: 'w31-locktime' }), date = h('div', { class: 'w31-lockdate' });
       const tick = () => { const n = Sys.now(); time.textContent = Intl31.time(n).replace(/ ?[AP]M$/i, ''); date.textContent = Intl31.longDate(n).replace(/, \d{4}$/, ''); };
       tick();
       const iv = setInterval(tick, 1000);
-      const lock = h('div', { class: 'neo-lockface' }, h('div', { class: 'neo-lockclock' }, time, date));
+      const lock = h('div', { class: 'w31-lockface' }, h('div', { class: 'w31-lockclock' }, time, date));
       ov.append(bg, lock);
       Sys.screen.appendChild(ov);
       Sys.mode = 'locked';
@@ -182,8 +186,8 @@ const Shell10 = {
   signInPanel(ov, first, done) {
     const pw = Store.get('acctPassword', '');
     const av = iconImg('user'); av.style.width = av.style.height = '128px';
-    const name = h('div', { class: 'neo-signname', text: Store.get('userName', 'User') });
-    const box = h('div', { class: 'neo-center neo-signin' }, av, name);
+    const name = h('div', { class: 'w31-signname', text: Store.get('userName', 'User') });
+    const box = h('div', { class: 'w31-center w31-signin' }, av, name);
     let input = null;
     const go = async () => {
       if (pw && input.value !== pw) {
@@ -195,16 +199,16 @@ const Shell10 = {
       Sys.textKey = null;
       box.innerHTML = '';
       const sp = this.spinner('#ffffff');
-      box.append(h('div', { class: 'neo-welcome' }, sp.el, h('span', { text: first ? 'Welcome' : 'Welcome' })));
+      box.append(h('div', { class: 'w31-welcome' }, sp.el, h('span', { text: first ? 'Welcome' : 'Welcome' })));
       await sleep(Store.get('fastBoot') ? 300 : 1100);
       sp.stop();
       done();
     };
-    const msg = h('div', { class: 'neo-signmsg' });
+    const msg = h('div', { class: 'w31-signmsg' });
     if (pw) {
-      input = h('input', { class: 'tx neo-pw', type: 'password', placeholder: 'Password' });
+      input = h('input', { class: 'tx w31-pw', type: 'password', placeholder: 'Password' });
       const arrow = UI.button('→', { default: true, onClick: go });
-      box.append(h('div', { class: 'neo-pwrow' }, input, arrow), msg);
+      box.append(h('div', { class: 'w31-pwrow' }, input, arrow), msg);
       input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
       Sys.textKey = null;
       setTimeout(() => input.focus(), 0);
@@ -215,7 +219,7 @@ const Shell10 = {
       setTimeout(() => b.focus(), 0);
     }
     // power options at the bottom-right of the sign-in screen
-    const pwr = h('div', { class: 'neo-signpower' }, this.tbIcon('s_power', 'Power', e => {
+    const pwr = h('div', { class: 'w31-signpower' }, this.tbIcon('s_power', 'Power', e => {
       const r = Sys.rectOf(e.currentTarget);
       Menu.show(this.powerItems(true), r.x, r.y, { anchorH: 0 });
     }));
@@ -232,9 +236,9 @@ const Shell10 = {
     const su = pmg && pmg.find(g => g.name.toLowerCase() === 'startup');
     const disabled = Store.get('startup.off', []);
     if (su) su.items.filter(it => !disabled.includes(it.name)).forEach((it, i) => setTimeout(() => Sys.launch(it.cmd, { quiet: true, show: it.runMin ? 'min' : undefined }), 500 + i * 300));
-    if (!Store.get('neo.welcomed')) {
-      Store.set('neo.welcomed', true);
-      setTimeout(() => this.notify({ app: 'Windows 31', icon: 'neologo', title: 'Welcome to Windows 31', text: 'Windows, rebuilt with Windows 3.1 pixels. Click here to read the welcome note.', onClick: () => Sys.launch('NOTEPAD.EXE ' + KNOWN.documents + '\\WELCOME.TXT') }), 1200);
+    if (!Store.get('shell.welcomed')) {
+      Store.set('shell.welcomed', true);
+      setTimeout(() => this.notify({ app: 'Windows 31', icon: 'winlogo', title: 'Welcome to Windows 31', text: 'Windows, rebuilt with Windows 3.1 pixels. Click here to read the welcome note.', onClick: () => Sys.launch('NOTEPAD.EXE ' + KNOWN.documents + '\\WELCOME.TXT') }), 1200);
     }
   },
 
@@ -259,9 +263,9 @@ const Shell10 = {
     Saver.stop();
     Store.flush(); FS.flush();
     if (!opts.skipUpdates && Updates.needsRestart() && !Store.get('wu.stage2')) await Updates.beforeRestart();
-    const el = h('div', { class: 'neo-full', style: { background: 'var(--active-title)' } });
+    const el = h('div', { class: 'w31-full', style: { background: 'var(--active-title)' } });
     const sp = this.spinner('#ffffff');
-    el.append(h('div', { class: 'neo-center', style: { gap: '24px' } }, sp.el, h('div', { class: 'neo-bigtext', text: restart ? 'Restarting' : 'Shutting down' })));
+    el.append(h('div', { class: 'w31-center', style: { gap: '24px' } }, sp.el, h('div', { class: 'w31-bigtext', text: restart ? 'Restarting' : 'Shutting down' })));
     Sys.screen.appendChild(el);
     Snd.event('SystemExit');
     await sleep(Store.get('fastBoot') ? 600 : 2200);
@@ -281,14 +285,14 @@ const Shell10 = {
     this.offs = [];
     clearInterval(this.clockIv);
     Sys.deskEl.classList.add('hidden');
-    Sys.deskEl.classList.remove('neo');
+    Sys.deskEl.classList.remove('w31');
     this.started = false;
   },
 
   /* sleep: black screen; any input wakes to the lock screen */
   sleep() {
     this.closePanels();
-    const el = h('div', { class: 'neo-full', style: { background: '#000', zIndex: 450000 } });
+    const el = h('div', { class: 'w31-full', style: { background: '#000', zIndex: 450000 } });
     Sys.screen.appendChild(el);
     Sys.screen.classList.add('nocursor');
     Sys.mode = 'asleep';
@@ -322,7 +326,7 @@ const Shell10 = {
   buildDesktop() {
     this.offs = [];
     Sys.vd = 0;
-    this.vds = Store.get('neo.vds', ['Desktop 1']);
+    this.vds = Store.get('shell.vds', ['Desktop 1']);
     this.buildTaskbar();
     this.buildIcons();
     const re = () => this.renderTaskbar();
@@ -367,7 +371,7 @@ const Shell10 = {
   },
 
   buildIcons() {
-    this.iconsEl = h('div', { class: 'neo-deskicons' });
+    this.iconsEl = h('div', { class: 'w31-deskicons' });
     Sys.wmEl.prepend(this.iconsEl);
     this.iconsEl.addEventListener('pointerdown', e => { if (e.target === this.iconsEl) this.selectIcons([]); });
     this.renderIcons();
@@ -466,7 +470,7 @@ const Shell10 = {
     if (!el || !el.item.path) return;
     this.selectIcons([el]);
     const lbl = el.querySelector('.lbl');
-    const inp = h('input', { class: 'tx neo-rename' });
+    const inp = h('input', { class: 'tx w31-rename' });
     inp.value = el.item.name;
     lbl.replaceWith(inp);
     inp.focus();
@@ -493,35 +497,35 @@ const Shell10 = {
 
   /* ======================= TASKBAR ======================= */
   tbIcon(icon, title, onClick, cls = '') {
-    const b = h('div', { class: 'neo-tbtn ' + cls, title }, iconImg(icon));
+    const b = h('div', { class: 'w31-tbtn ' + cls, title }, iconImg(icon));
     b.addEventListener('pointerdown', e => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); onClick(e); } });
     return b;
   },
   buildTaskbar() {
-    const tb = this.tb = h('div', { class: 'neo-taskbar raised' });
-    this.startBtn = h('div', { class: 'neo-tbtn neo-start' }, iconImg('s_neologo'), h('span', { text: 'Start' }));
+    const tb = this.tb = h('div', { class: 'w31-taskbar raised' });
+    this.startBtn = h('div', { class: 'w31-tbtn w31-start' }, iconImg('s_winlogo'), h('span', { text: 'Start' }));
     this.startBtn.addEventListener('pointerdown', e => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); this.toggle('start'); } });
     this.startBtn.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); this.winX(); });
-    this.searchEl = h('div', { class: 'neo-search' }, iconImg('s_search'));
+    this.searchEl = h('div', { class: 'w31-search' }, iconImg('s_search'));
     this.searchInput = h('input', { class: 'tx', placeholder: 'Type here to search', spellcheck: false });
     this.searchEl.appendChild(this.searchInput);
     this.searchInput.addEventListener('focus', () => { if (this.open !== 'search') this.toggle('search'); });
     this.searchInput.addEventListener('input', () => { if (this.open !== 'search') this.toggle('search'); else this.renderSearch(); });
     this.searchInput.addEventListener('keydown', e => this.searchKey(e));
-    this.searchIconBtn = this.tbIcon('s_search', 'Search', () => this.toggle('search'), 'neo-searchicon');
+    this.searchIconBtn = this.tbIcon('s_search', 'Search', () => this.toggle('search'), 'w31-searchicon');
     this.tvBtn = this.tbIcon('s_taskview', 'Task View', () => this.taskView());
-    this.apps = h('div', { class: 'neo-tbapps' });
+    this.apps = h('div', { class: 'w31-tbapps' });
     this.netBtn = this.tbIcon('s_network', 'Windows 31 Network\nInternet access', () => this.toggle('network'));
     this.volBtn = this.tbIcon('s_volume', 'Speakers', () => this.toggle('volume'));
-    this.clockBtn = h('div', { class: 'neo-tbtn neo-clock' }, h('div'), h('div'));
+    this.clockBtn = h('div', { class: 'w31-tbtn w31-clock' }, h('div'), h('div'));
     this.clockBtn.addEventListener('pointerdown', e => { if (e.button === 0) { e.preventDefault(); e.stopPropagation(); this.toggle('clock'); } });
     this.acBtn = this.tbIcon('s_bell', 'Action Center', () => this.toggle('action'));
-    this.showDesk = h('div', { class: 'neo-showdesk', title: 'Show desktop' });
+    this.showDesk = h('div', { class: 'w31-showdesk', title: 'Show desktop' });
     this.showDesk.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); this.toggleDesktop(); });
-    const tray = h('div', { class: 'neo-tray' }, this.netBtn, this.volBtn, this.clockBtn, this.acBtn);
+    const tray = h('div', { class: 'w31-tray' }, this.netBtn, this.volBtn, this.clockBtn, this.acBtn);
     tb.append(this.startBtn, this.searchEl, this.searchIconBtn, this.tvBtn, this.apps, tray, this.showDesk);
     tb.addEventListener('contextmenu', e => {
-      if (e.target.closest('.neo-tbapp') || e.target.closest('.neo-start')) return;
+      if (e.target.closest('.w31-tbapp') || e.target.closest('.w31-start')) return;
       e.preventDefault();
       const p = Sys.pointer(e);
       Menu.show(this.taskbarMenu(), p.x, p.y);
@@ -600,7 +604,7 @@ const Shell10 = {
         if (w.o.dialog && w.modalOwner) continue;
         const id = (w.app && w.app.id) || ('w' + Sys.desktop.wins.indexOf(w));
         let g = groups.find(x => x.key === id);
-        if (!g) { const a = NEO_APPS.find(x => appIdOf(x) === id) || { name: w.title, cmd: null, icon: w.o.icon || 'app' }; g = { key: id, app: a, wins: [] }; groups.push(g); }
+        if (!g) { const a = START_APPS.find(x => appIdOf(x) === id) || { name: w.title, cmd: null, icon: w.o.icon || 'app' }; g = { key: id, app: a, wins: [] }; groups.push(g); }
         g.wins.push(w);
       }
       this.apps.innerHTML = '';
@@ -608,7 +612,7 @@ const Shell10 = {
       for (const g of groups) {
         const active = g.wins.includes(Sys.desktop.active) && !Sys.desktop.active.isMin;
         const icon = g.wins[0] ? (g.wins[0].o.icon || g.app.icon) : g.app.icon;
-        const b = h('div', { class: 'neo-tbapp' + (g.wins.length ? ' running' : '') + (g.wins.length > 1 ? ' multi' : '') + (active ? ' active' : '') + (labels ? ' labels' : ''), title: g.wins.length === 1 ? g.wins[0].title : g.app.name },
+        const b = h('div', { class: 'w31-tbapp' + (g.wins.length ? ' running' : '') + (g.wins.length > 1 ? ' multi' : '') + (active ? ' active' : '') + (labels ? ' labels' : ''), title: g.wins.length === 1 ? g.wins[0].title : g.app.name },
           g.wins[0] && g.wins[0].o.drawIcon && g.wins[0].isMin && g.wins[0].iconCanvas ? null : iconImg(icon),
           labels && g.wins.length ? h('span', { text: g.wins.length > 1 ? `${g.app.name} (${g.wins.length})` : g.wins[0].title }) : null);
         if (g.wins.some(w => w._flash)) b.classList.add('flash');
@@ -670,7 +674,7 @@ const Shell10 = {
     this.tb && this.tb.classList.add('peek');
     const make = { start: () => this.startMenu(), search: () => this.searchPanel(), action: () => this.actionCenter(), clock: () => this.clockFlyout(), volume: () => this.volumeFlyout(), network: () => this.networkFlyout() }[which];
     this.panel = make();
-    this.panel.classList.add('neo-panel');
+    this.panel.classList.add('w31-panel');
     Sys.deskEl.appendChild(this.panel);
     if (which === 'start') this.startBtn.classList.add('pressed');
     // a click anywhere else closes the panel
@@ -695,9 +699,9 @@ const Shell10 = {
 
   /* ---------------- Start menu ---------------- */
   startMenu() {
-    const el = h('div', { class: 'neo-start-menu raised' });
-    const rail = h('div', { class: 'neo-rail' });
-    const railBtn = (icon, label, fn) => { const b = h('div', { class: 'neo-railbtn', title: label }, iconImg(icon), h('span', { text: label })); b.addEventListener('pointerup', e => { if (e.button === 0) fn(b); }); return b; };
+    const el = h('div', { class: 'w31-start-menu raised' });
+    const rail = h('div', { class: 'w31-rail' });
+    const railBtn = (icon, label, fn) => { const b = h('div', { class: 'w31-railbtn', title: label }, iconImg(icon), h('span', { text: label })); b.addEventListener('pointerup', e => { if (e.button === 0) fn(b); }); return b; };
     rail.append(
       railBtn('s_user', Store.get('userName', 'User'), b => { const r = Sys.rectOf(b); Menu.show([{ label: '&Change account settings', action: () => Sys.launch('SETTINGS accounts/info') }, { label: '&Lock', action: () => this.lock() }, { label: 'Sign &out', action: () => this.signOut() }], r.x + r.w, r.y, { anchorH: 0 }); }),
       h('div', { style: { flex: 1 } }),
@@ -705,12 +709,12 @@ const Shell10 = {
       railBtn('s_pics', 'Pictures', () => { this.closePanels(); Sys.launch('EXPLORER pictures'); }),
       railBtn('s_gear', 'Settings', () => { this.closePanels(); Sys.launch('SETTINGS'); }),
       railBtn('s_power', 'Power', b => { const r = Sys.rectOf(b); Menu.show(this.powerItems(), r.x + r.w, r.y, { anchorH: 0 }); }));
-    const list = h('div', { class: 'neo-applist' });
+    const list = h('div', { class: 'w31-applist' });
     const openFolders = new Set(this._openFolders || []);
     const renderList = () => {
       list.innerHTML = '';
       const item = (a, indent) => {
-        const r = h('div', { class: 'neo-appitem' + (indent ? ' indent' : '') }, iconImg(a.icon, 16), h('span', { text: a.name }));
+        const r = h('div', { class: 'w31-appitem' + (indent ? ' indent' : '') }, iconImg(a.icon, 16), h('span', { text: a.name }));
         r.addEventListener('pointerup', e => { if (e.button === 0) this.launchApp(a); });
         r.addEventListener('contextmenu', e => {
           e.preventDefault(); e.stopPropagation();
@@ -725,24 +729,24 @@ const Shell10 = {
         list.appendChild(r);
       };
       const recent = Store.get('start.recent', []).map(appByCmd).filter(Boolean).slice(0, 3);
-      if (recent.length && Store.get('start.showRecent', true)) { list.appendChild(h('div', { class: 'neo-applabel', text: 'Recently used' })); recent.forEach(a => item(a)); }
-      const tops = NEO_APPS.filter(a => !a.folder).map(a => ({ ...a, sort: a.name }));
-      const folders = [...new Set(NEO_APPS.filter(a => a.folder).map(a => a.folder))].map(f => ({ folder: f, sort: f }));
+      if (recent.length && Store.get('start.showRecent', true)) { list.appendChild(h('div', { class: 'w31-applabel', text: 'Recently used' })); recent.forEach(a => item(a)); }
+      const tops = START_APPS.filter(a => !a.folder).map(a => ({ ...a, sort: a.name }));
+      const folders = [...new Set(START_APPS.filter(a => a.folder).map(a => a.folder))].map(f => ({ folder: f, sort: f }));
       let letter = '';
       for (const it of [...tops, ...folders].sort((a, b) => a.sort.localeCompare(b.sort))) {
         const L = /^[a-z]/i.test(it.sort) ? it.sort[0].toUpperCase() : '#';
-        if (L !== letter) { letter = L; list.appendChild(h('div', { class: 'neo-applabel', text: L })); }
+        if (L !== letter) { letter = L; list.appendChild(h('div', { class: 'w31-applabel', text: L })); }
         if (it.folder) {
           const open = openFolders.has(it.folder);
-          const r = h('div', { class: 'neo-appitem' }, iconImg(open ? 's_folderOpen' : 's_folder', 16), h('span', { text: it.folder }), h('span', { class: 'neo-chev', text: open ? '▲' : '▼' }));
+          const r = h('div', { class: 'w31-appitem' }, iconImg(open ? 's_folderOpen' : 's_folder', 16), h('span', { text: it.folder }), h('span', { class: 'w31-chev', text: open ? '▲' : '▼' }));
           r.addEventListener('pointerup', () => { open ? openFolders.delete(it.folder) : openFolders.add(it.folder); this._openFolders = [...openFolders]; const st = list.scrollTop; renderList(); list.scrollTop = st; });
           list.appendChild(r);
-          if (open) NEO_APPS.filter(a => a.folder === it.folder).sort((a, b) => a.name.localeCompare(b.name)).forEach(a => item(a, true));
+          if (open) START_APPS.filter(a => a.folder === it.folder).sort((a, b) => a.name.localeCompare(b.name)).forEach(a => item(a, true));
         } else item(it);
       }
     };
     renderList();
-    const tiles = h('div', { class: 'neo-tiles' });
+    const tiles = h('div', { class: 'w31-tiles' });
     this.renderTiles = () => this.tilesInto(tiles);
     this.renderTiles();
     el.append(rail, list);
@@ -773,21 +777,21 @@ const Shell10 = {
   },
   tilesInto(el) {
     el.innerHTML = '';
-    el.appendChild(h('div', { class: 'neo-tilehead', text: 'Life at a glance' }));
-    const grid = h('div', { class: 'neo-tilegrid' });
+    el.appendChild(h('div', { class: 'w31-tilehead', text: 'Life at a glance' }));
+    const grid = h('div', { class: 'w31-tilegrid' });
     const n = Sys.now();
     for (const t of (Store.get('start.tiles', null) || this.defaultTiles())) {
       const a = appByCmd(t.cmd);
       if (!a) continue;
-      const tile = h('div', { class: 'neo-tile ' + t.size, style: { background: t.color } });
-      const body = h('div', { class: 'neo-tilebody' });
+      const tile = h('div', { class: 'w31-tile ' + t.size, style: { background: t.color } });
+      const body = h('div', { class: 'w31-tilebody' });
       // live tiles
-      if (t.cmd === 'CALENDAR.EXE') body.append(h('div', { class: 'neo-tilebig', text: String(n.getDate()) }), h('div', { text: Intl31.DAYS[n.getDay()] }));
-      else if (t.cmd === 'CLOCK.EXE') body.append(h('div', { class: 'neo-tilebig', text: Intl31.time(n).replace(/ ?[AP]M$/i, '') }), h('div', { text: n.getHours() >= 12 ? 'PM' : 'AM' }));
-      else if (t.cmd === 'WEATHER') { const wx = Weather.today(); body.append(h('div', { class: 'neo-tilerow' }, iconImg(wx.icon), h('div', { class: 'neo-tilebig', text: wx.temp + '°' })), h('div', { text: wx.cond + ' · ' + Weather.city })); }
+      if (t.cmd === 'CALENDAR.EXE') body.append(h('div', { class: 'w31-tilebig', text: String(n.getDate()) }), h('div', { text: Intl31.DAYS[n.getDay()] }));
+      else if (t.cmd === 'CLOCK.EXE') body.append(h('div', { class: 'w31-tilebig', text: Intl31.time(n).replace(/ ?[AP]M$/i, '') }), h('div', { text: n.getHours() >= 12 ? 'PM' : 'AM' }));
+      else if (t.cmd === 'WEATHER') { const wx = Weather.today(); body.append(h('div', { class: 'w31-tilerow' }, iconImg(wx.icon), h('div', { class: 'w31-tilebig', text: wx.temp + '°' })), h('div', { text: wx.cond + ' · ' + Weather.city })); }
       else if (t.live === 'photos') { const pics = ['REDBRICK', 'HONEY', 'ARGYLE', 'MARBLE', 'CHITZ', 'LEAVES']; const c = Wallpapers.gen(pics[Math.floor(Date.now() / 8000) % pics.length]); if (c) tile.style.backgroundImage = `url(${c.toDataURL()})`; body.appendChild(iconImg(a.icon)); }
       else body.appendChild(iconImg(a.icon));
-      tile.append(body, h('div', { class: 'neo-tilename', text: t.live === 'photos' ? 'Photos' : a.name }));
+      tile.append(body, h('div', { class: 'w31-tilename', text: t.live === 'photos' ? 'Photos' : a.name }));
       tile.addEventListener('pointerup', e => { if (e.button === 0) this.launchApp(a); });
       tile.addEventListener('contextmenu', e => {
         e.preventDefault(); e.stopPropagation();
@@ -805,14 +809,14 @@ const Shell10 = {
 
   /* ---------------- Search ---------------- */
   searchPanel() {
-    const el = h('div', { class: 'neo-search-panel raised' });
-    this.searchResults = h('div', { class: 'neo-results' });
-    this.searchDetail = h('div', { class: 'neo-resdetail' });
+    const el = h('div', { class: 'w31-search-panel raised' });
+    this.searchResults = h('div', { class: 'w31-results' });
+    this.searchDetail = h('div', { class: 'w31-resdetail' });
     el.append(this.searchResults, this.searchDetail);
     setTimeout(() => { this.searchInput.focus(); this.renderSearch(); }, 0);
     if (this.searchEl.style.display === 'none') {
       // search icon mode: the box lives at the top of the panel
-      const box = h('div', { class: 'neo-search inpanel' }, iconImg('s_search'), this.searchInput);
+      const box = h('div', { class: 'w31-search inpanel' }, iconImg('s_search'), this.searchInput);
       el.prepend(box);
       el._close = () => this.searchEl.appendChild(this.searchInput);
     }
@@ -821,8 +825,8 @@ const Shell10 = {
   searchIndex(q) {
     const ql = q.toLowerCase();
     const res = [];
-    for (const a of NEO_APPS) if (a.name.toLowerCase().includes(ql)) res.push({ kind: 'App', name: a.name, icon: a.icon, run: () => this.launchApp(a), score: a.name.toLowerCase().startsWith(ql) ? 0 : 1 });
-    for (const p of (typeof SETTINGS_PAGES !== 'undefined' ? SETTINGS_PAGES : [])) if ((p.title + ' ' + (p.keywords || '')).toLowerCase().includes(ql)) res.push({ kind: 'Setting', name: p.title, icon: 'settings10', run: () => { this.closePanels(); Sys.launch('SETTINGS ' + p.id); }, score: 2 });
+    for (const a of START_APPS) if (a.name.toLowerCase().includes(ql)) res.push({ kind: 'App', name: a.name, icon: a.icon, run: () => this.launchApp(a), score: a.name.toLowerCase().startsWith(ql) ? 0 : 1 });
+    for (const p of (typeof SETTINGS_PAGES !== 'undefined' ? SETTINGS_PAGES : [])) if ((p.title + ' ' + (p.keywords || '')).toLowerCase().includes(ql)) res.push({ kind: 'Setting', name: p.title, icon: 'settings', run: () => { this.closePanels(); Sys.launch('SETTINGS ' + p.id); }, score: 2 });
     let files = 0;
     const walk = (dir, depth) => {
       if (files > 40 || depth > 6) return;
@@ -844,10 +848,10 @@ const Shell10 = {
     const q = this.searchInput.value.trim();
     this.searchResults.innerHTML = ''; this.searchDetail.innerHTML = '';
     if (!q) {
-      this.searchResults.appendChild(h('div', { class: 'neo-applabel', text: 'Top apps' }));
+      this.searchResults.appendChild(h('div', { class: 'w31-applabel', text: 'Top apps' }));
       const top = Store.get('start.recent', []).map(appByCmd).filter(Boolean);
-      for (const a of (top.length ? top : NEO_APPS.slice(0, 5))) {
-        const r = h('div', { class: 'neo-appitem' }, iconImg(a.icon, 16), h('span', { text: a.name }));
+      for (const a of (top.length ? top : START_APPS.slice(0, 5))) {
+        const r = h('div', { class: 'w31-appitem' }, iconImg(a.icon, 16), h('span', { text: a.name }));
         r.addEventListener('pointerup', () => this.launchApp(a));
         this.searchResults.appendChild(r);
       }
@@ -856,12 +860,12 @@ const Shell10 = {
     }
     const res = this.searchIndex(q);
     this.searchList = res; this.searchSel = 0;
-    if (!res.length) { this.searchResults.appendChild(h('div', { class: 'neo-noresult', text: `No results found for "${q}"` })); return; }
+    if (!res.length) { this.searchResults.appendChild(h('div', { class: 'w31-noresult', text: `No results found for "${q}"` })); return; }
     let kind = null;
     res.forEach((r, i) => {
       const head = i === 0 ? 'Best match' : (r.kind === 'App' ? 'Apps' : r.kind === 'Setting' ? 'Settings' : r.kind === 'Web' ? 'Search the web' : 'Documents');
-      if (head !== kind) { kind = head; this.searchResults.appendChild(h('div', { class: 'neo-applabel', text: head })); }
-      const row = h('div', { class: 'neo-appitem' + (i === 0 ? ' best' : '') }, iconImg(i === 0 ? r.icon : (r.icon.startsWith('s_') ? r.icon : r.icon), i === 0 ? 32 : 16), h('span', {}, h('div', { text: r.name }), i === 0 ? h('div', { class: 'neo-kind', text: r.kind }) : null));
+      if (head !== kind) { kind = head; this.searchResults.appendChild(h('div', { class: 'w31-applabel', text: head })); }
+      const row = h('div', { class: 'w31-appitem' + (i === 0 ? ' best' : '') }, iconImg(i === 0 ? r.icon : (r.icon.startsWith('s_') ? r.icon : r.icon), i === 0 ? 32 : 16), h('span', {}, h('div', { text: r.name }), i === 0 ? h('div', { class: 'w31-kind', text: r.kind }) : null));
       row.addEventListener('pointerenter', () => { this.searchSel = i; this.searchDetailFor(r); this.markSel(); });
       row.addEventListener('pointerup', () => r.run());
       row._i = i;
@@ -870,13 +874,13 @@ const Shell10 = {
     this.searchDetailFor(res[0]);
     this.markSel();
   },
-  markSel() { [...this.searchResults.querySelectorAll('.neo-appitem')].forEach(r => r.classList.toggle('hot', r._i === this.searchSel)); },
+  markSel() { [...this.searchResults.querySelectorAll('.w31-appitem')].forEach(r => r.classList.toggle('hot', r._i === this.searchSel)); },
   searchDetailFor(r) {
     const d = this.searchDetail;
     d.innerHTML = '';
     const big = iconImg(r.icon.startsWith('s_') ? 'doc' : r.icon); big.style.width = big.style.height = '64px';
-    d.append(big, h('div', { class: 'neo-detname', text: r.name }), h('div', { class: 'neo-kind', text: r.kind }), h('div', { class: 'neo-sep' }));
-    const act = (label, fn) => { const b = h('div', { class: 'neo-appitem', text: label }); b.addEventListener('pointerup', fn); d.appendChild(b); };
+    d.append(big, h('div', { class: 'w31-detname', text: r.name }), h('div', { class: 'w31-kind', text: r.kind }), h('div', { class: 'w31-sep' }));
+    const act = (label, fn) => { const b = h('div', { class: 'w31-appitem', text: label }); b.addEventListener('pointerup', fn); d.appendChild(b); };
     act('Open', () => r.run());
     if (r.path) act('Open file location', () => { this.closePanels(); Sys.launch(`EXPLORER "${FS.dirname(r.path)}"`); });
     if (r.kind === 'App') act('Run as administrator', () => r.run());
@@ -890,15 +894,15 @@ const Shell10 = {
 
   /* ---------------- Action Center & notifications ---------------- */
   notify(n) {
-    n = { time: Sys.now(), seen: false, icon: 'neologo', ...n };
+    n = { time: Sys.now(), seen: false, icon: 'winlogo', ...n };
     this.notes.unshift(n);
     this.renderTaskbar();
     if (Store.get('focusAssist', false) || !Store.get('notify.on', true) || !this.started) return;
     Snd.event('SystemAsterisk');
-    const t = h('div', { class: 'neo-toast win dlg active' },
+    const t = h('div', { class: 'w31-toast win dlg active' },
       h('div', { class: 'inner' },
         h('div', { class: 'tb' }, h('div', { class: 'cap', text: n.app })),
-        h('div', { class: 'neo-toastbody' }, iconImg(n.icon), h('div', {}, h('div', { class: 'neo-ttitle', text: n.title }), h('div', { text: n.text })))));
+        h('div', { class: 'w31-toastbody' }, iconImg(n.icon), h('div', {}, h('div', { class: 'w31-ttitle', text: n.title }), h('div', { text: n.text })))));
     const close = () => { t.remove(); this.layoutToasts(); };
     t.addEventListener('pointerdown', e => { e.stopPropagation(); close(); n.seen = true; this.renderTaskbar(); n.onClick && n.onClick(); });
     Sys.deskEl.appendChild(t);
@@ -907,19 +911,19 @@ const Shell10 = {
   },
   layoutToasts() {
     let y = (Store.get('tb.autohide', false) ? 4 : this.TB) + 8;
-    [...Sys.deskEl.querySelectorAll('.neo-toast')].reverse().forEach(t => { t.style.bottom = y + 'px'; y += t.offsetHeight + 8; });
+    [...Sys.deskEl.querySelectorAll('.w31-toast')].reverse().forEach(t => { t.style.bottom = y + 'px'; y += t.offsetHeight + 8; });
   },
   actionCenter() {
     this.notes.forEach(n => n.seen = true);
     this.renderTaskbar();
-    const el = h('div', { class: 'neo-action raised' });
-    const list = h('div', { class: 'neo-notes' });
+    const el = h('div', { class: 'w31-action raised' });
+    const list = h('div', { class: 'w31-notes' });
     const render = () => {
       list.innerHTML = '';
-      if (!this.notes.length) { list.appendChild(h('div', { class: 'neo-nonotes', text: 'No new notifications' })); return; }
+      if (!this.notes.length) { list.appendChild(h('div', { class: 'w31-nonotes', text: 'No new notifications' })); return; }
       for (const n of this.notes) {
-        const c = h('div', { class: 'neo-note raised' }, iconImg(n.icon, 32), h('div', { style: { flex: 1 } }, h('div', { class: 'neo-kind', text: `${n.app}  ·  ${Intl31.time(n.time)}` }), h('div', { class: 'neo-ttitle', text: n.title }), h('div', { text: n.text })));
-        const x = h('div', { class: 'neo-x', text: '×' });
+        const c = h('div', { class: 'w31-note raised' }, iconImg(n.icon, 32), h('div', { style: { flex: 1 } }, h('div', { class: 'w31-kind', text: `${n.app}  ·  ${Intl31.time(n.time)}` }), h('div', { class: 'w31-ttitle', text: n.title }), h('div', { text: n.text })));
+        const x = h('div', { class: 'w31-x', text: '×' });
         x.addEventListener('pointerdown', e => { e.stopPropagation(); this.notes.splice(this.notes.indexOf(n), 1); render(); this.renderTaskbar(); });
         c.appendChild(x);
         c.addEventListener('pointerup', () => { if (n.onClick) { this.closePanels(); n.onClick(); } });
@@ -927,11 +931,11 @@ const Shell10 = {
       }
     };
     render();
-    const head = h('div', { class: 'neo-achead' }, h('span', { text: 'Notifications' }));
-    const clear = h('span', { class: 'neo-link', text: 'Clear all notifications' });
+    const head = h('div', { class: 'w31-achead' }, h('span', { text: 'Notifications' }));
+    const clear = h('span', { class: 'w31-link', text: 'Clear all notifications' });
     clear.addEventListener('pointerup', () => { this.notes = []; render(); this.renderTaskbar(); });
     head.appendChild(clear);
-    const qa = h('div', { class: 'neo-quick' });
+    const qa = h('div', { class: 'w31-quick' });
     const quick = [
       ['Tablet mode', 's_taskview', 'tablet', on => { if (on) this.vdWindows().forEach(w => w.maxEl && !w.isMin && w.maximize()); }],
       ['Network', 's_network', null, () => { this.closePanels(); this.toggle('network'); }],
@@ -943,7 +947,7 @@ const Shell10 = {
       ['Show desktop', 's_thispc', null, () => { this.closePanels(); this.toggleDesktop(); }]
     ];
     for (const [label, icon, key, fn] of quick) {
-      const b = h('div', { class: 'neo-qa' + (key && Store.get(key, false) ? ' on' : '') }, iconImg(icon), h('span', { text: label }));
+      const b = h('div', { class: 'w31-qa' + (key && Store.get(key, false) ? ' on' : '') }, iconImg(icon), h('span', { text: label }));
       b.addEventListener('pointerup', () => {
         if (key) { Store.set(key, !Store.get(key, false)); b.classList.toggle('on', Store.get(key, false)); fn(Store.get(key, false)); }
         else fn();
@@ -957,41 +961,41 @@ const Shell10 = {
 
   /* ---------------- flyouts ---------------- */
   clockFlyout() {
-    const el = h('div', { class: 'neo-fly neo-flyclock raised' });
+    const el = h('div', { class: 'w31-fly w31-flyclock raised' });
     let month = Sys.now(); month.setDate(1);
-    const big = h('div', { class: 'neo-flytime' }), date = h('div', { class: 'neo-link', text: '' });
-    const cal = h('div', { class: 'neo-cal' });
+    const big = h('div', { class: 'w31-flytime' }), date = h('div', { class: 'w31-link', text: '' });
+    const cal = h('div', { class: 'w31-cal' });
     date.addEventListener('pointerup', () => { this.closePanels(); Sys.launch('CALENDAR.EXE'); });
     const draw = () => {
       const n = Sys.now();
       big.textContent = Intl31.time(n, true); date.textContent = Intl31.longDate(n);
       cal.innerHTML = '';
-      const hd = h('div', { class: 'neo-calhead' });
-      const prev = h('span', { class: 'neo-link', text: '◄' }), next = h('span', { class: 'neo-link', text: '►' });
+      const hd = h('div', { class: 'w31-calhead' });
+      const prev = h('span', { class: 'w31-link', text: '◄' }), next = h('span', { class: 'w31-link', text: '►' });
       prev.addEventListener('pointerup', () => { month.setMonth(month.getMonth() - 1); draw(); });
       next.addEventListener('pointerup', () => { month.setMonth(month.getMonth() + 1); draw(); });
       hd.append(h('span', { text: `${Intl31.MONTHS[month.getMonth()]} ${month.getFullYear()}` }), h('span', {}, prev, ' ', next));
       cal.appendChild(hd);
-      const g = h('div', { class: 'neo-calgrid' });
-      ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(d => g.appendChild(h('div', { class: 'neo-caldow', text: d })));
+      const g = h('div', { class: 'w31-calgrid' });
+      ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(d => g.appendChild(h('div', { class: 'w31-caldow', text: d })));
       const start = new Date(month); start.setDate(1 - month.getDay());
       for (let i = 0; i < 42; i++) {
         const d = new Date(start); d.setDate(start.getDate() + i);
         const today = d.toDateString() === n.toDateString();
-        g.appendChild(h('div', { class: 'neo-calday' + (today ? ' today' : '') + (d.getMonth() !== month.getMonth() ? ' other' : ''), text: String(d.getDate()) }));
+        g.appendChild(h('div', { class: 'w31-calday' + (today ? ' today' : '') + (d.getMonth() !== month.getMonth() ? ' other' : ''), text: String(d.getDate()) }));
       }
       cal.appendChild(g);
     };
     draw();
     this.flyClock = () => { big.textContent = Intl31.time(Sys.now(), true); };
-    const link = h('div', { class: 'neo-link', text: 'Date and time settings' });
+    const link = h('div', { class: 'w31-link', text: 'Date and time settings' });
     link.addEventListener('pointerup', () => { this.closePanels(); Sys.launch('SETTINGS time/datetime'); });
     el.append(big, date, cal, link);
     return el;
   },
   volumeFlyout() {
-    const el = h('div', { class: 'neo-fly neo-flyvol raised' });
-    const pct = h('div', { class: 'neo-flypct' });
+    const el = h('div', { class: 'w31-fly w31-flyvol raised' });
+    const pct = h('div', { class: 'w31-flypct' });
     const mute = this.tbIcon(Store.get('muted', false) ? 's_mute' : 's_volume', 'Mute', () => {
       Store.set('muted', !Store.get('muted', false)); mute.firstChild.src = iconURL(Store.get('muted', false) ? 's_mute' : 's_volume'); this.renderTaskbar();
     });
@@ -999,18 +1003,18 @@ const Shell10 = {
     sl.el.style.position = 'relative'; sl.el.style.width = '190px';
     pct.textContent = Store.get('volume', 80);
     sl.el.addEventListener('pointerup', () => Snd.beep());
-    el.append(h('div', { class: 'neo-kind', text: 'Speakers (Windows 31 Sound Synthesizer)' }), h('div', { class: 'neo-volrow' }, mute, sl.el, pct));
+    el.append(h('div', { class: 'w31-kind', text: 'Speakers (Windows 31 Sound Synthesizer)' }), h('div', { class: 'w31-volrow' }, mute, sl.el, pct));
     return el;
   },
   networkFlyout() {
-    const el = h('div', { class: 'neo-fly neo-flynet raised' });
+    const el = h('div', { class: 'w31-fly w31-flynet raised' });
     const air = Store.get('airplane', false);
-    const net = h('div', { class: 'neo-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'neo-ttitle', text: 'Windows 31 Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
-    const set = h('div', { class: 'neo-link', text: 'Network & Internet settings' });
+    const net = h('div', { class: 'w31-netitem' + (air ? '' : ' on') }, iconImg('s_network'), h('div', {}, h('div', { class: 'w31-ttitle', text: 'Windows 31 Network' }), h('div', { text: air ? 'Airplane mode is on' : 'Connected, secured' })));
+    const set = h('div', { class: 'w31-link', text: 'Network & Internet settings' });
     set.addEventListener('pointerup', () => { this.closePanels(); Sys.launch('SETTINGS network/status'); });
-    const ab = h('div', { class: 'neo-qa' + (air ? ' on' : '') }, iconImg('s_netoff'), h('span', { text: 'Airplane mode' }));
+    const ab = h('div', { class: 'w31-qa' + (air ? ' on' : '') }, iconImg('s_netoff'), h('span', { text: 'Airplane mode' }));
     ab.addEventListener('pointerup', () => { Store.set('airplane', !Store.get('airplane', false)); this.closePanels(); this.renderTaskbar(); this.toggle('network'); });
-    el.append(net, set, h('div', { class: 'neo-quick' }, ab));
+    el.append(net, set, h('div', { class: 'w31-quick' }, ab));
     return el;
   },
 
@@ -1038,27 +1042,27 @@ const Shell10 = {
   taskView() {
     this.closePanels();
     if (this.tv) { this.closeTaskView(); return; }
-    const ov = this.tv = h('div', { class: 'neo-taskview' });
-    const strip = h('div', { class: 'neo-vdstrip' });
-    const cards = h('div', { class: 'neo-cards' });
+    const ov = this.tv = h('div', { class: 'w31-taskview' });
+    const strip = h('div', { class: 'w31-vdstrip' });
+    const cards = h('div', { class: 'w31-cards' });
     const render = () => {
       strip.innerHTML = ''; cards.innerHTML = '';
       this.vds.forEach((name, i) => {
-        const d = h('div', { class: 'neo-vd raised' + (i === Sys.vd ? ' cur' : '') }, h('div', { class: 'neo-vdthumb' }), h('span', { text: name }));
+        const d = h('div', { class: 'w31-vd raised' + (i === Sys.vd ? ' cur' : '') }, h('div', { class: 'w31-vdthumb' }), h('span', { text: name }));
         d.dataset.vd = i;
-        d.addEventListener('pointerup', e => { if (e.button === 0 && !e.target.classList.contains('neo-x')) { this.switchVD(i); this.closeTaskView(); } });
-        if (this.vds.length > 1) { const x = h('div', { class: 'neo-x', text: '×' }); x.addEventListener('pointerup', e => { e.stopPropagation(); this.removeVD(i); render(); }); d.appendChild(x); }
+        d.addEventListener('pointerup', e => { if (e.button === 0 && !e.target.classList.contains('w31-x')) { this.switchVD(i); this.closeTaskView(); } });
+        if (this.vds.length > 1) { const x = h('div', { class: 'w31-x', text: '×' }); x.addEventListener('pointerup', e => { e.stopPropagation(); this.removeVD(i); render(); }); d.appendChild(x); }
         strip.appendChild(d);
       });
-      const add = h('div', { class: 'neo-vd neo-vdnew raised' }, iconImg('s_plus'), h('span', { text: 'New desktop' }));
-      add.addEventListener('pointerup', () => { this.vds.push('Desktop ' + (this.vds.length + 1)); Store.set('neo.vds', this.vds); render(); });
+      const add = h('div', { class: 'w31-vd w31-vdnew raised' }, iconImg('s_plus'), h('span', { text: 'New desktop' }));
+      add.addEventListener('pointerup', () => { this.vds.push('Desktop ' + (this.vds.length + 1)); Store.set('shell.vds', this.vds); render(); });
       strip.appendChild(add);
       const ws = this.vdWindows().filter(w => !(w.o.dialog && w.modalOwner));
-      if (!ws.length) cards.appendChild(h('div', { class: 'neo-bigtext', style: { color: 'var(--desktop-text)' }, text: 'No open windows' }));
+      if (!ws.length) cards.appendChild(h('div', { class: 'w31-bigtext', style: { color: 'var(--desktop-text)' }, text: 'No open windows' }));
       for (const w of ws) {
-        const c = h('div', { class: 'neo-card win active' },
-          h('div', { class: 'inner' }, h('div', { class: 'tb' }, h('div', { class: 'cap', text: w.title })), h('div', { class: 'body neo-cardbody' }, iconImg(w.o.icon || 'app'))));
-        const x = h('div', { class: 'neo-x', text: '×' });
+        const c = h('div', { class: 'w31-card win active' },
+          h('div', { class: 'inner' }, h('div', { class: 'tb' }, h('div', { class: 'cap', text: w.title })), h('div', { class: 'body w31-cardbody' }, iconImg(w.o.icon || 'app'))));
+        const x = h('div', { class: 'w31-x', text: '×' });
         x.addEventListener('pointerup', e => { e.stopPropagation(); w.close().then(render); });
         c.appendChild(x);
         // drag a card onto another desktop to move the window there
@@ -1103,7 +1107,7 @@ const Shell10 = {
     for (const w of Sys.desktop.wins) if ((w.vd || 0) > i) w.vd--;
     this.vds.splice(i, 1);
     this.vds = this.vds.map((n, k) => /^Desktop \d+$/.test(n) ? 'Desktop ' + (k + 1) : n);
-    Store.set('neo.vds', this.vds);
+    Store.set('shell.vds', this.vds);
     const cur = Sys.vd > i || Sys.vd === i ? Math.max(0, Sys.vd - 1) : Sys.vd;
     Sys.vd = -1; this.switchVD(cur);
   },
@@ -1124,7 +1128,7 @@ const Shell10 = {
         A: () => this.toggle('action'), S: () => this.toggle('search'), X: () => this.winX(), Tab: () => this.taskView(), M: () => this.vdWindows().forEach(w => w.minBox !== false && !w.isMin && w.minimize())
       };
       if (e.ctrlKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); this.switchVD(Sys.vd + (e.key === 'ArrowLeft' ? -1 : 1)); return true; }
-      if (e.ctrlKey && k === 'D') { e.preventDefault(); this.vds.push('Desktop ' + (this.vds.length + 1)); Store.set('neo.vds', this.vds); this.switchVD(this.vds.length - 1); return true; }
+      if (e.ctrlKey && k === 'D') { e.preventDefault(); this.vds.push('Desktop ' + (this.vds.length + 1)); Store.set('shell.vds', this.vds); this.switchVD(this.vds.length - 1); return true; }
       if (map[k]) { e.preventDefault(); map[k](); return true; }
       const w = Sys.desktop.active;
       if (w && /^Arrow/.test(e.key) && !w.o.dialog) {
@@ -1150,14 +1154,14 @@ const Shell10 = {
   }
 };
 
-/* ======================= NEO10 WALLPAPERS (pixel art, 16 colours, dithered) ======================= */
+/* ======================= WINDOWS 31 WALLPAPERS (pixel art, 16 colours, dithered) ======================= */
 (() => {
   const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
   const dith = (x, y, v) => v > (BAYER[y & 3][x & 3] + .5) / 16;
   Object.assign(Wallpapers.makers, {
-    /* desktop: seamless 192×192 tile — Neo10 logos on a wide diamond lattice, each throwing faint rays */
-    NEO10() {
-      const S = 192, g = new PixGrid(S, S), L = neoLogoGrid(32), TAU = Math.PI * 2;
+    /* desktop: seamless 192×192 tile — Windows 31 logos on a wide diamond lattice, each throwing faint rays */
+    WIN31() {
+      const S = 192, g = new PixGrid(S, S), L = winLogoGrid(32), TAU = Math.PI * 2;
       const centres = [[0, 0], [S, 0], [0, S], [S, S], [S / 2, S / 2]];
       for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
         const swell = .5 + .5 * Math.cos(TAU * (x + y) / S);
@@ -1180,7 +1184,7 @@ const Shell10 = {
       return g.canvas();
     },
     /* lock screen: sunset over a lake — repeats left-to-right; STARS tiles the sky above it */
-    LOCK10() {
+    LOCK31() {
       const W = 320, H = 400, g = new PixGrid(W, H), horizon = 290, TAU = Math.PI * 2;
       const sky = [['N', 'N'], ['N', 'm'], ['m', 'r'], ['r', 'R'], ['R', 'Y']];
       const skyAt = (x, y) => { const t = Math.max(0, y) / horizon * (sky.length - .01); const [a, b] = sky[Math.floor(t)]; return dith(x, y, t % 1) ? b : a; };

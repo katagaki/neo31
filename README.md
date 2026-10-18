@@ -91,24 +91,24 @@ Browsers reserve some Windows/Command-key combinations, so every action is also 
 
 ```
 index.html
-css/win31.css        look & feel, colour-scheme variables, @font-face
-fonts/               generated pixel webfonts (+ LICENSE.md)
-tools/build_fonts.py converts the bitmap font sources into those webfonts
-js/util.js           helpers, settings store
-js/sound.js          synthesised system sounds (TADA, CHIMES, DING, CHORD)
-js/icons.js          pixel-art icons, bitmap font, cursors, raster helpers
-js/fs.js             virtual FAT filesystem with the default C: drive
-js/wm.js             window manager, MDI, menus
-js/ui.js             dialog controls, message boxes, file dialogs
-js/shell.js          system services, schemes, wallpapers, screen savers
-js/dos.js            text console, COMMAND.COM, BIOS checks, power-off screen, Command Prompt
-js/bios.js           CMOS settings and the BIOS setup utility
-js/settings.js       system-wide settings: mouse, keyboard repeat, Alt+Tab, INI sync
-js/apps/*.js         one file per application
-js/neo10/*.js        desktop shell, File Explorer, Settings, Task Manager, Weather, Run, Edge, Photos
-js/neo10/setup10.js  Windows Setup, out-of-box experience, Windows Update, reset and recovery
-css/neo10.css        desktop shell styles
-css/setup10.css      Setup, update and recovery screens
+css/win31.css            Windows 3.1 look & feel, colour-scheme variables, @font-face
+css/windows31.css        desktop styles
+css/setup31.css          Setup, update and recovery screens
+fonts/                   generated pixel webfonts (+ LICENSE.md)
+tools/build_fonts.py     converts the bitmap font sources into those webfonts
+js/util.js               helpers, settings store
+js/sound.js              synthesised system sounds (TADA, CHIMES, DING, CHORD)
+js/icons.js              pixel-art icons, bitmap font, cursors, raster helpers
+js/fs.js                 virtual FAT filesystem with the default C: drive
+js/wm.js                 window manager, MDI, menus
+js/ui.js                 dialog controls, message boxes, file dialogs
+js/shell.js              system services, schemes, wallpapers, screen savers
+js/dos.js                text console, COMMAND.COM, BIOS checks, power-off screen, Command Prompt
+js/bios.js               CMOS settings and the BIOS setup utility
+js/settings.js           system-wide settings: mouse, keyboard repeat, Alt+Tab, INI sync
+js/apps/*.js             one file per application
+js/windows31/*.js        desktop, File Explorer, Settings, Task Manager, Weather, Run, Edge, Photos
+js/windows31/setup31.js  Windows Setup, out-of-box experience, Windows Update, reset and recovery
 ```
 
 Windows 31 is a fan-made simulation. Microsoft and Windows are trademarks of Microsoft Corporation.

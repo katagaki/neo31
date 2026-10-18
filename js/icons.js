@@ -604,7 +604,6 @@ const ICON_DEFS = {
     g.f(15, 10, 2, 11, 'K'); g.f(15, 24, 2, 3, 'K');
   },
 
-  winlogo: g => { const f = flagGrid(32, 32); g.d = f.d; },
 
   /* ---- 16x16 glyphs ---- */
   s_folder: g => g.m(0, 2, [
@@ -978,10 +977,9 @@ const Raster = {
   }
 };
 
-/* ======================= NEO10 ICONS ======================= */
-/* The Neo10 emblem: the Windows 10 four-pane window in perspective, in the
-   Windows 3.1 flag colours. Works at any size. */
-function neoLogoGrid(S = 32) {
+/* ======================= WINDOWS 31 ICONS ======================= */
+/* The Windows 31 logo: the four-square flag. Works at any size. */
+function winLogoGrid(S = 32) {
   // a 1-pixel margin keeps the squares off the edge of icons and tiles
   const g = new PixGrid(S, S), f = flagGrid(S - 2, S - 2);
   for (let y = 0; y < S - 2; y++) for (let x = 0; x < S - 2; x++) if (f.d[y * (S - 2) + x]) g.p(x + 1, y + 1, f.d[y * (S - 2) + x]);
@@ -995,7 +993,7 @@ const FOLDER_BIG = g => {
   g.b(1, 10, 30, 18, 'Y'); g.l(2, 11, 29, 11, 'W'); g.l(2, 11, 2, 26, 'W'); g.l(29, 12, 29, 26, 'y'); g.l(3, 26, 29, 26, 'y');
 };
 Object.assign(ICON_DEFS, {
-  neologo: g => { g.d = neoLogoGrid(32).d; },
+  winlogo: g => { g.d = winLogoGrid(32).d; },
   thispc: g => { g.bev(3, 3, 26, 19, 'S'); g.b(5, 5, 22, 14, 'c'); g.f(7, 7, 8, 2, 'C'); g.b(11, 22, 10, 3, 'G'); g.bev(6, 25, 20, 4, 'S'); },
   recycle: g => {
     g.b(6, 5, 20, 4, 'S'); g.b(12, 3, 8, 3, 'S');
@@ -1014,7 +1012,7 @@ Object.assign(ICON_DEFS, {
   fmusic: g => { FOLDER_BIG(g); g.m(11, 12, ['....KKKKKKK', '....KNNNNNK', '....KNKKKNK', '....KNK.KNK', '....KNK.KNK', '.KKKKNK.KNK', 'KNNNNNKKKNK', 'KNNNNNKKNNK', '.KKKKK..KK.']); },
   fdesk: g => { FOLDER_BIG(g); g.b(10, 13, 15, 11, 'N'); g.f(11, 14, 13, 6, 'c'); g.f(11, 21, 13, 2, 'S'); },
   explorer: g => { FOLDER_BIG(g); g.f(2, 16, 28, 4, 'B'); g.l(2, 16, 29, 16, 'N'); g.l(2, 19, 29, 19, 'N'); },
-  settings10: g => {
+  settings: g => {
     // gear: body + 8 teeth filled grey, then a 1px black outline traced around the shape
     const sh = new PixGrid(32, 32);
     sh.disc(15.5, 15.5, 10, 'S');
@@ -1041,7 +1039,7 @@ Object.assign(ICON_DEFS, {
   weather: g => { g.disc(11.5, 11.5, 7, 'Y'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.l(11.5 + Math.cos(a) * 8.5, 11.5 + Math.sin(a) * 8.5, 11.5 + Math.cos(a) * 10.5, 11.5 + Math.sin(a) * 10.5, 'Y'); }
     g.disc(17, 21, 5, 'W'); g.disc(23, 19, 6, 'W'); g.disc(11, 23, 4, 'W'); g.f(11, 23, 18, 5, 'W');
     g.ring(17, 21, 5, 'S'); },
-  store10: g => { g.b(4, 9, 24, 20, 'W'); g.l(10, 9, 12, 3, 'K'); g.l(22, 9, 20, 3, 'K'); g.l(12, 3, 20, 3, 'K'); const n = neoLogoGrid(16); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const c = n.get(x, y); if (c) g.p(8 + x, 11 + y, c); } },
+  store: g => { g.b(4, 9, 24, 20, 'W'); g.l(10, 9, 12, 3, 'K'); g.l(22, 9, 20, 3, 'K'); g.l(12, 3, 20, 3, 'K'); const n = winLogoGrid(16); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const c = n.get(x, y); if (c) g.p(8 + x, 11 + y, c); } },
   lock: g => { g.ring(15.5, 11, 6, 'K'); g.ring(15.5, 11, 5, 'K'); g.bev(7, 13, 18, 15, 'Y'); g.f(15, 18, 2, 5, 'K'); },
   globe: g => {
     g.disc(15.5, 15.5, 13, 'B');
@@ -1065,7 +1063,7 @@ Object.assign(ICON_DEFS, {
   runbox: g => { g.b(2, 6, 28, 20, 'S'); g.f(3, 7, 26, 3, 'N'); g.b(5, 14, 22, 6, 'W'); g.f(7, 16, 1, 2, 'K'); },
 
   /* 16x16 glyphs */
-  s_neologo: g => { g.d = neoLogoGrid(16).d; },
+  s_winlogo: g => { g.d = winLogoGrid(16).d; },
   s_search: g => g.m(1, 1, ['...KKKK.....', '..K....K....', '.K......K...', '.K......K...', '.K......K...', '.K......K...', '..K....K....', '...KKKKK....', '.......KK...', '........KK..', '.........KK.', '..........KK']),
   s_taskview: g => { g.o(1, 3, 10, 8, 'K'); g.f(1, 3, 10, 2, 'K'); g.b(5, 6, 10, 8, 'W'); g.f(5, 6, 10, 2, 'K'); },
   s_bell: g => g.m(1, 2, ['KKKKKKKKKKKKK.', 'KWWWWWWWWWWWK.', 'KWKKKKKKKKKWK.', 'KWWWWWWWWWWWK.', 'KWKKKKKKKWWWK.', 'KWWWWWWWWWWWK.', 'KKKKKKWKKKKKK.', '.....KWK......', '.....KK.......', '.....K........']),

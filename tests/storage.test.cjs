@@ -14,24 +14,24 @@ function pc(seed = {}) {
       setItem: (k, v) => { if (fail || [...values].reduce((sum, [key, value]) => sum + (key === k ? 0 : value.length), 0) + v.length > limit) throw new Error('Quota exceeded'); values.set(k, v); },
       removeItem: k => values.delete(k)
     },
-    Sys: { isNeo: () => true, now: () => new Date(), apps: {}, env: {} },
+    Sys: { now: () => new Date(), apps: {}, env: {} },
     KNOWN: { recycle: 'C:\\RECYCLED', desktop: 'C:\\DESKTOP' },
     msgBox: async () => 'yes'
   });
-  for (const path of ['js/util.js', 'js/fs.js', 'js/neo10/fileops.js', 'js/hostfiles.js']) vm.runInContext(fs.readFileSync(path, 'utf8'), context, { filename: path });
+  for (const path of ['js/util.js', 'js/fs.js', 'js/windows31/fileops.js', 'js/hostfiles.js']) vm.runInContext(fs.readFileSync(path, 'utf8'), context, { filename: path });
   return { run: code => vm.runInContext(code, context), values, limit: value => { limit = value; }, fail: value => { fail = value; }, close: () => vm.runInContext('clearTimeout(Store._t); clearTimeout(FS._t)', context) };
 }
 
 test('legacy files and settings migrate together and survive reload', () => {
   const first = pc(); const tree = first.run('JSON.stringify(FS.root)'); first.close();
   const old = pc({ 'neo31.v1.fs': tree, 'neo31.v1.cfg': JSON.stringify({ shell: 'win31', userName: 'Ada' }) });
-  old.run("FS.write('C:\\\\TEST.TXT', 'Saved'); Store.set('shell', 'neo10'); FS.flush()");
+  old.run("FS.write('C:\\\\TEST.TXT', 'Saved'); Store.set('theme', 'dark'); FS.flush()");
   assert.equal(old.values.has('neo31.v1.cfg'), false);
   assert.equal(old.values.has('neo31.v1.fs'), false);
   assert.equal(JSON.parse(old.values.get('windows31.v1.fs')).version, 1);
   const loaded = pc(Object.fromEntries(old.values));
   assert.equal(loaded.run("FS.read('C:\\\\TEST.TXT')"), 'Saved');
-  assert.equal(loaded.run("Store.get('shell')"), 'neo10');
+  assert.equal(loaded.run("Store.get('theme')"), 'dark');
   assert.equal(loaded.run("Store.get('userName')"), 'Ada'); old.close(); loaded.close();
 });
 

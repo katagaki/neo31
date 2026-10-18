@@ -18,16 +18,16 @@
       const save = () => Store.set('ex.opts', st);
       let loc = resolveTarget(opts.args), hist = [], fwd = [], items = [], sel = new Set(), cur = -1, query = '';
 
-      const back = h('div', { class: 'neo-xbtn', title: 'Back' }, iconImg('s_back'));
-      const forward = h('div', { class: 'neo-xbtn', title: 'Forward' }, iconImg('s_fwd'));
-      const up = h('div', { class: 'neo-xbtn', title: 'Up' }, iconImg('s_upfolder'));
-      const addr = h('input', { class: 'tx neo-addr', spellcheck: false });
-      const search = h('input', { class: 'tx neo-xsearch', placeholder: 'Search', spellcheck: false });
-      const bar = h('div', { class: 'neo-xbar' }, back, forward, up, addr, search);
-      const nav = h('div', { class: 'neo-xnav lb', tabindex: '0' });
-      const main = h('div', { class: 'neo-xmain lb', tabindex: '0' });
+      const back = h('div', { class: 'w31-xbtn', title: 'Back' }, iconImg('s_back'));
+      const forward = h('div', { class: 'w31-xbtn', title: 'Forward' }, iconImg('s_fwd'));
+      const up = h('div', { class: 'w31-xbtn', title: 'Up' }, iconImg('s_upfolder'));
+      const addr = h('input', { class: 'tx w31-addr', spellcheck: false });
+      const search = h('input', { class: 'tx w31-xsearch', placeholder: 'Search', spellcheck: false });
+      const bar = h('div', { class: 'w31-xbar' }, back, forward, up, addr, search);
+      const nav = h('div', { class: 'w31-xnav lb', tabindex: '0' });
+      const main = h('div', { class: 'w31-xmain lb', tabindex: '0' });
       const status = h('div', { class: 'status' }, h('div', { style: { flex: '0 0 auto', minWidth: '120px' } }), h('div', { style: { flex: 1 } }));
-      const split = h('div', { class: 'neo-xsplit' }, nav, main);
+      const split = h('div', { class: 'w31-xsplit' }, nav, main);
 
       const title = () => loc in VIRTUAL ? VIRTUAL[loc] : (loc === 'C:\\' ? 'Local Disk (C:)' : FileOps.shownName(FS.basename(loc), FS.get(loc)));
       const pathLabel = () => loc in VIRTUAL ? VIRTUAL[loc] : 'This PC > ' + FS.resolve(loc).parts.reduce((acc, p, i, a) => {
@@ -86,64 +86,64 @@
         search.placeholder = 'Search ' + title();
         renderNav();
         main.innerHTML = '';
-        main.className = 'neo-xmain lb view-' + st.view;
+        main.className = 'w31-xmain lb view-' + st.view;
         if (loc === 'thispc') return renderThisPC();
         items = list();
         if (loc === 'recycle') {
-          const tools = h('div', { class: 'neo-xtools' }, UI.button('&Empty Recycle Bin', { onClick: async () => { await FileOps.emptyRecycle(w); } }), UI.button('&Restore all items', { onClick: () => { items.forEach(e => FileOps.restore(e.full)); } }));
+          const tools = h('div', { class: 'w31-xtools' }, UI.button('&Empty Recycle Bin', { onClick: async () => { await FileOps.emptyRecycle(w); } }), UI.button('&Restore all items', { onClick: () => { items.forEach(e => FileOps.restore(e.full)); } }));
           main.appendChild(tools);
         }
         if (st.view === 'details') {
           const cols = loc === 'recycle' ? [['name', 'Name', 200], ['orig', 'Original Location', 170], ['date', 'Date Deleted', 150], ['size', 'Size', 80]]
             : [['name', 'Name', 210], ['date', 'Date modified', 150], ['type', 'Type', 140], ['size', 'Size', 80]];
-          const head = h('div', { class: 'neo-xhead' });
+          const head = h('div', { class: 'w31-xhead' });
           for (const [k, label, wd] of cols) {
-            const c = h('div', { class: 'neo-xcol raised', style: { width: wd + 'px' }, text: label + (st.sort === k ? (st.desc ? ' ▼' : ' ▲') : '') });
+            const c = h('div', { class: 'w31-xcol raised', style: { width: wd + 'px' }, text: label + (st.sort === k ? (st.desc ? ' ▼' : ' ▲') : '') });
             c.addEventListener('pointerup', () => { if (k === 'orig') return; if (st.sort === k) st.desc = !st.desc; else { st.sort = k; st.desc = false; } save(); render(); });
             head.appendChild(c);
           }
           main.appendChild(head);
           items.forEach((e, i) => {
-            const row = h('div', { class: 'it neo-xrow' }, h('span', { style: { width: cols[0][2] + 'px' } }, iconImg(FileOps.iconFor(e.name, e.node, 16), 16), h('span', { class: 'neo-xname', text: shown(e) })));
+            const row = h('div', { class: 'it w31-xrow' }, h('span', { style: { width: cols[0][2] + 'px' } }, iconImg(FileOps.iconFor(e.name, e.node, 16), 16), h('span', { class: 'w31-xname', text: shown(e) })));
             if (loc === 'recycle') row.append(h('span', { style: { width: '170px' }, text: e.node.orig ? FS.dirname(e.node.orig) : '' }), h('span', { style: { width: '150px' }, text: e.node.del ? `${Intl31.date(new Date(e.node.del))} ${Intl31.time(new Date(e.node.del))}` : '' }));
             else row.append(h('span', { style: { width: '150px' }, text: `${Intl31.date(new Date(e.node.d || WIN_DATE))} ${Intl31.time(new Date(e.node.d || WIN_DATE))}` }), h('span', { style: { width: '140px' }, text: FileOps.typeName(e.name, e.node) }));
             row.append(h('span', { style: { width: '80px', textAlign: 'right' }, text: e.node.t === 'd' ? '' : sizeStr(FS.size(e.node)) }));
             bindItem(row, i); main.appendChild(row);
           });
         } else {
-          const grid = h('div', { class: 'neo-xgrid' });
+          const grid = h('div', { class: 'w31-xgrid' });
           items.forEach((e, i) => {
             const big = st.view === 'icons';
-            const it = h('div', { class: big ? 'icon neo-xicon' : 'it neo-xlist' }, big ? h('div', { class: 'img' }, iconImg(FileOps.iconFor(e.name, e.node, 32))) : iconImg(FileOps.iconFor(e.name, e.node, 16), 16), h('div', { class: big ? 'lbl' : 'neo-xname', text: shown(e) }));
+            const it = h('div', { class: big ? 'icon w31-xicon' : 'it w31-xlist' }, big ? h('div', { class: 'img' }, iconImg(FileOps.iconFor(e.name, e.node, 32))) : iconImg(FileOps.iconFor(e.name, e.node, 16), 16), h('div', { class: big ? 'lbl' : 'w31-xname', text: shown(e) }));
             bindItem(it, i); grid.appendChild(it);
           });
           main.appendChild(grid);
         }
-        if (!items.length) main.appendChild(h('div', { class: 'neo-xempty', text: query ? 'No items match your search.' : 'This folder is empty.' }));
+        if (!items.length) main.appendChild(h('div', { class: 'w31-xempty', text: query ? 'No items match your search.' : 'This folder is empty.' }));
         paintSel();
       };
 
       const renderThisPC = () => {
         items = [];
-        main.appendChild(h('div', { class: 'neo-applabel', text: 'Folders (5)' }));
-        const g1 = h('div', { class: 'neo-pcgrid' });
+        main.appendChild(h('div', { class: 'w31-applabel', text: 'Folders (5)' }));
+        const g1 = h('div', { class: 'w31-pcgrid' });
         for (const k of ['desktop', 'documents', 'downloads', 'music', 'pictures']) {
           const n = FS.get(KNOWN[k]); if (!n) continue;
-          const el = h('div', { class: 'icon neo-xicon' }, h('div', { class: 'img' }, iconImg(FileOps.iconFor(FS.basename(KNOWN[k]), n, 32))), h('div', { class: 'lbl', text: FileOps.shownName(FS.basename(KNOWN[k]), n) }));
+          const el = h('div', { class: 'icon w31-xicon' }, h('div', { class: 'img' }, iconImg(FileOps.iconFor(FS.basename(KNOWN[k]), n, 32))), h('div', { class: 'lbl', text: FileOps.shownName(FS.basename(KNOWN[k]), n) }));
           el.addEventListener('dblclick', () => go(KNOWN[k]));
           g1.appendChild(el);
         }
         main.appendChild(g1);
-        main.appendChild(h('div', { class: 'neo-applabel', text: 'Devices and drives (2)' }));
+        main.appendChild(h('div', { class: 'w31-applabel', text: 'Devices and drives (2)' }));
         const drive = (label, icon, free, total, fn) => {
           const pct = total ? (total - free) / total : 0;
-          const d = h('div', { class: 'neo-drive' }, iconImg(icon), h('div', {}, h('div', { text: label }),
-            h('div', { class: 'neo-usage sunken' }, h('div', { style: { width: Math.round(pct * 100) + '%', background: pct > .9 ? '#ff0000' : 'var(--highlight)' } })),
-            h('div', { class: 'neo-kind', text: total ? `${(free / 1048576).toFixed(1)} MB free of ${(total / 1048576).toFixed(0)} MB` : '' })));
+          const d = h('div', { class: 'w31-drive' }, iconImg(icon), h('div', {}, h('div', { text: label }),
+            h('div', { class: 'w31-usage sunken' }, h('div', { style: { width: Math.round(pct * 100) + '%', background: pct > .9 ? '#ff0000' : 'var(--highlight)' } })),
+            h('div', { class: 'w31-kind', text: total ? `${(free / 1048576).toFixed(1)} MB free of ${(total / 1048576).toFixed(0)} MB` : '' })));
           d.addEventListener('dblclick', fn);
           return d;
         };
-        main.appendChild(h('div', { class: 'neo-pcdrives' }, drive('Local Disk (C:)', 'thispc', FS.free(), FS.totalBytes, () => go('C:\\')),
+        main.appendChild(h('div', { class: 'w31-pcdrives' }, drive('Local Disk (C:)', 'thispc', FS.free(), FS.totalBytes, () => go('C:\\')),
           drive('3½ Floppy (A:)', 'floppy', 0, 0, () => msgBox('A:\\ is not accessible.\n\nThe device is not ready.', 'Location is not available', { icon: 'stop', owner: w }))));
         status.children[0].textContent = '7 items'; status.children[1].textContent = '';
       };
@@ -168,7 +168,7 @@
       };
 
       /* ---------- selection & item behaviour ---------- */
-      const rows = () => [...main.querySelectorAll('.neo-xrow, .neo-xicon, .neo-xlist')];
+      const rows = () => [...main.querySelectorAll('.w31-xrow, .w31-xicon, .w31-xlist')];
       const paintSel = () => {
         rows().forEach((r, i) => { r.classList.toggle('sel', sel.has(i)); r.classList.toggle('cur', i === cur); });
         const s = [...sel].map(i => items[i]).filter(Boolean);
@@ -232,8 +232,8 @@
       const renameInline = i => {
         const e = items[i]; if (!e || loc === 'recycle') return;
         const row = rows()[i]; if (!row) return;
-        const lbl = row.querySelector('.neo-xname, .lbl');
-        const inp = h('input', { class: 'tx neo-rename' });
+        const lbl = row.querySelector('.w31-xname, .lbl');
+        const inp = h('input', { class: 'tx w31-rename' });
         inp.value = FileOps.shownName(e.name, e.node);
         lbl.replaceWith(inp); inp.focus();
         const dot = inp.value.lastIndexOf('.');
@@ -351,10 +351,10 @@
       });
       search.addEventListener('input', () => { query = search.value.trim(); sel.clear(); cur = -1; render(); search.focus(); });
       search.addEventListener('keydown', e => { if (e.key === 'Escape') { search.value = ''; query = ''; render(); main.focus(); } });
-      main.addEventListener('pointerdown', e => { if (e.target === main || e.target.classList.contains('neo-xgrid')) { sel.clear(); cur = -1; paintSel(); main.focus(); } });
-      main.addEventListener('contextmenu', e => { if (e.target.closest('.neo-xrow, .neo-xicon, .neo-xlist')) return; e.preventDefault(); const p = Sys.pointer(e); Menu.show(bgMenu(), p.x, p.y); });
+      main.addEventListener('pointerdown', e => { if (e.target === main || e.target.classList.contains('w31-xgrid')) { sel.clear(); cur = -1; paintSel(); main.focus(); } });
+      main.addEventListener('contextmenu', e => { if (e.target.closest('.w31-xrow, .w31-xicon, .w31-xlist')) return; e.preventDefault(); const p = Sys.pointer(e); Menu.show(bgMenu(), p.x, p.y); });
 
-      w.body.classList.add('neo-explorer');
+      w.body.classList.add('w31-explorer');
       w.body.append(bar, split, status);
       const off = FS.on('change', () => { clearTimeout(w._rt); w._rt = setTimeout(() => { if (!(loc in VIRTUAL) && !FS.isDir(loc)) loc = 'thispc'; const keep = [...sel]; render(); sel = new Set(keep.filter(i => i < items.length)); paintSel(); }, 30); });
       w.on('closed', off);

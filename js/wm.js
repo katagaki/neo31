@@ -430,8 +430,8 @@ class Win extends Emitter {
       this._bindBtn(this.maxEl, () => this.isMax ? this.restore() : this.maximize());
       this.tb.appendChild(this.maxEl);
     }
-    // Neo10: Windows 10 caption buttons gain a Close box
-    if ((o.closeBox ?? Sys.isNeo()) && o.sysMenu !== false) {
+    // caption buttons include a Close box
+    if ((o.closeBox ?? true) && o.sysMenu !== false) {
       this.closeEl = h('div', { class: 'tbtn close' });
       this._bindBtn(this.closeEl, () => this.close());
       this.tb.appendChild(this.closeEl);
@@ -642,7 +642,7 @@ class Win extends Emitter {
     this.state = 'min';
     this.el.classList.add('min');
     this.el.classList.remove('max', 'mdimax');
-    const toTaskbar = Sys.isNeo() && !this.isMdi;    // Neo10 minimises to the taskbar
+    const toTaskbar = !this.isMdi;    // top-level windows minimise to the taskbar
     if (!toTaskbar) this.makeIcon();
     this.wm.syncMdiMax();
     if (this.o.onMinimize) this.o.onMinimize(true);
@@ -858,8 +858,8 @@ class Win extends Emitter {
   /* ---------------- move / size with XOR outline ---------------- */
   _titleDown(e) {
     if (e.button !== 0 || e.target !== this.capEl && e.target !== this.tb) return;
-    const neo = Sys.isNeo() && !this.isMdi && !this.dialog;
-    if ((this.isMax && !neo) || this.o.fixedPos) return;
+    const snappable = !this.isMdi && !this.dialog;
+    if ((this.isMax && !snappable) || this.o.fixedPos) return;
     e.preventDefault();
     this.tb.setPointerCapture(e.pointerId);
     const sx = e.clientX, sy = e.clientY;
@@ -868,8 +868,8 @@ class Win extends Emitter {
     const mv = ev => {
       const dx = (ev.clientX - sx) / Sys.scale, dy = (ev.clientY - sy) / Sys.scale;
       if (!xr && Math.abs(dx) + Math.abs(dy) < 4) return;
-      // Neo10: dragging a maximised or snapped window restores its size under the pointer
-      if (neo && !unsnapped && (this.isMax || this.snapRestore)) {
+      // dragging a maximised or snapped window restores its size under the pointer
+      if (snappable && !unsnapped && (this.isMax || this.snapRestore)) {
         unsnapped = true;
         const rr = this.isMax ? this.normalRect : this.snapRestore;
         const p0 = Sys.pointer(e, this.wm.el), frac = (p0.x - r0.x) / r0.w;
@@ -881,7 +881,7 @@ class Win extends Emitter {
       if (!xr) xr = xorRect(this.wm.el);
       nx = Settings.snap(r0.x + dx); ny = clamp(Settings.snap(r0.y + dy), -4, this.wm.H - 20);
       zone = null;
-      if (neo && this.o.resizable !== false && Store.get('snap', true)) {
+      if (snappable && this.o.resizable !== false && Store.get('snap', true)) {
         const p = Sys.pointer(ev, this.wm.el), W = this.wm.W, H = this.wm.H;
         if (p.x <= 1) zone = { x: 0, y: 0, w: Math.round(W / 2), h: H };
         else if (p.x >= W - 2) zone = { x: Math.round(W / 2), y: 0, w: W - Math.round(W / 2), h: H };

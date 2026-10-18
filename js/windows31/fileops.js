@@ -1,5 +1,5 @@
 'use strict';
-/* File operations shared by the Neo10 desktop and File Explorer:
+/* File operations shared by the desktop and File Explorer:
    names, types, icons, open, Recycle Bin, rename, cut/copy/paste, properties. */
 
 const FileOps = {

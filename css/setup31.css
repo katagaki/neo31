@@ -1,0 +1,61 @@
+/* ===== Windows 31 Setup, out-of-box experience, updates and recovery ===== */
+.setup-setup { z-index: 400000; font: 16px/18px "W31 MS Sans Serif 10", sans-serif; }
+.setup-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.setup-big { font: 32px/36px "W31 Sans 32"; color: #fff; text-align: center; }
+.setup-small { font: 13px/15px "W31 MS Sans Serif", sans-serif; color: #c0c0c0; text-align: center; }
+
+/* the classic-looking install wizard */
+.setup-setupbox { width: 520px; background: var(--btn-face); color: var(--btn-text); border: 1px solid #000; display: flex; flex-direction: column; }
+.setup-setuptitle { display: flex; align-items: center; gap: 6px; height: 20px; padding: 0 4px; background: var(--active-title); color: var(--active-title-text); font: var(--sys-font); }
+.setup-setupbody { min-height: 300px; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; white-space: pre-line; }
+.setup-msg { width: 380px; }
+.setup-msg .setup-setupbody { min-height: 0; }
+.setup-setupfoot { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--btn-shadow); }
+.setup-setupfoot:empty { display: none; }
+.setup-setuplogo { display: flex; align-items: center; gap: 14px; font: 32px/36px "W31 Sans 32"; color: #000080; margin-bottom: 8px; }
+.setup-field { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.setup-note { font: 13px/15px "W31 MS Sans Serif", sans-serif; }
+.setup-err { font: 13px/15px "W31 MS Sans Serif", sans-serif; color: #800000; min-height: 15px; }
+.setup-h { font: 24px/28px "W31 Sans 24"; color: #000080; }
+.setup-mid { position: relative; flex: 1; min-height: 120px; }
+.setup-license { height: 170px; overflow-y: auto; background: var(--window); color: var(--window-text); padding: 6px; font: 13px/15px "W31 MS Sans Serif", sans-serif; white-space: pre-wrap; user-select: text; }
+.setup-task { display: flex; align-items: center; gap: 8px; color: var(--disabled-text); }
+.setup-task.on { color: var(--btn-text); font-weight: bold; }
+.setup-task.done { color: var(--btn-text); }
+.setup-tick { width: 14px; text-align: center; }
+.setup-task.done .setup-tick::before { content: '\221A'; }
+.setup-task.on .setup-tick::before { content: '\25BA'; }
+.setup-bar { height: 18px; background: var(--window); }
+.setup-bar > div { height: 100%; width: 0; background: var(--highlight); }
+
+/* tiles: install type, Reset this PC and the recovery environment */
+.setup-tile { display: flex; align-items: center; gap: 14px; padding: 10px; border: 1px solid transparent; outline: none; }
+.setup-tile:hover, .setup-tile:focus { border-color: currentColor; background: rgba(255, 255, 255, .12); }
+.setup-tiletitle { font: 16px/18px "W31 MS Sans Serif 10", sans-serif; font-weight: bold; }
+.setup-tile .setup-small { text-align: left; color: inherit; }
+.setup-setupbody .setup-tile:hover, .setup-setupbody .setup-tile:focus { background: var(--highlight); color: var(--highlight-text); }
+
+/* out-of-box experience */
+.setup-oobesteps { position: absolute; top: 24px; left: 40px; display: flex; gap: 28px; font: 13px/15px "W31 MS Sans Serif", sans-serif; color: #8080ff; }
+.setup-oobesteps .on { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+.setup-oobe { position: absolute; inset: 70px 60px 70px 60px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.setup-oobehead { font: 32px/40px "W31 Sans 32"; text-align: center; max-width: 640px; margin-top: 30px; }
+.setup-oobesub { font: 16px/18px "W31 MS Sans Serif 10", sans-serif; color: #c0c0c0; text-align: center; max-width: 560px; }
+.setup-oobemain { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; flex: 1; min-height: 0; }
+.setup-oobefoot { position: absolute; left: 60px; right: 60px; bottom: 24px; display: flex; gap: 10px; }
+.setup-list { width: 340px; height: 210px; background: var(--window); color: var(--window-text); font: 16px/18px "W31 MS Sans Serif 10", sans-serif; }
+.setup-list .it { min-height: 22px; }
+.setup-input.tx { width: 340px; height: 26px; font: 16px/18px "W31 MS Sans Serif 10", sans-serif; }
+.setup-busy { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 40px; }
+.setup-privgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 30px; max-width: 660px; overflow-y: auto; }
+.setup-privacy { display: flex; gap: 12px; align-items: flex-start; }
+.setup-privacy .setup-small { text-align: left; }
+.setup-togrow { display: flex; align-items: center; gap: 6px; flex: none; width: 90px; }
+.setup-oobe .w31-toggle { position: relative; }
+
+/* recovery environment */
+.setup-re { position: absolute; inset: 40px 60px; display: flex; flex-direction: column; gap: 20px; }
+.setup-reh { font: 32px/40px "W31 Sans 32"; }
+.setup-reback { min-height: 26px; }
+.setup-retiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; align-content: start; }
+.setup-retiles .setup-small { color: #c0c0c0; }

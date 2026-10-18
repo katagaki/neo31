@@ -33,7 +33,7 @@ const MouseLayer = {
 
   onClick(e) {
     if (e.isTrusted && this.swapped() && !isEditable(e.target)) return;   // swapFilter will synthesise
-    if (!e.isTrusted && !e.neoSynth) return;
+    if (!e.isTrusted && !e.synthetic) return;
     if (e.button !== 0) return;
     const now = performance.now(), L = this.last;
     if (L && now - L.t <= Sys.dblTime() && Math.abs(e.clientX - L.x) <= 4 && Math.abs(e.clientY - L.y) <= 4) {
@@ -71,7 +71,7 @@ const MouseLayer = {
       if (!common || common === document) common = tgt;
       const type = b === 0 ? 'click' : b === 2 ? 'contextmenu' : 'auxclick';
       const ev = new MouseEvent(type, { ...init, button: b, buttons: 0, detail: 1 });
-      ev.neoSynth = true;
+      ev.synthetic = true;
       common.dispatchEvent(ev);
     }
   }

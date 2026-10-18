@@ -34,15 +34,15 @@ const SetupUI = {
   wait(ms) { return sleep(ms * this.speed()); },
   /* a full-screen layer above the desktop, lock screen and menus */
   layer(bg = '#000080') {
-    const el = h('div', { class: 'neo-full w31-setup', style: { background: bg } });
+    const el = h('div', { class: 'w31-full setup-setup', style: { background: bg } });
     Sys.screen.appendChild(el);
     return el;
   },
   /* spinner + big line + small line, as on the update and reset screens */
   status(bg = '#000080') {
-    const el = this.layer(bg), sp = Shell10.spinner('#ffffff');
-    const big = h('div', { class: 'w31-big' }), small = h('div', { class: 'w31-small' });
-    el.appendChild(h('div', { class: 'neo-center', style: { gap: '28px' } }, sp.el, h('div', { class: 'w31-stack' }, big, small)));
+    const el = this.layer(bg), sp = Shell31.spinner('#ffffff');
+    const big = h('div', { class: 'setup-big' }), small = h('div', { class: 'setup-small' });
+    el.appendChild(h('div', { class: 'w31-center', style: { gap: '28px' } }, sp.el, h('div', { class: 'setup-stack' }, big, small)));
     return { el, set(b, s = '') { big.textContent = b; small.textContent = s; }, close() { sp.stop(); el.remove(); } };
   },
   /* count a percentage up with uneven steps, like real progress */
@@ -57,17 +57,17 @@ const SetupUI = {
   },
   toggle(label, desc, on) {
     const st = { on };
-    const sw = h('div', { class: 'neo-toggle sunken' + (on ? ' on' : ''), tabindex: '0', role: 'switch', 'aria-label': label, 'aria-checked': String(on) }, h('div', { class: 'neo-knob raised' }));
+    const sw = h('div', { class: 'w31-toggle sunken' + (on ? ' on' : ''), tabindex: '0', role: 'switch', 'aria-label': label, 'aria-checked': String(on) }, h('div', { class: 'w31-knob raised' }));
     const txt = h('span', { text: on ? 'Yes' : 'No' });
     const flip = () => { st.on = !st.on; sw.classList.toggle('on', st.on); sw.setAttribute('aria-checked', String(st.on)); txt.textContent = st.on ? 'Yes' : 'No'; };
     sw.addEventListener('pointerup', flip);
     sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
-    st.el = h('div', { class: 'w31-privacy' }, h('div', { class: 'w31-togrow' }, sw, txt), h('div', {}, h('b', { text: label }), h('div', { class: 'w31-small', text: desc })));
+    st.el = h('div', { class: 'setup-privacy' }, h('div', { class: 'setup-togrow' }, sw, txt), h('div', {}, h('b', { text: label }), h('div', { class: 'setup-small', text: desc })));
     return st;
   },
   /* large flat tiles, as on the recovery environment's "Choose an option" screen */
   tile(icon, title, desc, fn) {
-    const t = h('div', { class: 'w31-tile', tabindex: '0', role: 'button' }, iconImg(icon), h('div', {}, h('div', { class: 'w31-tiletitle', text: title }), desc ? h('div', { class: 'w31-small', text: desc }) : null));
+    const t = h('div', { class: 'setup-tile', tabindex: '0', role: 'button' }, iconImg(icon), h('div', {}, h('div', { class: 'setup-tiletitle', text: title }), desc ? h('div', { class: 'setup-small', text: desc }) : null));
     t.addEventListener('click', fn);
     t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
     return t;
@@ -75,17 +75,17 @@ const SetupUI = {
   /* a message box drawn over the Setup screens (the desktop, where msgBox draws, is hidden) */
   message(text, title = 'Windows Setup', buttons = ['OK']) {
     return new Promise(resolve => {
-      const veil = h('div', { class: 'neo-full', style: { zIndex: 410000, background: 'transparent' } });
-      const foot = h('div', { class: 'w31-setupfoot' });
-      const box = h('div', { class: 'w31-setupbox w31-msg raised', role: 'alertdialog', 'aria-label': title },
-        h('div', { class: 'w31-setuptitle' }, h('span', { text: title })), h('div', { class: 'w31-setupbody', text: text }), foot);
+      const veil = h('div', { class: 'w31-full', style: { zIndex: 410000, background: 'transparent' } });
+      const foot = h('div', { class: 'setup-setupfoot' });
+      const box = h('div', { class: 'setup-setupbox setup-msg raised', role: 'alertdialog', 'aria-label': title },
+        h('div', { class: 'setup-setuptitle' }, h('span', { text: title })), h('div', { class: 'setup-setupbody', text: text }), foot);
       buttons.forEach((b, i) => { const btn = UI.button(b, { default: i === 0, onClick: () => { veil.remove(); resolve(b); } }); btn.style.minWidth = '80px'; foot.appendChild(btn); });
-      veil.appendChild(h('div', { class: 'neo-center' }, box));
+      veil.appendChild(h('div', { class: 'w31-center' }, box));
       Sys.screen.appendChild(veil);
       foot.querySelector('button').focus();
     });
   },
-  logo(px = 64) { const c = neoLogoGrid(32).canvas(); c.className = 'neo-pix'; c.style.width = c.style.height = px + 'px'; return c; }
+  logo(px = 64) { const c = winLogoGrid(32).canvas(); c.className = 'w31-pix'; c.style.width = c.style.height = px + 'px'; return c; }
 };
 
 /* ======================= WINDOWS UPDATE ======================= */
@@ -121,7 +121,7 @@ const Updates = Object.assign(new Emitter(), {
     await SetupUI.wait(1800);
     const list = this.available();
     Store.set('wu.last', Date.now());
-    if (!list.length) { this.set('idle', []); if (!quiet) Shell10.notify({ app: 'Windows Update', icon: 'neologo', title: 'You\'re up to date', text: 'Windows 31, version 22H2 is the latest version.' }); return; }
+    if (!list.length) { this.set('idle', []); if (!quiet) Shell31.notify({ app: 'Windows Update', icon: 'winlogo', title: 'You\'re up to date', text: 'Windows 31, version 22H2 is the latest version.' }); return; }
     const items = list.map(u => ({ ...u, status: 'Pending download', pct: 0 }));
     this.set('working', items);
     for (const it of items) {
@@ -133,7 +133,7 @@ const Updates = Object.assign(new Emitter(), {
       this.emit('change', this.state);
     }
     this.set(this.needsRestart() ? 'restart' : 'idle');
-    if (this.needsRestart() && !quiet) Shell10.notify({ app: 'Windows Update', icon: 'neologo', title: 'Restart required', text: 'Restart your PC to finish installing updates. Choose Update and restart from Power.', onClick: () => Sys.launch('SETTINGS update/windowsupdate') });
+    if (this.needsRestart() && !quiet) Shell31.notify({ app: 'Windows Update', icon: 'winlogo', title: 'Restart required', text: 'Restart your PC to finish installing updates. Choose Update and restart from Power.', onClick: () => Sys.launch('SETTINGS update/windowsupdate') });
   },
   record(list) { Store.set('wu.history', [...list.map(u => ({ id: u.id, title: u.title, date: Date.now() })), ...this.history()].slice(0, 40)); },
   /* the two halves of installing at restart: before shutting down and after starting */
@@ -157,7 +157,7 @@ const Updates = Object.assign(new Emitter(), {
 /* ======================= SETUP AND OUT-OF-BOX EXPERIENCE ======================= */
 const Setup = {
   /* PCs saved before Setup existed have already been set up */
-  needed() { return !Store.get('oobe.done') && !Store.get('neo.inited'); },
+  needed() { return !Store.get('oobe.done') && !Store.get('shell.inited'); },
 
   /* Runs before the desktop appears. Returns 'oobe' when the user has just been
      created, so the shell signs straight in, or 'off' if the PC was turned off. */
@@ -182,66 +182,66 @@ const Setup = {
   install() {
     return new Promise(resolve => {
       const el = SetupUI.layer('#008080');
-      const box = h('div', { class: 'w31-setupbox raised' });
-      const title = h('div', { class: 'w31-setuptitle' }, iconImg('setup', 16), h('span', { text: 'Windows Setup' }));
-      const body = h('div', { class: 'w31-setupbody' }), foot = h('div', { class: 'w31-setupfoot' });
+      const box = h('div', { class: 'setup-setupbox raised' });
+      const title = h('div', { class: 'setup-setuptitle' }, iconImg('setup', 16), h('span', { text: 'Windows Setup' }));
+      const body = h('div', { class: 'setup-setupbody' }), foot = h('div', { class: 'setup-setupfoot' });
       box.append(title, body, foot);
-      el.appendChild(h('div', { class: 'neo-center' }, box));
+      el.appendChild(h('div', { class: 'w31-center' }, box));
       const btn = (label, fn, opts = {}) => { const b = UI.button(label, { default: opts.default, onClick: fn }); b.style.minWidth = '80px'; if (opts.disabled) b.disabled = true; return b; };
       const step = (kids, buttons) => { body.innerHTML = ''; foot.innerHTML = ''; body.append(...kids.filter(Boolean)); foot.append(...buttons); (foot.querySelector('button[data-default]') || body.querySelector('input, .lb, button'))?.focus(); };
-      const field = (label, ctl) => { ctl.el.style.position = 'relative'; ctl.el.style.width = '260px'; return h('div', { class: 'w31-field' }, h('span', { text: label }), ctl.el); };
+      const field = (label, ctl) => { ctl.el.style.position = 'relative'; ctl.el.style.width = '260px'; return h('div', { class: 'setup-field' }, h('span', { text: label }), ctl.el); };
 
       const language = () => {
         const lang = UI.combo({ label: 'Language to install', items: ['English (United States)', 'English (United Kingdom)', 'Japanese', 'German', 'French'] }); lang.set(0, false);
         const fmt = UI.combo({ label: 'Time and currency format', items: ['English (United States)', 'English (United Kingdom)', 'Japanese (Japan)', 'German (Germany)', 'French (France)'] }); fmt.set(0, false);
         const kb = UI.combo({ label: 'Keyboard or input method', items: ['US', 'United Kingdom', 'Japanese', 'German', 'French'] }); kb.set(0, false);
-        step([h('div', { class: 'w31-setuplogo' }, SetupUI.logo(48), h('span', { text: 'Windows 31' })),
+        step([h('div', { class: 'setup-setuplogo' }, SetupUI.logo(48), h('span', { text: 'Windows 31' })),
           field('Language to install:', lang), field('Time and currency format:', fmt), field('Keyboard or input method:', kb),
-          h('div', { class: 'w31-note', text: 'Enter your language and other preferences and click "Next" to continue.' })],
+          h('div', { class: 'setup-note', text: 'Enter your language and other preferences and click "Next" to continue.' })],
         [btn('&Next', () => { Store.set('oobe.language', lang.value.text); Store.set('oobe.keyboard', kb.value.text); installNow(); }, { default: true })]);
       };
       const installNow = () => {
         const go = btn('&Install now', productKey, { default: true }); go.style.minWidth = '140px'; go.style.height = '36px';
         const repair = SP.link('Repair your computer', async () => { el.remove(); const r = await Recovery.environment(); if (r === 'off') return resolve('off'); document.body.focus(); resolve(this.install()); });
-        step([h('div', { class: 'w31-setuplogo' }, SetupUI.logo(48), h('span', { text: 'Windows 31' })), h('div', { class: 'neo-center w31-mid' }, go), repair], []);
+        step([h('div', { class: 'setup-setuplogo' }, SetupUI.logo(48), h('span', { text: 'Windows 31' })), h('div', { class: 'w31-center setup-mid' }, go), repair], []);
       };
       const productKey = () => {
         const key = UI.text('', { maxLength: 29 }); key.style.width = '300px'; key.setAttribute('aria-label', 'Product key');
-        const msg = h('div', { class: 'w31-err' });
+        const msg = h('div', { class: 'setup-err' });
         const next = () => {
           const v = key.value.trim().toUpperCase();
           if (!/^([A-Z0-9]{5}-){4}[A-Z0-9]{5}$/.test(v)) { msg.textContent = 'This product key didn\'t work. Check it and try again, or try a different key.'; Snd.beep(); return; }
           Store.set('oobe.productKey', v.slice(-5)); license();
         };
         key.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); next(); } });
-        step([h('div', { class: 'w31-h', text: 'Activate Windows' }),
-          h('div', { class: 'w31-note', text: 'If this is the first time you\'re installing Windows on this PC, you need to enter a valid product key. It looks like this: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX' }),
+        step([h('div', { class: 'setup-h', text: 'Activate Windows' }),
+          h('div', { class: 'setup-note', text: 'If this is the first time you\'re installing Windows on this PC, you need to enter a valid product key. It looks like this: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX' }),
           key, msg, SP.link('I don\'t have a product key', license)],
         [btn('&Next', next, { default: true })]);
       };
       const license = () => {
         const accept = UI.check('I &accept the license terms', false, v => { nb.disabled = !v; });
         const nb = btn('&Next', type, { default: true, disabled: true });
-        step([h('div', { class: 'w31-h', text: 'Applicable notices and license terms' }),
-          h('div', { class: 'w31-license sunken', text: LICENSE_TEXT }), accept],
+        step([h('div', { class: 'setup-h', text: 'Applicable notices and license terms' }),
+          h('div', { class: 'setup-license sunken', text: LICENSE_TEXT }), accept],
         [btn('&Back', productKey), nb]);
       };
-      const type = () => step([h('div', { class: 'w31-h', text: 'Which type of installation do you want?' }),
+      const type = () => step([h('div', { class: 'setup-h', text: 'Which type of installation do you want?' }),
         SetupUI.tile('setup', 'Upgrade: Install Windows and keep files, settings, and applications', 'The upgrade option isn\'t available because there\'s no copy of Windows on this PC.', () => SetupUI.message('The upgrade option isn\'t available if you start your computer using Windows installation media.\n\nChoose Custom to continue.')),
         SetupUI.tile('thispc', 'Custom: Install Windows only (advanced)', 'The files, settings, and applications aren\'t moved to Windows with this option.', where)],
       [btn('&Back', license)]);
       const where = () => {
         const lb = UI.listbox({ label: 'Drives', items: [{ icon: 'thispc', text: 'Drive 0 Unallocated Space          125.0 MB          125.0 MB free' }], sel: 0 });
         lb.el.style.height = '110px';
-        step([h('div', { class: 'w31-h', text: 'Where do you want to install Windows?' }), lb.el,
-          h('div', { class: 'w31-note', text: 'Windows will create the partitions it needs on Drive 0.' })],
+        step([h('div', { class: 'setup-h', text: 'Where do you want to install Windows?' }), lb.el,
+          h('div', { class: 'setup-note', text: 'Windows will create the partitions it needs on Drive 0.' })],
         [btn('&Back', type), btn('&Next', installing, { default: true })]);
       };
       const installing = async () => {
         const tasks = ['Copying Windows files', 'Getting files ready for installation', 'Installing features', 'Installing updates', 'Finishing up'];
-        const rows = tasks.map(t => h('div', { class: 'w31-task' }, h('span', { class: 'w31-tick' }), h('span', { text: t })));
-        step([h('div', { class: 'w31-h', text: 'Installing Windows' }), h('div', { class: 'w31-note', text: 'Status' }), ...rows,
-          h('div', { class: 'w31-note', text: 'Your computer will restart several times. This might take a while.' })], []);
+        const rows = tasks.map(t => h('div', { class: 'setup-task' }, h('span', { class: 'setup-tick' }), h('span', { text: t })));
+        step([h('div', { class: 'setup-h', text: 'Installing Windows' }), h('div', { class: 'setup-note', text: 'Status' }), ...rows,
+          h('div', { class: 'setup-note', text: 'Your computer will restart several times. This might take a while.' })], []);
         for (let i = 0; i < tasks.length; i++) {
           rows[i].classList.add('on');
           const label = rows[i].lastChild;
@@ -252,14 +252,14 @@ const Setup = {
         restart();
       };
       const restart = async () => {
-        const bar = h('div', { class: 'w31-bar sunken' }, h('div'));
+        const bar = h('div', { class: 'setup-bar sunken' }, h('div'));
         let left = 10, timer;
         const now = () => { clearInterval(timer); el.remove(); this.firstBoot().then(resolve); };
-        step([h('div', { class: 'w31-h', text: 'Windows needs to restart to continue' }), h('div', { class: 'w31-note', text: 'Restarting in 10 seconds' }), bar],
+        step([h('div', { class: 'setup-h', text: 'Windows needs to restart to continue' }), h('div', { class: 'setup-note', text: 'Restarting in 10 seconds' }), bar],
           [btn('&Restart now', now, { default: true })]);
         timer = setInterval(() => {
           left--; bar.firstChild.style.width = ((10 - left) * 10) + '%';
-          body.querySelector('.w31-note').textContent = `Restarting in ${left} second${left === 1 ? '' : 's'}`;
+          body.querySelector('.setup-note').textContent = `Restarting in ${left} second${left === 1 ? '' : 's'}`;
           if (left <= 0) now();
         }, 1000 * SetupUI.speed());
       };
@@ -272,8 +272,8 @@ const Setup = {
     const black = SetupUI.layer('#000');
     await SetupUI.wait(1200);
     black.remove();
-    const el = SetupUI.layer('#000'), sp = Shell10.spinner('#ffffff'), line = h('div', { class: 'w31-small' });
-    el.appendChild(h('div', { class: 'neo-center', style: { gap: '48px' } }, SetupUI.logo(128), h('div', { class: 'w31-stack' }, sp.el, line)));
+    const el = SetupUI.layer('#000'), sp = Shell31.spinner('#ffffff'), line = h('div', { class: 'setup-small' });
+    el.appendChild(h('div', { class: 'w31-center', style: { gap: '48px' } }, SetupUI.logo(128), h('div', { class: 'setup-stack' }, sp.el, line)));
     await SetupUI.ramp(0, 100, 5000, p => { line.textContent = `Getting devices ready ${p}%`; });
     line.textContent = 'Getting ready'; await SetupUI.wait(2500);
     sp.stop(); el.remove();
@@ -291,10 +291,10 @@ const Setup = {
   oobe() {
     return new Promise(resolve => {
       const el = SetupUI.layer('#000080');
-      const head = h('div', { class: 'w31-oobehead' }), sub = h('div', { class: 'w31-oobesub' });
-      const main = h('div', { class: 'w31-oobemain' }), foot = h('div', { class: 'w31-oobefoot' });
-      const steps = h('div', { class: 'w31-oobesteps' });
-      el.append(steps, h('div', { class: 'w31-oobe' }, head, sub, main), foot);
+      const head = h('div', { class: 'setup-oobehead' }), sub = h('div', { class: 'setup-oobesub' });
+      const main = h('div', { class: 'setup-oobemain' }), foot = h('div', { class: 'setup-oobefoot' });
+      const steps = h('div', { class: 'setup-oobesteps' });
+      el.append(steps, h('div', { class: 'setup-oobe' }, head, sub, main), foot);
       const section = n => { steps.innerHTML = ''; ['Basics', 'Network', 'Account', 'Services'].forEach((t, i) => steps.appendChild(h('span', { class: i === n ? 'on' : '', text: t }))); };
       const page = (sec, title, text, kids, buttons, back) => {
         section(sec); head.textContent = title; sub.textContent = text || '';
@@ -306,8 +306,8 @@ const Setup = {
         setTimeout(() => (main.querySelector('input, .lb') || foot.querySelector('button[data-default]'))?.focus(), 0);
         return foot;
       };
-      const pickList = (items, cur) => { const lb = UI.listbox({ label: 'Choices', items, sel: Math.max(0, items.indexOf(cur)) }); lb.el.classList.add('w31-list'); return lb; };
-      const busy = async (text, ms) => { section(-1); head.textContent = text; sub.textContent = ''; main.innerHTML = ''; foot.innerHTML = ''; const sp = Shell10.spinner('#ffffff'); main.appendChild(h('div', { class: 'w31-busy' }, sp.el)); await SetupUI.wait(ms); sp.stop(); };
+      const pickList = (items, cur) => { const lb = UI.listbox({ label: 'Choices', items, sel: Math.max(0, items.indexOf(cur)) }); lb.el.classList.add('setup-list'); return lb; };
+      const busy = async (text, ms) => { section(-1); head.textContent = text; sub.textContent = ''; main.innerHTML = ''; foot.innerHTML = ''; const sp = Shell31.spinner('#ffffff'); main.appendChild(h('div', { class: 'setup-busy' }, sp.el)); await SetupUI.wait(ms); sp.stop(); };
 
       const region = () => {
         const lb = pickList(OOBE_REGIONS, Store.get('oobe.region', 'United States'));
@@ -320,7 +320,7 @@ const Setup = {
       };
       const network = async () => {
         await busy('Let\'s connect you to a network', 1200);
-        const lb = UI.listbox({ label: 'Networks', items: [{ icon: 'cpNetwork', text: 'Ethernet  -  Windows 31 Network  -  Connected' }], sel: 0 }); lb.el.classList.add('w31-list'); lb.el.style.height = '60px';
+        const lb = UI.listbox({ label: 'Networks', items: [{ icon: 'cpNetwork', text: 'Ethernet  -  Windows 31 Network  -  Connected' }], sel: 0 }); lb.el.classList.add('setup-list'); lb.el.style.height = '60px';
         page(1, 'You\'re connected', 'Windows 31 found a wired network. Setup will use it to get the latest updates.', [lb.el],
           [['&Next', async () => { await busy('Checking for updates.', 1200); await updates(); }, { default: true }]], keyboard);
       };
@@ -328,8 +328,8 @@ const Setup = {
         const items = Updates.available();
         section(1); head.textContent = 'Checking for updates.'; sub.textContent = 'This might take a few minutes.';
         main.innerHTML = ''; foot.innerHTML = '';
-        const sp = Shell10.spinner('#ffffff'), pct = h('div', { class: 'w31-small' });
-        main.appendChild(h('div', { class: 'w31-busy' }, sp.el, pct));
+        const sp = Shell31.spinner('#ffffff'), pct = h('div', { class: 'setup-small' });
+        main.appendChild(h('div', { class: 'setup-busy' }, sp.el, pct));
         await SetupUI.ramp(0, 100, 3500 + items.length * 900, p => { pct.textContent = `Downloading updates ${p}%`; });
         await SetupUI.ramp(0, 100, 2500, p => { pct.textContent = `Installing updates ${p}%`; });
         Updates.record(items);
@@ -337,21 +337,21 @@ const Setup = {
         who();
       };
       const who = () => {
-        const name = UI.text(Store.get('userName', ''), { maxLength: 20 }); name.placeholder = 'User name'; name.classList.add('w31-input');
+        const name = UI.text(Store.get('userName', ''), { maxLength: 20 }); name.placeholder = 'User name'; name.classList.add('setup-input');
         const go = () => { if (!name.value.trim()) return; Store.set('userName', name.value.trim()); password(); };
         const f = page(2, 'Who\'s going to use this PC?', 'What name do you want to use?', [name], [['&Next', go, { default: true, disabled: !name.value.trim() }]]);
         name.addEventListener('input', () => { f.querySelector('button[data-default]').disabled = !name.value.trim(); });
         name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
       };
       const password = () => {
-        const pw = UI.text('', { password: true, maxLength: 64 }); pw.placeholder = 'Password'; pw.classList.add('w31-input');
+        const pw = UI.text('', { password: true, maxLength: 64 }); pw.placeholder = 'Password'; pw.classList.add('setup-input');
         const go = () => { if (pw.value) confirmPw(pw.value); else { Store.set('acctPassword', ''); privacy(); } };
         pw.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
         page(2, 'Create a super memorable password', 'Make sure to pick something you\'ll absolutely remember. Leave it blank to sign in without a password.', [pw], [['&Next', go, { default: true }]], who);
       };
       const confirmPw = first => {
-        const pw = UI.text('', { password: true, maxLength: 64 }); pw.placeholder = 'Confirm your password'; pw.classList.add('w31-input');
-        const msg = h('div', { class: 'w31-err' });
+        const pw = UI.text('', { password: true, maxLength: 64 }); pw.placeholder = 'Confirm your password'; pw.classList.add('setup-input');
+        const msg = h('div', { class: 'setup-err' });
         const go = () => { if (pw.value !== first) { msg.textContent = 'The passwords don\'t match. Try again.'; pw.value = ''; Snd.beep(); return; } Store.set('acctPassword', first); privacy(); };
         pw.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
         page(2, 'Confirm your password', '', [pw, msg], [['&Next', go, { default: true }]], password);
@@ -362,7 +362,7 @@ const Setup = {
           ['tailored', 'Get tailored experiences', 'Let Microsoft use your diagnostic data to offer you tips and recommendations.'], ['adid', 'Let apps use advertising ID', 'Apps can use advertising ID to provide more personalised advertising.']];
         const ts = opts.map(([k, l, d]) => [k, SetupUI.toggle(l, d, Store.get('privacy.' + k, true))]);
         page(3, 'Choose privacy settings for your device', 'Microsoft puts you in control of your privacy. Choose your settings, then select Accept to save them. You can change these settings at any time.',
-          [h('div', { class: 'w31-privgrid' }, ...ts.map(([, t]) => t.el))], [['&Accept', () => { ts.forEach(([k, t]) => Store.set('privacy.' + k, t.on)); finish(); }, { default: true }]]);
+          [h('div', { class: 'setup-privgrid' }, ...ts.map(([, t]) => t.el))], [['&Accept', () => { ts.forEach(([k, t]) => Store.set('privacy.' + k, t.on)); finish(); }, { default: true }]]);
       };
       const finish = async () => {
         foot.remove(); steps.remove();
@@ -423,8 +423,8 @@ const Recovery = {
             ...(mode === 'keep'
               ? ['Remove all apps and programs that didn\'t come with this PC', 'Change settings back to their defaults', 'Reinstall Windows without removing your personal files']
               : ['Remove all the personal files and user accounts on this PC', 'Remove any apps and programs that didn\'t come with this PC', 'Change settings back to their defaults', 'Give this PC a new name and device ID']).map(t => h('div', { text: '• ' + t })),
-            h('div', { class: 'w31-small', style: { color: 'inherit' }, text: 'This will take a few minutes and your PC will restart.' }),
-            buttons(['Back', choose], ['Reset', async () => { d.close(); Store.set('reset.pending', mode); Store.flush(); await Shell10.shutdown(true, { skipUpdates: true }); }, true], ['Cancel', () => d.close()]));
+            h('div', { class: 'setup-small', style: { color: 'inherit' }, text: 'This will take a few minutes and your PC will restart.' }),
+            buttons(['Back', choose], ['Reset', async () => { d.close(); Store.set('reset.pending', mode); Store.flush(); await Shell31.shutdown(true, { skipUpdates: true }); }, true], ['Cancel', () => d.close()]));
         };
         choose();
       }
@@ -452,25 +452,25 @@ const Recovery = {
   async advancedStartup() {
     if (await msgBox('Your PC will restart to the Windows Recovery Environment, where you can repair or reset it.\n\nSave your work first.', 'Advanced startup', { buttons: 'okcancel', icon: 'info' }) !== 'ok') return;
     Store.set('winre.pending', true); Store.flush();
-    Shell10.shutdown(true, { skipUpdates: true });
+    Shell31.shutdown(true, { skipUpdates: true });
   },
 
   /* the blue "Choose an option" screens. Resolves 'continue' or 'off'. */
   environment() {
     return new Promise(resolve => {
       const el = SetupUI.layer('#000080');
-      const head = h('div', { class: 'w31-reh' }), list = h('div', { class: 'w31-retiles' }), back = h('div', { class: 'w31-reback' });
-      el.appendChild(h('div', { class: 'w31-re' }, back, head, list));
+      const head = h('div', { class: 'setup-reh' }), list = h('div', { class: 'setup-retiles' }), back = h('div', { class: 'setup-reback' });
+      el.appendChild(h('div', { class: 'setup-re' }, back, head, list));
       const screen = (title, tiles, onBack) => {
         head.textContent = title; list.innerHTML = ''; list.append(...tiles);
         back.innerHTML = '';
         if (onBack) { const b = UI.button('←', { onClick: onBack }); b.setAttribute('aria-label', 'Back'); back.appendChild(b); }
-        list.querySelector('.w31-tile')?.focus();
+        list.querySelector('.setup-tile')?.focus();
       };
       const leave = r => { el.remove(); resolve(r); };
       const working = async (text, ms) => { const s = SetupUI.status(); s.set(text, ''); await SetupUI.wait(ms); s.close(); };
       const home = () => screen('Choose an option', [
-        SetupUI.tile('neologo', 'Continue', 'Exit and continue to Windows 31', () => leave('continue')),
+        SetupUI.tile('winlogo', 'Continue', 'Exit and continue to Windows 31', () => leave('continue')),
         SetupUI.tile('control', 'Troubleshoot', 'Reset your PC or see advanced options', troubleshoot),
         SetupUI.tile('s_power', 'Turn off your PC', '', () => leave('off'))]);
       const troubleshoot = () => screen('Troubleshoot', [
@@ -489,7 +489,7 @@ const Recovery = {
         }),
         SetupUI.tile('dos', 'Command Prompt', 'Use the Command Prompt for advanced troubleshooting', () => SetupUI.message('Command Prompt is available once Windows 31 starts.\n\nChoose Continue, then open Command Prompt from Start.', 'Command Prompt')),
         SetupUI.tile('clock', 'System Restore', 'Use a restore point recorded on your PC to restore Windows', () => SetupUI.message('No restore points have been created on your computer\'s system drive.', 'System Restore')),
-        SetupUI.tile('neologo', 'Uninstall Updates', 'Remove recently installed quality updates from Windows', async () => {
+        SetupUI.tile('winlogo', 'Uninstall Updates', 'Remove recently installed quality updates from Windows', async () => {
           const hist = Updates.history(), last = hist.findIndex(u => u.id);
           if (last < 0) { await SetupUI.message('There are no updates to uninstall.', 'Uninstall Updates'); return; }
           if (await SetupUI.message(`Uninstall ${hist[last].title}?`, 'Uninstall Updates', ['Yes', 'No']) !== 'Yes') return;

@@ -13,7 +13,7 @@ window.runWindows31Regression = async function () {
   const cleanWindows = async () => { Menu.closeAll(true); for (const w of Sys.topWindows().slice().reverse()) await w.close(true); };
   try {
     if (Sys.mode === 'locked') {
-      document.querySelector('.neo-lock')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      document.querySelector('.w31-lock')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
       button(document, 'Sign in')?.click(); await wait(400);
     }
     await cleanWindows();
@@ -25,7 +25,7 @@ window.runWindows31Regression = async function () {
       assert(Store.get('regressMarker') === original.cfg.regressMarker, 'Settings were not put back');
     });
     await check('text and binary host import/export with name collisions', async () => {
-      const dir = FS.join('C:\\', FileOps.uniqueName('C:\\', 'NEOTEST')); FS.mkdir(dir);
+      const dir = FS.join('C:\\', FileOps.uniqueName('C:\\', 'W31TEST')); FS.mkdir(dir);
       const pick = HostFiles.pick, download = HostFiles.download, message = window.msgBox;
       const exports = [];
       try {
@@ -136,7 +136,7 @@ window.runWindows31Regression = async function () {
       const edge = Sys.run('edge', { args: 'https://example.com/' });
       assert(button(edge.body, 'Open in new window') && edge.body.innerText.includes('refuses to connect'), 'Live-page guidance is absent');
       assert(edge.body.querySelector('iframe[title="Live page from example.com"]'), 'Live frame has no accessible name');
-      await edge.close(true); const settings = Sys.run('settings10', { args: 'update/recovery' });
+      await edge.close(true); const settings = Sys.run('settings', { args: 'update/recovery' });
       assert(button(settings.body, 'Get started') && button(settings.body, 'Restart now'), 'Recovery controls are absent'); await settings.close(true);
     });
   } finally { await cleanWindows(); putBack(); }

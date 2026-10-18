@@ -141,8 +141,18 @@ const Store = {
     }
     // saved favourites, history and home pages pointed at the offline web's old address
     if (this.base === this.legacyKey) this.data = JSON.parse(JSON.stringify(this.data).replace(/neo31\.net/g, 'windows31.net').replace(/neo31-run:/g, 'windows31-run:'));
+    this.migrate(this.data);
     if (this.state) this.state.cfg = this.data;
     return this.data;
+  },
+  /* settings saved under the names the desktop had before it was Windows 31 */
+  migrate(d) {
+    const keys = { 'neo.inited': 'shell.inited', 'neo.welcomed': 'shell.welcomed', 'neo.vds': 'shell.vds' };
+    for (const [o, n] of Object.entries(keys)) if (o in d) { if (!(n in d)) d[n] = d[o]; delete d[o]; }
+    const pictures = { 'NEO10.BMP': 'WIN31.BMP', 'LOCK10.BMP': 'LOCK31.BMP' };
+    for (const k of ['wallpaper', 'lockImage']) if (pictures[d[k]]) d[k] = pictures[d[k]];
+    if (d.scheme === 'Neo10 Dark') d.scheme = 'Windows 31 Dark';
+    if (d['edge.engine'] === 'neo') d['edge.engine'] = 'offline';
   },
   get(k, d) { return Object.hasOwn(this.data, k) ? this.data[k] : d; },
   set(k, v) { this.data[k] = v; this.save(); },

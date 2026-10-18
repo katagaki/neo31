@@ -106,9 +106,9 @@ class DosShell {
 
   promptStr() {
     const d = Sys.now();
-    // Neo10's Command Prompt shows paths with their Windows 10 capitalisation
+    // the Command Prompt shows paths with their long-name capitalisation
     const pretty = () => {
-      if (!(this.inWin && Sys.isNeo())) return this.cwd;
+      if (!this.inWin) return this.cwd;
       const r = FS.resolve(this.cwd); let p = 'C:', node = FS.root;
       for (const part of r.parts) { node = node && node.c && node.c[part]; p += '\\' + FS.displayName(part, node || { t: 'd' }); }
       return r.parts.length ? p : 'C:\\';
@@ -370,13 +370,13 @@ class DosShell {
 
 DosShell.cmds = {
   CLS() { this.con.clear(); },
-  VER() { this.out(''); this.out(this.inWin && Sys.isNeo() ? 'Microsoft Windows [Version 10.0.19045.3803]' : 'MS-DOS Version 6.00'); },
+  VER() { this.out(''); this.out(this.inWin ? 'Microsoft Windows [Version 10.0.19045.3803]' : 'MS-DOS Version 6.00'); },
   START(a, s) {
     if (!this.inWin) { this.out('This program cannot be run in DOS mode.'); return; }
     Sys.launch(s || 'CMD', { cwd: this.cwd, caller: 'Command Prompt' });
   },
   EXPLORER(a, s) {
-    if (!this.inWin || !Sys.isNeo()) { this.out('Bad command or file name'); return; }
+    if (!this.inWin) { this.out('Bad command or file name'); return; }
     Sys.launch('EXPLORER ' + (s ? FS.full(s, this.cwd) : this.cwd));
   },
   VOL() { this.out(''); this.out(' Volume in drive C is MS-DOS_6'); this.out(' Volume Serial Number is 1A2B-3C4D'); },
@@ -847,7 +847,7 @@ Sys.registerApp('dos', {
     const fsHolder = { full: false };
     let shell;
     const w = new Win({
-      title: Sys.isNeo() ? 'Command Prompt' : 'MS-DOS Prompt', icon: Sys.isNeo() ? 'cmd' : 'dos', resizable: false, maxBox: true,
+      title: 'Command Prompt', icon: 'cmd', resizable: false, maxBox: true,
       onKey: (e, name) => {
         if (name === 'Alt+Enter') { toggleFull(); return true; }
         if (e.altKey && !e.ctrlKey) return false;
@@ -864,7 +864,7 @@ Sys.registerApp('dos', {
     w.body.style.background = '#000';
     w.body.appendChild(pre);
     const con = new TextConsole(pre);
-    shell = new DosShell(con, { inWindows: true, cwd: opts.cwd || (Sys.isNeo() ? USER_HOME : 'C:\\WINDOWS'), onExit: () => { if (fsHolder.full) toggleFull(); w.close(true); } });
+    shell = new DosShell(con, { inWindows: true, cwd: opts.cwd || USER_HOME, onExit: () => { if (fsHolder.full) toggleFull(); w.close(true); } });
     con.render();
     requestAnimationFrame(() => {
       w.sizeToClient(640, 400);
@@ -884,13 +884,7 @@ Sys.registerApp('dos', {
       con.render();
     };
     w.maximize = () => toggleFull();
-    if (Sys.isNeo()) { con.writeln('Microsoft Windows [Version 10.0.19045.3803]'); con.writeln('(c) Microsoft Corporation. All rights reserved.'); }
-    else {
-      [' \u25A0 Type EXIT and press ENTER to quit this MS-DOS prompt and', '   return to Windows.',
-        ' \u25A0 Press ALT+TAB to switch to Windows or another application.',
-        ' \u25A0 Press ALT+ENTER to switch this MS-DOS Prompt between a', '   window and full screen.'].forEach(l => con.writeln(l, 'c-hi'));
-      DosShell.cmds.COMMAND.call(shell);
-    }
+    con.writeln('Microsoft Windows [Version 10.0.19045.3803]'); con.writeln('(c) Microsoft Corporation. All rights reserved.');
     con.writeln('');
     if (opts.args) {
       shell.busy = true;
